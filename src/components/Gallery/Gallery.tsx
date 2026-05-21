@@ -1,5 +1,5 @@
 import { useFrame } from '@react-three/fiber';
-import { Image, MeshReflectorMaterial, useCursor } from '@react-three/drei';
+import { Image, MeshReflectorMaterial, Text, useCursor } from '@react-three/drei';
 import { useMemo, useRef, useState } from 'react';
 import * as THREE from 'three';
 
@@ -9,38 +9,39 @@ import { assets } from '../../helpers/useImageAssets';
 import { openLightbox } from '../../helpers/lightbox';
 
 const GOLDEN = 1.61803398875;
-const CAROUSEL_SPEED = 0.35; // world-units per second
-const CAROUSEL_WIDTH = 14; // total X range of the carousel belt
+const CAROUSEL_SPEED = 0.15; // slower — was 0.35
+const CAROUSEL_WIDTH = 24; // wider spacing
 
 /**
  * Gallery — infinite horizontal carousel.
- *
- * Frames slide from right to left in a continuous loop. Each frame's
- * width/height reflects the image's aspect ratio for variety. The
- * reflective floor is set to high mixStrength for bold reflections.
- * Pointer parallax tilts the stage.
+ * Slower pace, more spacing, varied Z-depth, floor text, camera pan on pointer.
  */
 export function Gallery() {
   const yPos = getSectionWorldY('gallery');
   const visibility = useSectionVisibility('gallery');
   const groupRef = useRef<THREE.Group>(null);
   const stageRef = useRef<THREE.Group>(null);
-  const target = useRef({ x: 0, y: 0 });
-  const current = useRef({ x: 0, y: 0 });
+  const camTarget = useRef({ x: 0, y: 0 });
+  const camCurrent = useRef({ x: 0, y: 0 });
 
-  // Use ALL gallery images for the carousel
   const galleryAssets = useMemo(() => {
     return assets.filter((a) => a.affinity === 'gallery' && a.kind === 'image');
   }, []);
 
-  // Place frames evenly across the belt
   const frameCount = galleryAssets.length;
   const spacing = CAROUSEL_WIDTH / frameCount;
 
-  // Store X offsets — each frame wraps around
   const offsets = useRef<number[]>(
     Array.from({ length: frameCount }, (_, i) => i * spacing - CAROUSEL_WIDTH / 2),
   );
+
+  // Per-frame Z depth (seeded, more variation)
+  const depths = useMemo(() => {
+    return galleryAssets.map((_, i) => {
+      const seed = ((i * 7919) % 100) / 100;
+      return -1 + seed * 5; // Z ranges from -1 to +4 (close to far)
+    });
+  }, [galleryAssets]);
 
   useFrame((state, dt) => {
     if (!groupRef.current) return;
@@ -48,33 +49,34 @@ export function Gallery() {
     groupRef.current.visible = v > 0.02;
     if (v < 0.02) return;
 
-    // Advance the carousel
+    // Advance carousel (slower)
     for (let i = 0; i < offsets.current.length; i++) {
       offsets.current[i] -= CAROUSEL_SPEED * dt;
-      // Wrap around: when a frame exits left, respawn on right
-      if (offsets.current[i] < -CAROUSEL_WIDTH / 2 - 1) {
+      if (offsets.current[i] < -CAROUSEL_WIDTH / 2 - 2) {
         offsets.current[i] += CAROUSEL_WIDTH + spacing;
       }
     }
 
-    // Pointer parallax
-    target.current.x = state.pointer.x * 0.12;
-    target.current.y = state.pointer.y * 0.08;
-    current.current.x += (target.current.x - current.current.x) * 0.05;
-    current.current.y += (target.current.y - current.current.y) * 0.05;
+    // Camera pan — pointer moves the whole stage camera-like
+    camTarget.current.x = state.pointer.x * 1.2;
+    camTarget.current.y = state.pointer.y * 0.6;
+    camCurrent.current.x += (camTarget.current.x - camCurrent.current.x) * 0.03;
+    camCurrent.current.y += (camTarget.current.y - camCurrent.current.y) * 0.03;
 
     if (stageRef.current) {
-      stageRef.current.rotation.y = current.current.x * 0.3;
-      stageRef.current.rotation.x = -current.current.y * 0.15;
+      // Pan = translate + slight rotation for parallax
+      stageRef.current.position.x = -camCurrent.current.x * 0.5;
+      stageRef.current.rotation.y = camCurrent.current.x * 0.08;
+      stageRef.current.rotation.x = -camCurrent.current.y * 0.04;
     }
   });
 
   return (
     <group ref={groupRef} position={[0, yPos, 0]}>
       <group ref={stageRef} position={[0, -0.5, -2]}>
-        {/* Reflective floor with strong reflections */}
+        {/* Reflective floor — strong reflections */}
         <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, 0, 0]}>
-          <planeGeometry args={[50, 50]} />
+          <planeGeometry args={[60, 60]} />
           <MeshReflectorMaterial
             blur={[300, 100]}
             resolution={512}
@@ -89,6 +91,44 @@ export function Gallery() {
           />
         </mesh>
 
+        {/* Floor text */}
+        <Text
+          position={[0, 0.01, -2]}
+          rotation={[-Math.PI / 2, 0, 0]}
+          fontSize={0.6}
+          color="#d30000"
+          anchorX="center"
+          anchorY="middle"
+          letterSpacing={0.3}
+          fillOpacity={0.15}
+        >
+          STUDIO PANIC ATTACK
+        </Text>
+        <Text
+          position={[0, 0.01, 5]}
+          rotation={[-Math.PI / 2, 0, 0]}
+          fontSize={0.18}
+          color="#f6f3ee"
+          anchorX="center"
+          anchorY="middle"
+          letterSpacing={0.5}
+          fillOpacity={0.3}
+        >
+          PROJECTS · GALLERY · 2024 — 2026
+        </Text>
+        <Text
+          position={[-6, 0.01, 1]}
+          rotation={[-Math.PI / 2, 0, Math.PI / 2]}
+          fontSize={0.12}
+          color="#f6f3ee"
+          anchorX="center"
+          anchorY="middle"
+          letterSpacing={0.6}
+          fillOpacity={0.18}
+        >
+          EMA STOYANOVA
+        </Text>
+
         {/* Carousel frames */}
         {galleryAssets.map((asset, i) => (
           <CarouselFrame
@@ -97,6 +137,7 @@ export function Gallery() {
             aspect={asset.aspect}
             index={i}
             offsets={offsets}
+            depth={depths[i]}
           />
         ))}
       </group>
@@ -109,9 +150,10 @@ interface CarouselFrameProps {
   aspect: number;
   index: number;
   offsets: React.MutableRefObject<number[]>;
+  depth: number;
 }
 
-function CarouselFrame({ url, aspect, index, offsets }: CarouselFrameProps) {
+function CarouselFrame({ url, aspect, index, offsets, depth }: CarouselFrameProps) {
   const [hover, setHover] = useState(false);
   useCursor(hover);
   const groupRef = useRef<THREE.Group>(null);
@@ -121,27 +163,22 @@ function CarouselFrame({ url, aspect, index, offsets }: CarouselFrameProps) {
   const colorTarget = useMemo(() => new THREE.Color('#f6f3ee'), []);
 
   // Variable frame size based on aspect
-  const w = aspect >= 1 ? 1.1 : 0.75;
-  const h = aspect >= 1 ? 1.1 / aspect : 0.75 / aspect;
-  const clampedH = Math.min(h, GOLDEN * 1.2);
-  const clampedW = Math.min(w, 1.4);
+  const w = aspect >= 1 ? 1.2 : 0.8;
+  const h = aspect >= 1 ? 1.2 / aspect : 0.8 / aspect;
+  const clampedH = Math.min(h, GOLDEN * 1.3);
+  const clampedW = Math.min(w, 1.5);
 
   useFrame((state, dt) => {
     if (!groupRef.current || !imageRef.current || !frameRef.current) return;
 
-    // Position from carousel offset
     const x = offsets.current[index];
     groupRef.current.position.x = x;
-    // Slight Y bob per frame
-    groupRef.current.position.y = Math.sin(state.clock.elapsedTime * 0.4 + seed * 6.28) * 0.03;
-    // Slight Z stagger for depth
-    groupRef.current.position.z = Math.sin(seed * 12.57) * 0.8;
+    groupRef.current.position.z = depth;
+    groupRef.current.position.y = Math.sin(state.clock.elapsedTime * 0.35 + seed * 6.28) * 0.025;
 
-    // Image zoom breathing
     const mat = imageRef.current.material as THREE.Material & { zoom?: number };
     if (mat) mat.zoom = 1.8 + Math.sin(seed * 10000 + state.clock.elapsedTime / 3) / 3;
 
-    // Frame hover color
     colorTarget.set(hover ? '#d30000' : '#f6f3ee');
     const fmat = frameRef.current.material as THREE.MeshBasicMaterial;
     fmat.color.lerp(colorTarget, Math.min(1, 8 * dt));

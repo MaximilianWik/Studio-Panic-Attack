@@ -4,14 +4,39 @@ import { Suspense, useMemo, useRef } from 'react';
 import * as THREE from 'three';
 
 import { getSectionWorldY, type SectionId, VIEWPORT_HEIGHT_UNITS } from '../../config/sections';
-import { pickByAffinity, type AssetEntry } from '../../helpers/useImageAssets';
 import { useDeviceProfile } from '../../helpers/useDeviceProfile';
 import { shaderIds, type ShaderId } from '../../shaders/imageShaders';
 import { openLightbox } from '../../helpers/lightbox';
 import { ImageEffect } from './ImageEffects';
 
+// All images from public/Scatter/
+const SCATTER_IMAGES = [
+  '/Scatter/000008390034_33a-copy-2.jpg',
+  '/Scatter/add-more-chaos.png',
+  '/Scatter/blob-ogzeet.png',
+  '/Scatter/cemetery-scene1.png',
+  '/Scatter/glasserrorscrnshot.png',
+  '/Scatter/holistic-letter-from-the-editor-and-3d-article.png',
+  '/Scatter/img_1027-2.png',
+  '/Scatter/img_1034.png',
+  '/Scatter/img_2832.png',
+  '/Scatter/img_3370.png',
+  '/Scatter/img_3375.png',
+  '/Scatter/img_4253-1.jpg',
+  '/Scatter/img_4256.jpg',
+  '/Scatter/img_4258.jpg',
+  '/Scatter/img_4297.jpg',
+  '/Scatter/img_9089.png',
+  '/Scatter/img_9247.png',
+  '/Scatter/img_9258.jpeg',
+  '/Scatter/img_9790-min.png',
+  '/Scatter/img_9791-min.png',
+  '/Scatter/img_9793-min.png',
+  '/Scatter/levelsequence-1.0011.png',
+];
+
 interface ScatteredItem {
-  asset: AssetEntry;
+  url: string;
   worldY: number;
   offsetX: number;
   offsetZ: number;
@@ -23,12 +48,7 @@ interface ScatteredItem {
   seed: number;
 }
 
-const sectionAffinities: { id: SectionId; count: number }[] = [
-  { id: 'graphic', count: 3 },
-  { id: 'threeD', count: 3 },
-  { id: 'ai', count: 3 },
-  { id: 'ux', count: 3 },
-];
+const sectionAffinities: SectionId[] = ['graphic', 'threeD', 'ai', 'ux'];
 
 function hash(i: number): number {
   let h = i * 2654435761;
@@ -39,30 +59,48 @@ function hash(i: number): number {
 
 function buildLayout(lowPower: boolean): ScatteredItem[] {
   const items: ScatteredItem[] = [];
-  let idx = 0;
-  for (const seg of sectionAffinities) {
-    const yCenter = getSectionWorldY(seg.id);
-    const pool = pickByAffinity(seg.id);
-    if (!pool.length) continue;
-    const want = lowPower ? Math.max(1, Math.floor(seg.count / 2)) : seg.count;
-    for (let k = 0; k < want; k++) {
-      const r1 = hash(idx + 11);
-      const r2 = hash(idx + 23);
-      const r3 = hash(idx + 37);
-      const r4 = hash(idx + 41);
-      const r5 = hash(idx + 53);
-      const asset = pool[(idx * 7 + k * 3) % pool.length];
-      const ySpread = (k / Math.max(1, want - 1) - 0.5) * VIEWPORT_HEIGHT_UNITS * 0.6;
-      const worldY = yCenter + ySpread + (r1 - 0.5) * 0.6;
-      const side = k % 2 === 0 ? -1 : 1;
-      const offsetX = side * (4.6 + r2 * 1.0);
-      const offsetZ = -2.0 - r3 * 2.5;
-      const rotZ = (r4 - 0.5) * 0.14;
-      const height = 2.8 + r5 * 1.6;
-      const effect: ShaderId | 'plain' = lowPower ? 'plain' : shaderIds[(idx * 3 + k) % shaderIds.length];
-      items.push({ asset, worldY, offsetX, offsetZ, rotZ, height, effect, parallax: 0.04 + r1 * 0.14, magnet: 0.12 + r2 * 0.3, seed: r3 * 100 });
-      idx++;
-    }
+  const count = lowPower ? 8 : 14;
+  // Randomly shuffle which images go where
+  const shuffled = [...SCATTER_IMAGES].sort(() => hash(Date.now() % 1000 + Math.random() * 100) - 0.5);
+
+  for (let i = 0; i < count; i++) {
+    const r1 = hash(i + 11);
+    const r2 = hash(i + 23);
+    const r3 = hash(i + 37);
+    const r4 = hash(i + 41);
+    const r5 = hash(i + 53);
+
+    // Distribute across the 4 category sections
+    const sectionIdx = i % sectionAffinities.length;
+    const yCenter = getSectionWorldY(sectionAffinities[sectionIdx]);
+    const url = shuffled[i % shuffled.length];
+
+    const ySpread = ((i % 3) / 2 - 0.5) * VIEWPORT_HEIGHT_UNITS * 0.5;
+    const worldY = yCenter + ySpread + (r1 - 0.5) * 1.0;
+
+    const side = i % 2 === 0 ? -1 : 1;
+    const offsetX = side * (4.2 + r2 * 1.4);
+    const offsetZ = -1.8 - r3 * 3.0;
+    const rotZ = (r4 - 0.5) * 0.16;
+    const height = 2.6 + r5 * 1.8;
+
+    // Rotate through all shader effects
+    const effect: ShaderId | 'plain' = lowPower
+      ? 'plain'
+      : shaderIds[i % shaderIds.length];
+
+    items.push({
+      url,
+      worldY,
+      offsetX,
+      offsetZ,
+      rotZ,
+      height,
+      effect,
+      parallax: 0.04 + r1 * 0.14,
+      magnet: 0.12 + r2 * 0.3,
+      seed: r3 * 100,
+    });
   }
   return items;
 }
@@ -107,7 +145,7 @@ export function ScatteredImages() {
         <group key={i} ref={(g) => { itemRefs.current[i] = g; }} position={[it.offsetX, 0, it.offsetZ]} rotation={[0, 0, it.rotZ]}>
           <group position={[0, it.worldY, 0]}>
             <Suspense fallback={null}>
-              <ImageEffect url={it.asset.url} height={it.height} effect={it.effect} intensity={lowPower ? 0 : 1} onClick={() => openLightbox(it.asset.url)} />
+              <ImageEffect url={it.url} height={it.height} effect={it.effect} intensity={lowPower ? 0 : 1} onClick={() => openLightbox(it.url)} />
             </Suspense>
           </group>
         </group>
