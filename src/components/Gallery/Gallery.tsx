@@ -6,6 +6,7 @@ import * as THREE from 'three';
 import { getSectionWorldY } from '../../config/sections';
 import { useSectionVisibility } from '../../helpers/useScrollSection';
 import { pickByAffinity } from '../../helpers/useImageAssets';
+import { openLightbox } from '../../helpers/lightbox';
 
 const GOLDEN = 1.61803398875;
 
@@ -100,13 +101,14 @@ interface FrameProps {
 function Frame({ url, position, rotation }: FrameProps) {
   const [hover, setHover] = useState(false);
   useCursor(hover);
+  const groupRef = useRef<THREE.Group>(null);
   const frameRef = useRef<THREE.Mesh>(null);
   const imageRef = useRef<THREE.Mesh>(null);
   const seed = useMemo(() => Math.random(), []);
   const colorTarget = useMemo(() => new THREE.Color('#f6f3ee'), []);
 
   useFrame((state, dt) => {
-    if (!imageRef.current || !frameRef.current) return;
+    if (!imageRef.current || !frameRef.current || !groupRef.current) return;
     // breathing zoom
     const mat = imageRef.current.material as THREE.Material & { zoom?: number };
     if (mat) mat.zoom = 2 + Math.sin(seed * 10000 + state.clock.elapsedTime / 3) / 2;
@@ -114,13 +116,17 @@ function Frame({ url, position, rotation }: FrameProps) {
     colorTarget.set(hover ? '#d30000' : '#f6f3ee');
     const fmat = frameRef.current.material as THREE.MeshBasicMaterial;
     fmat.color.lerp(colorTarget, Math.min(1, 8 * dt));
+    // independent rotation + drift
+    groupRef.current.rotation.y = rotation[1] + Math.sin(state.clock.elapsedTime * 0.3 + seed * 6.28) * 0.04;
+    groupRef.current.position.y = Math.sin(state.clock.elapsedTime * 0.4 + seed * 3.14) * 0.03;
   });
 
   return (
-    <group position={position} rotation={rotation}>
+    <group ref={groupRef} position={position} rotation={rotation}>
       <mesh
         onPointerOver={(e) => { e.stopPropagation(); setHover(true); }}
         onPointerOut={() => setHover(false)}
+        onClick={(e) => { e.stopPropagation(); openLightbox(url); }}
         scale={[1, GOLDEN, 0.05]}
         position={[0, GOLDEN / 2, 0]}
       >

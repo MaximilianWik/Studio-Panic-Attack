@@ -3,6 +3,7 @@ import { MeshGradient } from '@paper-design/shaders-react';
 export function HeroOverlay() {
   return (
     <>
+      {/* Red mesh-gradient backdrop — ALWAYS visible (entire site bg) */}
       <div
         aria-hidden
         style={{
@@ -11,8 +12,6 @@ export function HeroOverlay() {
           zIndex: 0,
           pointerEvents: 'none',
           background: '#050505',
-          opacity: 'var(--spa-hero, 1)',
-          transition: 'opacity 0.05s linear',
         }}
       >
         <MeshGradient
@@ -29,6 +28,7 @@ export function HeroOverlay() {
         />
       </div>
 
+      {/* Hero content — logo + scroll prompt, fades out as you scroll */}
       <div
         aria-hidden
         style={{

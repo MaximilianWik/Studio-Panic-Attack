@@ -24,10 +24,10 @@ interface ScatteredItem {
 }
 
 const sectionAffinities: { id: SectionId; count: number }[] = [
-  { id: 'graphic', count: 2 },
-  { id: 'threeD', count: 2 },
-  { id: 'ai', count: 1 },
-  { id: 'ux', count: 1 },
+  { id: 'graphic', count: 3 },
+  { id: 'threeD', count: 3 },
+  { id: 'ai', count: 3 },
+  { id: 'ux', count: 3 },
 ];
 
 function hash(i: number): number {
@@ -58,7 +58,7 @@ function buildLayout(lowPower: boolean): ScatteredItem[] {
       const offsetX = side * (4.6 + r2 * 1.0);
       const offsetZ = -2.0 - r3 * 2.5;
       const rotZ = (r4 - 0.5) * 0.14;
-      const height = 2.4 + r5 * 1.2;
+      const height = 2.8 + r5 * 1.6;
       const effect: ShaderId | 'plain' = lowPower ? 'plain' : shaderIds[(idx * 3 + k) % shaderIds.length];
       items.push({ asset, worldY, offsetX, offsetZ, rotZ, height, effect, parallax: 0.04 + r1 * 0.14, magnet: 0.12 + r2 * 0.3, seed: r3 * 100 });
       idx++;
