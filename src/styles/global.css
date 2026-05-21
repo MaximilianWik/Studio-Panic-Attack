@@ -156,3 +156,9 @@ canvas {
     transition-duration: 0.01ms !important;
   }
 }
+
+/* ---------- shared keyframes ---------- */
+@keyframes paFloat {
+  0%, 100% { transform: translateY(0); }
+  50%      { transform: translateY(-6px); }
+}

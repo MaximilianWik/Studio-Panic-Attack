@@ -230,14 +230,6 @@ function HighlightCard({ h, delayMs }: { h: Highlight; delayMs: number }) {
           {h.category}
         </span>
       </div>
-
-      {/* Keyframes injected once via inline style tag */}
-      <style>{`
-        @keyframes paFloat {
-          0%, 100% { transform: translateY(0); }
-          50%      { transform: translateY(-3px); }
-        }
-      `}</style>
     </a>
   );
 }

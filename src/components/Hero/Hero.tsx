@@ -118,12 +118,6 @@ export function Hero({ section }: Props) {
           S c r o l l
         </div>
       </Html>
-      <style>{`
-        @keyframes paFloat {
-          0%, 100% { transform: translateY(0); }
-          50%      { transform: translateY(-6px); }
-        }
-      `}</style>
     </group>
   );
 }
