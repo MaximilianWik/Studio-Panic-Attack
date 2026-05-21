@@ -95,9 +95,6 @@ export function Highlights() {
           </div>
 
           <div className="spa-footer" style={{ marginTop: 60 }}>
-            <h3 className="spa-footer__title">
-              Let&rsquo;s build something <em>loud</em>.
-            </h3>
             <div className="spa-footer__row">
               <span>EMA STOYANOVA</span>
               <span>STUDIO · PANIC · ATTACK</span>
