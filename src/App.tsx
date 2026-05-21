@@ -6,6 +6,7 @@ import {
   Preload,
   Environment,
 } from '@react-three/drei';
+import { Suspense } from 'react';
 import { Layout, totalPages } from './components/Layout';
 import { PostFx } from './components/PostFx';
 import { Cursor } from './components/Cursor';
@@ -19,10 +20,8 @@ import { theme } from './config/theme';
  * with a damped scroll buffer matching the section registry, and overlays
  * a custom DOM cursor.
  *
- * `eventSource` is bound to the document body so pointer events from the
- * HTML overlays (drei <Html />) still drive the scene's interactive
- * components. `eventPrefix="client"` keeps coordinates relative to the
- * viewport rather than the (transformed) canvas.
+ * <Environment> sits in its own Suspense boundary so a CDN failure
+ * degrades to plain directional lighting instead of blanking the page.
  */
 export default function App() {
   const profile = useDeviceProfile();
@@ -47,14 +46,19 @@ export default function App() {
           background: theme.bgDeep,
         }}
       >
+        <fog attach="fog" args={[theme.bgDeep, 18, 45]} />
         <color attach="background" args={[theme.bgDeep]} />
-        <fog attach="fog" args={[theme.bgDeep, 14, 40]} />
 
-        {/* Lighting + environment for the iridescent / metal materials */}
-        <ambientLight intensity={0.25} />
-        <directionalLight position={[4, 6, 8]} intensity={0.6} />
-        <directionalLight position={[-6, -3, 2]} intensity={0.25} color="#7a8aff" />
-        <Environment preset="warehouse" environmentIntensity={0.5} />
+        {/* Lighting fallback — always present so the scene is not pitch
+            black if the HDRI environment fails to load from drei's CDN. */}
+        <ambientLight intensity={0.4} />
+        <directionalLight position={[4, 6, 8]} intensity={0.9} />
+        <directionalLight position={[-6, -3, 2]} intensity={0.35} color="#7a8aff" />
+
+        {/* Optional HDRI on its own Suspense — degrades gracefully. */}
+        <Suspense fallback={null}>
+          <Environment preset="warehouse" environmentIntensity={0.5} />
+        </Suspense>
 
         <ScrollControls
           pages={totalPages}
