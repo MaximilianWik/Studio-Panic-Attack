@@ -10,9 +10,9 @@ import { openLightbox } from '../../helpers/lightbox';
 
 const GOLDEN = 1.61803398875;
 const CAROUSEL_SPEED = 0.15;
-const CAROUSEL_WIDTH = 44;
+const CAROUSEL_WIDTH = 36;
 /** Number of visible slots — fewer than total images so the pool can rotate. */
-const SLOT_COUNT = 22;
+const SLOT_COUNT = 28;
 
 interface SlotState {
   /** current image asset for this slot */
@@ -192,10 +192,16 @@ function CarouselSlot({ slotIndex, slots }: CarouselSlotProps) {
 
   // Variable frame size based on aspect of the CURRENTLY assigned asset
   const aspect = slot.asset.aspect;
-  const w = aspect >= 1 ? 1.2 : 0.8;
-  const h = aspect >= 1 ? 1.2 / aspect : 0.8 / aspect;
-  const clampedH = Math.min(h, GOLDEN * 1.3);
-  const clampedW = Math.min(w, 1.5);
+  // Per-slot stable size multiplier (random per slot, varies between slots)
+  const sizeMultiplier = useMemo(() => 0.63 + Math.random() * 0.63, []); // 0.63 .. 1.26
+
+  // Base sizes; aspect drives orientation
+  const baseW = aspect >= 1 ? 1.54 : 1.05;
+  const w = baseW * sizeMultiplier;
+  const h = w / aspect;
+  // Cap so portraits don't exceed reasonable height
+  const clampedH = Math.min(h, GOLDEN * 1.82);
+  const clampedW = Math.min(w, 2.52);
 
   useFrame((state, dt) => {
     const s = slots.current[slotIndex];
@@ -210,8 +216,9 @@ function CarouselSlot({ slotIndex, slots }: CarouselSlotProps) {
     groupRef.current.position.z = s.depth;
     groupRef.current.position.y = Math.sin(state.clock.elapsedTime * 0.35 + s.seed * 6.28) * 0.025;
 
+    // Subtle breathing zoom centered on 1.0 — keeps the full image visible
     const mat = imageRef.current.material as THREE.Material & { zoom?: number };
-    if (mat) mat.zoom = 1.8 + Math.sin(s.seed * 10000 + state.clock.elapsedTime / 3) / 3;
+    if (mat) mat.zoom = 0.97 + Math.sin(s.seed * 10000 + state.clock.elapsedTime / 3) * 0.03;
 
     colorTarget.set(hover ? '#d30000' : '#f6f3ee');
     const fmat = frameRef.current.material as THREE.MeshBasicMaterial;
