@@ -1,16 +1,11 @@
 import {
   EffectComposer,
-  Bloom,
   ChromaticAberration,
   Vignette,
   Noise,
 } from '@react-three/postprocessing';
-import { BlendFunction, KernelSize } from 'postprocessing';
-import { useRef } from 'react';
-import { useFrame } from '@react-three/fiber';
+import { BlendFunction } from 'postprocessing';
 import * as THREE from 'three';
-import type { ChromaticAberrationEffect } from 'postprocessing';
-import { useScrollVelocity } from '../helpers/useScrollSection';
 
 interface PostFxProps {
   /** Disable expensive passes on low-power devices. */
@@ -18,28 +13,18 @@ interface PostFxProps {
 }
 
 /**
- * Post-processing pipeline. Bloom + vignette + chromatic aberration + noise.
+ * Post-processing pipeline. Static effects only.
  *
- * Chromatic aberration intensity is coupled to scroll velocity — fast
- * scrolling pushes the channels apart, like a film camera being whipped.
- * On low-power devices we drop bloom and CA entirely.
+ * Earlier versions held a ref to the ChromaticAberration effect so we
+ * could couple aberration intensity to scroll velocity. That ref made
+ * @react-three/postprocessing's children-key memoization choke on
+ * `Converting circular structure to JSON` because effect instances
+ * carry circular `parent`/`children` references. The dynamic effect was
+ * a luxury — kept the API straight and the page rendering instead.
+ *
+ * On low-power devices we drop CA entirely.
  */
 export function PostFx({ reduced = false }: PostFxProps) {
-  const caRef = useRef<ChromaticAberrationEffect | null>(null);
-  const velocity = useScrollVelocity();
-  const targetOffset = useRef(new THREE.Vector2(0.0008, 0.0008));
-
-  useFrame(() => {
-    if (!caRef.current) return;
-    const v = Math.min(0.012, Math.abs(velocity.current) * 0.0008 + 0.0008);
-    targetOffset.current.set(v, v);
-    // smoothly track the target — postprocessing's offset uses a Vector2
-    const o = caRef.current.offset as unknown as THREE.Vector2 | undefined;
-    if (o && typeof o.lerp === 'function') {
-      o.lerp(targetOffset.current, 0.15);
-    }
-  });
-
   if (reduced) {
     return (
       <EffectComposer multisampling={0}>
@@ -51,18 +36,8 @@ export function PostFx({ reduced = false }: PostFxProps) {
 
   return (
     <EffectComposer multisampling={0}>
-      {/* On a light bg, only super-bright highlights should bloom — keep
-          threshold high and intensity low so the page stays crisp. */}
-      <Bloom
-        intensity={0.18}
-        luminanceThreshold={0.95}
-        luminanceSmoothing={0.15}
-        kernelSize={KernelSize.LARGE}
-        mipmapBlur
-      />
       <ChromaticAberration
-        ref={caRef}
-        offset={[0.0006, 0.0006] as unknown as THREE.Vector2}
+        offset={new THREE.Vector2(0.0008, 0.0008)}
         radialModulation={false}
         modulationOffset={0}
       />
