@@ -5,16 +5,33 @@ import * as THREE from 'three';
 
 import { getSectionWorldY } from '../../config/sections';
 import { useSectionVisibility } from '../../helpers/useScrollSection';
-import { assets } from '../../helpers/useImageAssets';
+import { assets, type AssetEntry } from '../../helpers/useImageAssets';
 import { openLightbox } from '../../helpers/lightbox';
 
 const GOLDEN = 1.61803398875;
-const CAROUSEL_SPEED = 0.15; // slower — was 0.35
-const CAROUSEL_WIDTH = 24; // wider spacing
+const CAROUSEL_SPEED = 0.15;
+const CAROUSEL_WIDTH = 44;
+/** Number of visible slots — fewer than total images so the pool can rotate. */
+const SLOT_COUNT = 22;
+
+interface SlotState {
+  /** current image asset for this slot */
+  asset: AssetEntry;
+  /** current X offset along the carousel belt */
+  offset: number;
+  /** stable Z depth for this slot */
+  depth: number;
+  /** breathing seed (regenerated each time a new image is assigned) */
+  seed: number;
+}
 
 /**
- * Gallery — infinite horizontal carousel.
- * Slower pace, more spacing, varied Z-depth, floor text, camera pan on pointer.
+ * Gallery — infinite horizontal carousel with rotating image pool.
+ *
+ * 12 visible slots cycle through 37+ unique images. As a slot wraps around
+ * (exits left → re-enters right), it picks the next image from the pool that
+ * is NOT currently assigned to any other visible slot. This guarantees no
+ * duplicate images on screen at any moment.
  */
 export function Gallery() {
   const yPos = getSectionWorldY('gallery');
@@ -24,24 +41,55 @@ export function Gallery() {
   const camTarget = useRef({ x: 0, y: 0 });
   const camCurrent = useRef({ x: 0, y: 0 });
 
-  const galleryAssets = useMemo(() => {
-    return assets.filter((a) => a.affinity === 'gallery' && a.kind === 'image');
+  // De-duplicated pool of gallery images
+  const pool = useMemo(() => {
+    const seen = new Set<string>();
+    const out: AssetEntry[] = [];
+    for (const a of assets) {
+      if (a.affinity !== 'gallery' || a.kind !== 'image') continue;
+      if (seen.has(a.url)) continue;
+      seen.add(a.url);
+      out.push(a);
+    }
+    return out;
   }, []);
 
-  const frameCount = galleryAssets.length;
-  const spacing = CAROUSEL_WIDTH / frameCount;
+  // Pool cursor — advances when a slot needs a fresh image
+  const poolCursor = useRef(0);
 
-  const offsets = useRef<number[]>(
-    Array.from({ length: frameCount }, (_, i) => i * spacing - CAROUSEL_WIDTH / 2),
+  // Initialize slots — pick the first SLOT_COUNT distinct images from the pool
+  const slots = useRef<SlotState[]>(
+    Array.from({ length: SLOT_COUNT }, (_, i) => {
+      const spacing = CAROUSEL_WIDTH / SLOT_COUNT;
+      return {
+        asset: pool[i % pool.length],
+        offset: i * spacing - CAROUSEL_WIDTH / 2,
+        depth: -1 + ((i * 7919) % 100) / 20, // -1 to +4
+        seed: Math.random(),
+      };
+    }),
   );
 
-  // Per-frame Z depth (seeded, more variation)
-  const depths = useMemo(() => {
-    return galleryAssets.map((_, i) => {
-      const seed = ((i * 7919) % 100) / 100;
-      return -1 + seed * 5; // Z ranges from -1 to +4 (close to far)
-    });
-  }, [galleryAssets]);
+  // Mark the slot URLs as currently in use (start cursor right after init slots)
+  if (poolCursor.current === 0) poolCursor.current = SLOT_COUNT;
+
+  /** Pick the next image from the pool that is NOT in any visible slot. */
+  const pickNextAsset = (excludeUrl?: string): AssetEntry => {
+    const inUse = new Set<string>();
+    for (const s of slots.current) inUse.add(s.asset.url);
+    if (excludeUrl) inUse.add(excludeUrl);
+    // Walk the pool starting at the cursor; return first not-in-use item
+    for (let i = 0; i < pool.length; i++) {
+      const idx = (poolCursor.current + i) % pool.length;
+      const candidate = pool[idx];
+      if (!inUse.has(candidate.url)) {
+        poolCursor.current = (idx + 1) % pool.length;
+        return candidate;
+      }
+    }
+    // Fallback (shouldn't happen if pool > slot count)
+    return pool[poolCursor.current++ % pool.length];
+  };
 
   useFrame((state, dt) => {
     if (!groupRef.current) return;
@@ -49,22 +97,25 @@ export function Gallery() {
     groupRef.current.visible = v > 0.02;
     if (v < 0.02) return;
 
-    // Advance carousel (slower)
-    for (let i = 0; i < offsets.current.length; i++) {
-      offsets.current[i] -= CAROUSEL_SPEED * dt;
-      if (offsets.current[i] < -CAROUSEL_WIDTH / 2 - 2) {
-        offsets.current[i] += CAROUSEL_WIDTH + spacing;
+    // Advance carousel
+    const spacing = CAROUSEL_WIDTH / SLOT_COUNT;
+    for (let i = 0; i < slots.current.length; i++) {
+      const s = slots.current[i];
+      s.offset -= CAROUSEL_SPEED * dt;
+      // Wrap: when fully off-screen left, recycle to the right with a NEW image
+      if (s.offset < -CAROUSEL_WIDTH / 2 - 2) {
+        s.offset += CAROUSEL_WIDTH + spacing;
+        s.asset = pickNextAsset(s.asset.url);
+        s.seed = Math.random();
       }
     }
 
-    // Camera pan — pointer moves the whole stage camera-like
+    // Camera pan via pointer
     camTarget.current.x = state.pointer.x * 1.2;
     camTarget.current.y = state.pointer.y * 0.6;
     camCurrent.current.x += (camTarget.current.x - camCurrent.current.x) * 0.03;
     camCurrent.current.y += (camTarget.current.y - camCurrent.current.y) * 0.03;
-
     if (stageRef.current) {
-      // Pan = translate + slight rotation for parallax
       stageRef.current.position.x = -camCurrent.current.x * 0.5;
       stageRef.current.rotation.y = camCurrent.current.x * 0.08;
       stageRef.current.rotation.x = -camCurrent.current.y * 0.04;
@@ -74,7 +125,7 @@ export function Gallery() {
   return (
     <group ref={groupRef} position={[0, yPos, 0]}>
       <group ref={stageRef} position={[0, -0.5, -2]}>
-        {/* Reflective floor — strong reflections */}
+        {/* Reflective floor */}
         <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, 0, 0]}>
           <planeGeometry args={[60, 60]} />
           <MeshReflectorMaterial
@@ -92,105 +143,75 @@ export function Gallery() {
         </mesh>
 
         {/* Floor text */}
-        <Text
-          position={[0, 0.01, -2]}
-          rotation={[-Math.PI / 2, 0, 0]}
-          fontSize={0.6}
-          color="#d30000"
-          anchorX="center"
-          anchorY="middle"
-          letterSpacing={0.3}
-          fillOpacity={0.15}
-        >
+        <Text position={[0, 0.01, -2]} rotation={[-Math.PI / 2, 0, 0]}
+          fontSize={0.6} color="#d30000" anchorX="center" anchorY="middle"
+          letterSpacing={0.3} fillOpacity={0.15}>
           STUDIO PANIC ATTACK
         </Text>
-        <Text
-          position={[0, 0.01, -4]}
-          rotation={[-Math.PI / 2, 0, 0]}
-          fontSize={0.4}
-          color="#f6f3ee"
-          anchorX="center"
-          anchorY="middle"
-          letterSpacing={0.02}
-          fillOpacity={0.7}
-          fontStyle="italic"
-        >
+        <Text position={[0, 0.01, -4]} rotation={[-Math.PI / 2, 0, 0]}
+          fontSize={0.4} color="#f6f3ee" anchorX="center" anchorY="middle"
+          letterSpacing={0.02} fillOpacity={0.7} fontStyle="italic">
           Have a peek inside my brain
         </Text>
-        <Text
-          position={[0, 0.01, 5]}
-          rotation={[-Math.PI / 2, 0, 0]}
-          fontSize={0.18}
-          color="#f6f3ee"
-          anchorX="center"
-          anchorY="middle"
-          letterSpacing={0.5}
-          fillOpacity={0.3}
-        >
+        <Text position={[0, 0.01, 5]} rotation={[-Math.PI / 2, 0, 0]}
+          fontSize={0.18} color="#f6f3ee" anchorX="center" anchorY="middle"
+          letterSpacing={0.5} fillOpacity={0.3}>
           PROJECTS · GALLERY · 2024 — 2026
         </Text>
-        <Text
-          position={[-6, 0.01, 1]}
-          rotation={[-Math.PI / 2, 0, Math.PI / 2]}
-          fontSize={0.12}
-          color="#f6f3ee"
-          anchorX="center"
-          anchorY="middle"
-          letterSpacing={0.6}
-          fillOpacity={0.18}
-        >
+        <Text position={[-6, 0.01, 1]} rotation={[-Math.PI / 2, 0, Math.PI / 2]}
+          fontSize={0.12} color="#f6f3ee" anchorX="center" anchorY="middle"
+          letterSpacing={0.6} fillOpacity={0.18}>
           EMA STOYANOVA
         </Text>
 
-        {/* Carousel frames */}
-        {galleryAssets.map((asset, i) => (
-          <CarouselFrame
-            key={asset.url}
-            url={asset.url}
-            aspect={asset.aspect}
-            index={i}
-            offsets={offsets}
-            depth={depths[i]}
-          />
+        {/* Slots — each renders the asset currently assigned to it */}
+        {slots.current.map((_s, i) => (
+          <CarouselSlot key={i} slotIndex={i} slots={slots} />
         ))}
       </group>
     </group>
   );
 }
 
-interface CarouselFrameProps {
-  url: string;
-  aspect: number;
-  index: number;
-  offsets: React.MutableRefObject<number[]>;
-  depth: number;
+interface CarouselSlotProps {
+  slotIndex: number;
+  slots: React.MutableRefObject<SlotState[]>;
 }
 
-function CarouselFrame({ url, aspect, index, offsets, depth }: CarouselFrameProps) {
+function CarouselSlot({ slotIndex, slots }: CarouselSlotProps) {
   const [hover, setHover] = useState(false);
   useCursor(hover);
   const groupRef = useRef<THREE.Group>(null);
   const frameRef = useRef<THREE.Mesh>(null);
   const imageRef = useRef<THREE.Mesh>(null);
-  const seed = useMemo(() => Math.random(), []);
   const colorTarget = useMemo(() => new THREE.Color('#f6f3ee'), []);
 
-  // Variable frame size based on aspect
+  // Track current url so we can rebuild the Image when it changes
+  const slot = slots.current[slotIndex];
+  const [currentUrl, setCurrentUrl] = useState(slot.asset.url);
+
+  // Variable frame size based on aspect of the CURRENTLY assigned asset
+  const aspect = slot.asset.aspect;
   const w = aspect >= 1 ? 1.2 : 0.8;
   const h = aspect >= 1 ? 1.2 / aspect : 0.8 / aspect;
   const clampedH = Math.min(h, GOLDEN * 1.3);
   const clampedW = Math.min(w, 1.5);
 
   useFrame((state, dt) => {
+    const s = slots.current[slotIndex];
     if (!groupRef.current || !imageRef.current || !frameRef.current) return;
 
-    const x = offsets.current[index];
-    groupRef.current.position.x = x;
-    groupRef.current.position.z = depth;
-    groupRef.current.position.y = Math.sin(state.clock.elapsedTime * 0.35 + seed * 6.28) * 0.025;
+    // If this slot's asset changed (due to wrap), force a re-render to swap the texture
+    if (s.asset.url !== currentUrl) {
+      setCurrentUrl(s.asset.url);
+    }
+
+    groupRef.current.position.x = s.offset;
+    groupRef.current.position.z = s.depth;
+    groupRef.current.position.y = Math.sin(state.clock.elapsedTime * 0.35 + s.seed * 6.28) * 0.025;
 
     const mat = imageRef.current.material as THREE.Material & { zoom?: number };
-    if (mat) mat.zoom = 1.8 + Math.sin(seed * 10000 + state.clock.elapsedTime / 3) / 3;
+    if (mat) mat.zoom = 1.8 + Math.sin(s.seed * 10000 + state.clock.elapsedTime / 3) / 3;
 
     colorTarget.set(hover ? '#d30000' : '#f6f3ee');
     const fmat = frameRef.current.material as THREE.MeshBasicMaterial;
@@ -202,7 +223,7 @@ function CarouselFrame({ url, aspect, index, offsets, depth }: CarouselFrameProp
       <mesh
         onPointerOver={(e) => { e.stopPropagation(); setHover(true); }}
         onPointerOut={() => setHover(false)}
-        onClick={(e) => { e.stopPropagation(); openLightbox(url); }}
+        onClick={(e) => { e.stopPropagation(); openLightbox(currentUrl); }}
         scale={[clampedW, clampedH, 0.05]}
         position={[0, clampedH / 2, 0]}
       >
@@ -212,7 +233,13 @@ function CarouselFrame({ url, aspect, index, offsets, depth }: CarouselFrameProp
           <boxGeometry />
           <meshBasicMaterial toneMapped={false} fog={false} />
         </mesh>
-        <Image ref={imageRef} raycast={() => null} position={[0, 0, 0.7]} url={url} />
+        <Image
+          key={currentUrl}
+          ref={imageRef}
+          raycast={() => null}
+          position={[0, 0, 0.7]}
+          url={currentUrl}
+        />
       </mesh>
     </group>
   );
