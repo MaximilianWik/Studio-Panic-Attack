@@ -25,58 +25,79 @@ interface LayoutProps {
 /**
  * Top-level scene. Sections are placed at fixed world-Y positions; the
  * master group is translated upward by `scroll.offset * totalPages * Y_PER_PAGE`
- * so that each section enters the camera at its allocated scroll range.
+ * so each section enters the camera at the start of its allocated scroll
+ * range. Camera stays still — this approach keeps lighting and post stable
+ * while still feeling like a smooth vertical pan.
  *
- * Camera stays still — this approach keeps lighting and post-processing
- * stable while still feeling like a smooth vertical pan through the scene.
+ * Each section is wrapped in its own <Suspense> so a single failing
+ * texture or HDRI never blanks the entire page.
  */
 export function Layout({ reducedEffects }: LayoutProps) {
   const masterRef = useRef<THREE.Group>(null);
   const scroll = useScroll();
 
   useFrame(() => {
-    if (!masterRef.current) return;
+    if (!masterRef.current || !scroll) return;
     masterRef.current.position.y = scroll.offset * totalPages * Y_PER_PAGE;
   });
 
   return (
     <group ref={masterRef}>
+      {/* Background-z scattered imagery */}
       <Suspense fallback={null}>
-        {/* Background-z scattered imagery — placed inside the master group
-            so it scrolls with the rest of the scene. */}
         <ScatteredImages reducedEffects={reducedEffects} />
+      </Suspense>
 
-        <group position={[0, sectionWorldY(sectionsById.hero), 0]}>
+      <group position={[0, sectionWorldY(sectionsById.hero), 0]}>
+        <Suspense fallback={null}>
           <Hero section={sectionsById.hero} />
-        </group>
-        <group position={[0, sectionWorldY(sectionsById.gallery), 0]}>
+        </Suspense>
+      </group>
+
+      <group position={[0, sectionWorldY(sectionsById.gallery), 0]}>
+        <Suspense fallback={null}>
           <Gallery section={sectionsById.gallery} reducedEffects={reducedEffects} />
-        </group>
-        <group position={[0, sectionWorldY(sectionsById['graphic-design']), 0]}>
+        </Suspense>
+      </group>
+
+      <group position={[0, sectionWorldY(sectionsById['graphic-design']), 0]}>
+        <Suspense fallback={null}>
           <GraphicDesign
             section={sectionsById['graphic-design']}
             reducedEffects={reducedEffects}
           />
-        </group>
-        <group position={[0, sectionWorldY(sectionsById['three-dee-art']), 0]}>
+        </Suspense>
+      </group>
+
+      <group position={[0, sectionWorldY(sectionsById['three-dee-art']), 0]}>
+        <Suspense fallback={null}>
           <ThreeDeeArt
             section={sectionsById['three-dee-art']}
             reducedEffects={reducedEffects}
           />
-        </group>
-        <group position={[0, sectionWorldY(sectionsById['ai-art']), 0]}>
+        </Suspense>
+      </group>
+
+      <group position={[0, sectionWorldY(sectionsById['ai-art']), 0]}>
+        <Suspense fallback={null}>
           <AIArt section={sectionsById['ai-art']} reducedEffects={reducedEffects} />
-        </group>
-        <group position={[0, sectionWorldY(sectionsById['ux-design']), 0]}>
+        </Suspense>
+      </group>
+
+      <group position={[0, sectionWorldY(sectionsById['ux-design']), 0]}>
+        <Suspense fallback={null}>
           <UXDesign
             section={sectionsById['ux-design']}
             reducedEffects={reducedEffects}
           />
-        </group>
-        <group position={[0, sectionWorldY(sectionsById.highlights), 0]}>
+        </Suspense>
+      </group>
+
+      <group position={[0, sectionWorldY(sectionsById.highlights), 0]}>
+        <Suspense fallback={null}>
           <Highlights section={sectionsById.highlights} />
-        </group>
-      </Suspense>
+        </Suspense>
+      </group>
     </group>
   );
 }

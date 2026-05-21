@@ -100,8 +100,8 @@ export const worldHeight = totalPages * Y_PER_PAGE;
 
 /** World-space Y position where a section is centered in the camera. */
 export function sectionWorldY(s: Section): number {
-  // Section centers at its midpoint along scroll. We negate so later
-  // sections sit at more-negative Y; the master group then translates
-  // *up* with scroll to bring them into the camera.
-  return -((s.offset + s.pages / 2) * Y_PER_PAGE);
+  // Section centers in the camera at the START of its scroll range.
+  // Negate so that as the master group translates upward with scroll,
+  // each section's start moment puts its content at world y=0.
+  return -s.offset * Y_PER_PAGE;
 }
