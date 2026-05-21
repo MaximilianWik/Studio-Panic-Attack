@@ -2,6 +2,69 @@
 
 All notable changes to Studio Panic Attack are tracked here.
 
+## [0.3.0] — sculpture pass: shock-value reset for 01/03/04, torus-knot reassigned to 02
+
+### Sculptures
+
+- 02 (3D Art) keeps the torus-knot transmission lens + "DESIGN BEYOND
+  THE TRADITIONAL FORMAT" headline. The composition was previously
+  authored inside `GraphicDesign.tsx` (01); it has been relocated
+  verbatim into `ThreeDeeArt.tsx` so the pairing the user was already
+  seeing on screen is now the canonical one. Click → `knifeSlashAt`
+  event for a chromatic-aberration pulse.
+- 01 (Graphic Design) replaced with **CMYK Misregistration**: three
+  halftone dot screens (cyan / magenta / yellow at 15° / 75° / 0°)
+  multiplied against a white backdrop. Each layer follows the cursor
+  with a different drag factor → constant misregistration. Click
+  springs all three offsets to zero over ~600 ms — the bold "01"
+  silhouette briefly resolves crisply, then drifts apart again.
+  Source image is canvas-rasterised at mount. Fires `cmykSnapAt` on
+  click for a soft PostFx noise pulse. Pure CMY palette — total
+  break from paper/blood.
+- 03 (AI Art) replaced with **Latent Bloom**: 5000-point cloud (1800
+  on tier ≤ 1) hallucinating through 7 SDF-sampled silhouettes — eye,
+  hand, butterfly, key, skull, "DREAM", bloom. All seven targets
+  rasterised at mount, packed into a single (N × 7) RGBA Float
+  DataTexture; vertex shader morphs between two consecutive targets
+  per frame. Pointer velocity multiplies morph speed (slow cursor =
+  slow dream, fast cursor = manic generation). Click → freezes the
+  morph for ~220 ms and fires `aiGlitchAt`. Neon vaporwave palette
+  (cyan ↔ magenta) — full break from paper/blood.
+- 04 (UX Design) replaced with **Hedgehog**: an InstancedMesh of 420
+  cones (150 on tier ≤ 1) distributed via Fibonacci spiral on a unit
+  sphere, each oriented along its outward surface normal. Per-instance
+  recoil from the cursor — spikes whose direction aligns with the
+  pointer collapse toward zero length, the rest stay erect. Click →
+  250 ms global pulse extending every spike to 2× length, plus a
+  PostFx noise burst via `hedgehogPulseAt`. Section progress drives
+  ball radius growth and slow yaw. Caution-tape yellow + ink black
+  palette. Conceptual inversion — a UX hero that visibly refuses to
+  be touched.
+
+### Architecture
+
+- New `helpers/sculptureEvents.ts` — tiny zustand store of one-shot
+  click timestamps (`knifeSlashAt`, `aiGlitchAt`, `hedgehogPulseAt`,
+  `cmykSnapAt`) plus a `decay(at, dur)` envelope helper. Sculptures
+  fire their event on click; PostFx and the sculpture itself decay
+  the timestamp into transient effects.
+- New `helpers/usePointerVelocity.ts` — smoothed NDC pointer-velocity
+  hook with EMA (fast attack, slow decay). Used by Latent Bloom to
+  modulate morph speed; reusable by future sculptures.
+- `PostFx` extended: ChromaticAberration (transient — knife slash and
+  AI glitch) and Noise (transient — hedgehog pulse and CMYK snap)
+  effects appended to the chain. Both effects are constructed
+  manually via `useMemo` and inserted as `<primitive>` so per-frame
+  mutation of `offset` and `blendMode.opacity.value` bypasses the
+  drei wrapper's prop diffing. Effects collapse to zero between
+  events — chain looks identical to the static base when idle.
+  Tier ≤ 1 still bypasses the entire chain.
+
+### Cleanup
+
+- `Layout.tsx`: dropped unused `VIEWPORT_HEIGHT_UNITS` import.
+- `Vocabulary.tsx`: dropped unused `state` parameter from `useFrame`.
+
 ## [0.2.0] — dark editorial pass + interactivity
 
 ### Visual

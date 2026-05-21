@@ -21,7 +21,7 @@ export function Vocabulary() {
   const visibility = useSectionVisibility('vocabulary');
   const htmlRef = useRef<HTMLDivElement>(null);
 
-  useFrame((state) => {
+  useFrame(() => {
     if (htmlRef.current) {
       const v = visibility();
       htmlRef.current.style.display = v > 0.1 ? '' : 'none';

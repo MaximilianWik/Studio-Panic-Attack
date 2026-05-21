@@ -2,7 +2,7 @@ import { useFrame } from '@react-three/fiber';
 import { useScroll, Environment, Lightformer } from '@react-three/drei';
 import { useRef } from 'react';
 import * as THREE from 'three';
-import { sections, VIEWPORT_HEIGHT_UNITS } from '../config/sections';
+import { sections } from '../config/sections';
 import { Hero } from './Hero/Hero';
 import { Gallery } from './Gallery/Gallery';
 import { GraphicDesign } from './Categories/GraphicDesign';
