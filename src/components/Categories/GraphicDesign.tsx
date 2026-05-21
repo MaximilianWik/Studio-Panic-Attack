@@ -1,6 +1,6 @@
-import { Float, MeshTransmissionMaterial, Text } from '@react-three/drei';
+import { MeshTransmissionMaterial, Text } from '@react-three/drei';
 import { useFrame, useThree } from '@react-three/fiber';
-import { useMemo, useRef } from 'react';
+import { useRef } from 'react';
 import * as THREE from 'three';
 
 import { theme } from '../../config/theme';
@@ -89,12 +89,9 @@ interface LensProps {
 
 function Lens({ lowPower, visibility }: LensProps) {
   const meshRef = useRef<THREE.Mesh>(null);
-  const target = useRef(new THREE.Vector3());
-  const current = useRef(new THREE.Vector3());
+  const pos = useRef(new THREE.Vector3(0, 0.3, 0));
+  const vel = useRef(new THREE.Vector3());
   const { viewport } = useThree();
-
-  // small offsetting jitter so the lens never sits dead-still
-  const jitter = useMemo(() => new THREE.Vector3(), []);
 
   useFrame((state, dt) => {
     const v = visibility();
@@ -104,59 +101,69 @@ function Lens({ lowPower, visibility }: LensProps) {
       return;
     }
     meshRef.current.visible = true;
+    const t = state.clock.elapsedTime;
 
-    target.current.set(
-      state.pointer.x * (viewport.width * 0.18),
-      state.pointer.y * (viewport.height * 0.14),
+    // Autonomous floating orbit
+    const orbitX = Math.sin(t * 0.4) * 0.8;
+    const orbitY = Math.cos(t * 0.3) * 0.5 + 0.3;
+    const orbitTarget = new THREE.Vector3(orbitX, orbitY, 0);
+
+    // Magnetic repulsion from cursor
+    const pointerWorld = new THREE.Vector3(
+      state.pointer.x * viewport.width * 0.35,
+      state.pointer.y * viewport.height * 0.35,
       0,
     );
-    // EMA → elastic damping
-    current.current.lerp(target.current, 0.08);
-    jitter.set(
-      Math.sin(state.clock.elapsedTime * 1.3) * 0.06,
-      Math.cos(state.clock.elapsedTime * 1.1) * 0.05,
-      0,
+    const diff = pos.current.clone().sub(pointerWorld);
+    const dist = diff.length();
+    const pushStrength = Math.exp(-dist * 1.2) * 2.5;
+    if (dist > 0.01) {
+      diff.normalize().multiplyScalar(pushStrength);
+    }
+
+    // Combine: drift toward orbit + push from cursor
+    vel.current.lerp(
+      orbitTarget.sub(pos.current).multiplyScalar(0.8).add(diff),
+      0.06,
     );
-    meshRef.current.position
-      .copy(current.current)
-      .add(jitter);
+    pos.current.add(vel.current.clone().multiplyScalar(dt));
+
+    meshRef.current.position.copy(pos.current);
     meshRef.current.rotation.x += dt * 0.35;
     meshRef.current.rotation.y += dt * 0.5;
   });
 
   return (
-    <Float speed={1.4} rotationIntensity={0.3} floatIntensity={0.6}>
-      <mesh ref={meshRef} castShadow receiveShadow scale={lowPower ? 0.85 : 1}>
-        <torusKnotGeometry args={[0.6, 0.22, 200, 32]} />
-        {lowPower ? (
-          <meshPhysicalMaterial
-            transmission={0.9}
-            roughness={0.18}
-            thickness={1.2}
-            ior={1.42}
-            clearcoat={1}
-            color={theme.paper}
-            attenuationColor={theme.blood}
-            attenuationDistance={1.2}
-          />
-        ) : (
-          <MeshTransmissionMaterial
-            samples={4}
-            resolution={192}
-            transmission={1}
-            roughness={0.08}
-            thickness={1.4}
-            ior={1.45}
-            chromaticAberration={0.08}
-            anisotropy={0.2}
-            distortion={0.3}
-            distortionScale={0.4}
-            temporalDistortion={0.06}
-            color={theme.paper}
-          />
-        )}
-      </mesh>
-    </Float>
+    <mesh ref={meshRef} scale={lowPower ? 0.85 : 1}>
+      <torusKnotGeometry args={[0.6, 0.22, 160, 24]} />
+      {lowPower ? (
+        <meshPhysicalMaterial
+          transmission={0.9}
+          roughness={0.18}
+          thickness={1.2}
+          ior={1.42}
+          clearcoat={1}
+          color={theme.paper}
+          attenuationColor={theme.blood}
+          attenuationDistance={1.2}
+        />
+      ) : (
+        <MeshTransmissionMaterial
+          samples={4}
+          resolution={192}
+          transmission={1}
+          roughness={0.08}
+          thickness={1.4}
+          ior={1.45}
+          chromaticAberration={0.08}
+          anisotropy={0.2}
+          distortion={0.3}
+          distortionScale={0.4}
+          temporalDistortion={0.06}
+          color={theme.paper}
+        />
+      )}
+    </mesh>
   );
 }
 

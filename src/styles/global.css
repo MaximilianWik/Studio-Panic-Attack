@@ -210,14 +210,15 @@ video {
 
 .spa-highlights {
   display: grid;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
-  gap: 18px;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 14px;
   width: min(1200px, 92vw);
+  height: min(88vh, 900px);
 }
 
 .spa-card {
   position: relative;
-  aspect-ratio: 3 / 4;
+  min-height: 280px;
   background: var(--smoke);
   border: 1px solid rgba(246, 243, 238, 0.08);
   overflow: hidden;
@@ -310,7 +311,8 @@ video {
 
 @media (max-width: 900px) {
   .spa-highlights {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
+    grid-template-columns: 1fr;
+    height: auto;
   }
 }
 
