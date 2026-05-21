@@ -2,6 +2,15 @@
 
 All notable changes to Studio Panic Attack are tracked here.
 
+## [0.3.1] — pull CMYK + Latent Bloom
+
+- 01 (Graphic Design): sculpture removed, hero is empty (text only).
+- 03 (AI Art): sculpture removed, hero is empty (text only).
+- 02 (3D Art) torus-knot and 04 (UX Design) Hedgehog kept and unchanged.
+- `helpers/sculptureEvents.ts`: dropped now-unused `cmykSnapAt` and
+  `aiGlitchAt` keys; PostFx no longer reads them.
+- `helpers/usePointerVelocity.ts`: removed (was only used by Latent Bloom).
+
 ## [0.3.0] — sculpture pass: shock-value reset for 01/03/04, torus-knot reassigned to 02
 
 ### Sculptures

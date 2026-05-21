@@ -15,8 +15,8 @@ import { decay, useSculptureEvents } from '../helpers/sculptureEvents';
  *
  * Static effects: brightness/contrast + vignette.
  * Transient effects driven by sculpture click events:
- *   - ChromaticAberration: 02 chrome lens slash (long) + 03 AI glitch (sharp)
- *   - Noise: 04 hedgehog pulse (sharp) + 01 CMYK snap-register (gentler)
+ *   - ChromaticAberration: 02 chrome lens slash
+ *   - Noise: 04 hedgehog pulse
  *
  * Each transient is decayed in useFrame from the event timestamp.
  * Effects are constructed manually with `useMemo` and inserted via
@@ -58,14 +58,10 @@ export function PostFx() {
     const ev = useSculptureEvents.getState();
 
     const knife = decay(ev.knifeSlashAt, 0.4);
-    const ai = decay(ev.aiGlitchAt, 0.22);
-    const peakX = Math.max(knife * 0.014, ai * 0.018);
-    const peakY = peakX * 0.6;
-    ca.offset.set(peakX, peakY);
+    ca.offset.set(knife * 0.014, knife * 0.014 * 0.6);
 
     const hh = decay(ev.hedgehogPulseAt, 0.25);
-    const cm = decay(ev.cmykSnapAt, 0.6);
-    noise.blendMode.opacity.value = Math.max(hh * 0.55, cm * 0.18);
+    noise.blendMode.opacity.value = hh * 0.55;
   });
 
   if (profile.isLowPower) return null;
