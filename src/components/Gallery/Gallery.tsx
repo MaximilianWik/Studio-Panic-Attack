@@ -105,6 +105,19 @@ export function Gallery() {
           STUDIO PANIC ATTACK
         </Text>
         <Text
+          position={[0, 0.01, -4]}
+          rotation={[-Math.PI / 2, 0, 0]}
+          fontSize={0.4}
+          color="#f6f3ee"
+          anchorX="center"
+          anchorY="middle"
+          letterSpacing={0.02}
+          fillOpacity={0.7}
+          fontStyle="italic"
+        >
+          Have a peek inside my brain
+        </Text>
+        <Text
           position={[0, 0.01, 5]}
           rotation={[-Math.PI / 2, 0, 0]}
           fontSize={0.18}

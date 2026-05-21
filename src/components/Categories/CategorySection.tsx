@@ -1,6 +1,7 @@
 import { Html } from '@react-three/drei';
+import { useFrame, useThree } from '@react-three/fiber';
 import { useRef, type ReactNode } from 'react';
-import type * as THREE from 'three';
+import * as THREE from 'three';
 import type { SectionId } from '../../config/sections';
 import { getSectionWorldY } from '../../config/sections';
 
@@ -14,37 +15,50 @@ interface Props {
 }
 
 /**
- * CategorySection — dramatic, elegant, minimal.
- *
- * Layout: one side has a MASSIVE number + title + body in elegant
- * serif italic. The other side hosts the 3D hero effect.
- * No chips, no eyebrow, no index strip.
+ * CategorySection — visibility based on WORLD-SPACE distance from
+ * camera, not scroll page ranges. Reliable across any scroll formula.
  */
 export function CategorySection({
   id, number, title, body, children, side = 'left',
 }: Props) {
   const yPos = getSectionWorldY(id);
-  const heroGroupRef = useRef<THREE.Group>(null);
+  const groupRef = useRef<THREE.Group>(null);
+  const htmlRef = useRef<HTMLDivElement>(null);
+  const { camera } = useThree();
+  const _w = useRef(new THREE.Vector3()).current;
+
+  useFrame(() => {
+    if (!groupRef.current || !htmlRef.current) return;
+    groupRef.current.getWorldPosition(_w);
+    // Distance from camera Y to this section's world Y after translation
+    const dy = Math.abs(_w.y - camera.position.y);
+    // Visible window: ±5 world units around camera Y
+    // Fade out edges from 4..5 units
+    const visibility = Math.max(0, Math.min(1, (5 - dy) / 1));
+    htmlRef.current.style.opacity = visibility.toFixed(2);
+    htmlRef.current.style.display = visibility > 0.01 ? '' : 'none';
+  });
+
   const heroX = side === 'left' ? 2.4 : -2.4;
 
   return (
-    <group position={[0, yPos, 0]}>
-      {/* Text side — huge number + elegant title + body */}
+    <group ref={groupRef} position={[0, yPos, 0]}>
       <Html
-        position={[side === 'left' ? -2.0 : 2.0, 0, 0]}
-        style={{ width: 'min(680px, 52vw)', pointerEvents: 'none' }}
+        position={[side === 'left' ? -1.6 : 1.6, 0, 0]}
+        style={{ width: 'min(760px, 56vw)', pointerEvents: 'none' }}
         transform={false}
         center
       >
-        <div className="spa-cat-elegant">
+        <div ref={htmlRef} className="spa-cat-elegant" style={{ transition: 'opacity 0.15s ease' }}>
           <span className="spa-cat-elegant__number">{number}</span>
           <h2 className="spa-cat-elegant__title">{title}</h2>
-          <p className="spa-cat-elegant__body">{body}</p>
+          <div className="spa-cat-elegant__body-wrap">
+            <p className="spa-cat-elegant__body">{body}</p>
+          </div>
         </div>
       </Html>
 
-      {/* 3D effect side */}
-      <group ref={heroGroupRef} position={[heroX, 0, 0]}>
+      <group position={[heroX, 0, 0]}>
         {children}
       </group>
     </group>

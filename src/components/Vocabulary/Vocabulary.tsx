@@ -21,15 +21,17 @@ export function Vocabulary() {
   const visibility = useSectionVisibility('vocabulary');
   const htmlRef = useRef<HTMLDivElement>(null);
 
-  useFrame(() => {
-    if (!htmlRef.current) return;
-    const v = visibility();
-    htmlRef.current.style.display = v > 0.1 ? '' : 'none';
-    htmlRef.current.style.opacity = String(Math.min(1, v * 1.4).toFixed(2));
+  useFrame((state) => {
+    if (htmlRef.current) {
+      const v = visibility();
+      htmlRef.current.style.display = v > 0.1 ? '' : 'none';
+      htmlRef.current.style.opacity = String(Math.min(1, v * 1.4).toFixed(2));
+    }
   });
 
   return (
     <group position={[0, yPos, 0]}>
+      {/* Swiss-knife textpath SVG + vocab list */}
       <Html center position={[0, 0, 0]} style={{ width: '92vw', maxWidth: '1000px', pointerEvents: 'none', zIndex: 4 }} transform={false}>
         <div ref={htmlRef} style={{ transition: 'opacity 0.18s ease' }}>
           <div className="spa-vocab">
@@ -38,7 +40,6 @@ export function Vocabulary() {
               <h2 className="spa-vocab__lead">
                 A studio that thinks in <em>silhouettes, prompts, paper, code.</em>
               </h2>
-              <p className="spa-body">The tagline runs along the outline — a swiss-army-knife of disciplines.</p>
               <ul className="spa-vocab__list">
                 {TERMS.map((t) => (<li key={t}>{t}</li>))}
               </ul>

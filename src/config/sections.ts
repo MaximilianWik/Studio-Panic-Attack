@@ -1,6 +1,6 @@
 /**
- * Section registry — COMPACT v3.
- * Reduced total scroll from 7.1 → 5.3 pages.
+ * Section registry — v4. Categories spaced out more (0.9 each) to
+ * prevent overlap. Total = 6.5 pages.
  */
 
 export type SectionId =
@@ -21,12 +21,12 @@ export interface SectionDef {
 
 export const sections: SectionDef[] = [
   { id: 'hero', length: 0.6, label: 'Home' },
-  { id: 'gallery', length: 0.8, label: 'Projects' },
-  { id: 'graphic', length: 0.65, label: 'Graphic' },
-  { id: 'threeD', length: 0.65, label: '3D' },
-  { id: 'ai', length: 0.65, label: 'AI' },
-  { id: 'ux', length: 0.65, label: 'UX' },
-  { id: 'vocabulary', length: 0.6, label: 'Vocabulary' },
+  { id: 'gallery', length: 0.9, label: 'Projects' },
+  { id: 'graphic', length: 0.9, label: 'Graphic' },
+  { id: 'threeD', length: 0.9, label: '3D' },
+  { id: 'ai', length: 0.9, label: 'AI' },
+  { id: 'ux', length: 0.9, label: 'UX' },
+  { id: 'vocabulary', length: 0.7, label: 'Vocabulary' },
   { id: 'highlights', length: 0.7, label: 'Highlights' },
 ];
 

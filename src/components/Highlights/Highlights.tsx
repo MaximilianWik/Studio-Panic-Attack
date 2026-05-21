@@ -81,11 +81,23 @@ export function Highlights() {
             gap: '40px',
           }}
         >
-          <div style={{ textAlign: 'center' }}>
-            <div className="spa-eyebrow">— SELECTED HIGHLIGHTS</div>
-            <h2 className="spa-title" style={{ fontSize: 'clamp(48px, 7vw, 120px)' }}>
-              Featured pieces
-            </h2>
+          <div style={{
+            display: 'grid',
+            gridTemplateColumns: '1fr auto',
+            alignItems: 'end',
+            width: 'min(1200px, 92vw)',
+            gap: '40px',
+            marginBottom: '8px',
+          }}>
+            <div>
+              <div className="spa-eyebrow">— SELECTED HIGHLIGHTS</div>
+              <h2 className="spa-title" style={{ fontSize: 'clamp(48px, 7vw, 120px)', textAlign: 'left' }}>
+                Featured pieces
+              </h2>
+            </div>
+            <p className="spa-highlights-quote">
+              There may be no better way to communicate what we do than through images. As you browse my site, take a few moments to let your eyes linger here, and see if you can get a feel for my signature touch.
+            </p>
           </div>
 
           <div className="spa-highlights">
