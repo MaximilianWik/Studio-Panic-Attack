@@ -1,15 +1,25 @@
 import { useFrame } from '@react-three/fiber';
-import { Image, MeshReflectorMaterial, Text, useCursor } from '@react-three/drei';
+import { Image, MeshReflectorMaterial, useCursor } from '@react-three/drei';
 import { useMemo, useRef, useState } from 'react';
 import * as THREE from 'three';
 
 import { getSectionWorldY } from '../../config/sections';
 import { useSectionVisibility } from '../../helpers/useScrollSection';
-import { pickByAffinity } from '../../helpers/useImageAssets';
+import { assets } from '../../helpers/useImageAssets';
 import { openLightbox } from '../../helpers/lightbox';
 
 const GOLDEN = 1.61803398875;
+const CAROUSEL_SPEED = 0.35; // world-units per second
+const CAROUSEL_WIDTH = 14; // total X range of the carousel belt
 
+/**
+ * Gallery — infinite horizontal carousel.
+ *
+ * Frames slide from right to left in a continuous loop. Each frame's
+ * width/height reflects the image's aspect ratio for variety. The
+ * reflective floor is set to high mixStrength for bold reflections.
+ * Pointer parallax tilts the stage.
+ */
 export function Gallery() {
   const yPos = getSectionWorldY('gallery');
   const visibility = useSectionVisibility('gallery');
@@ -18,111 +28,133 @@ export function Gallery() {
   const target = useRef({ x: 0, y: 0 });
   const current = useRef({ x: 0, y: 0 });
 
-  const images = useMemo(() => {
-    const pool = pickByAffinity('gallery');
-    return Array.from({ length: 9 }, (_, i) => pool[(i * 5 + 3) % pool.length]);
+  // Use ALL gallery images for the carousel
+  const galleryAssets = useMemo(() => {
+    return assets.filter((a) => a.affinity === 'gallery' && a.kind === 'image');
   }, []);
 
-  const frames = useMemo(() => [
-    { url: images[0].url, position: [0, 0, 1.4] as const, rotation: [0, 0, 0] as const },
-    { url: images[1].url, position: [-0.85, 0, -0.55] as const, rotation: [0, 0, 0] as const },
-    { url: images[2].url, position: [0.85, 0, -0.55] as const, rotation: [0, 0, 0] as const },
-    { url: images[3].url, position: [-1.85, 0, 0.25] as const, rotation: [0, Math.PI / 2.6, 0] as const },
-    { url: images[4].url, position: [-2.30, 0, 1.45] as const, rotation: [0, Math.PI / 2.6, 0] as const },
-    { url: images[5].url, position: [-2.10, 0, 2.65] as const, rotation: [0, Math.PI / 2.6, 0] as const },
-    { url: images[6].url, position: [1.85, 0, 0.25] as const, rotation: [0, -Math.PI / 2.6, 0] as const },
-    { url: images[7].url, position: [2.30, 0, 1.45] as const, rotation: [0, -Math.PI / 2.6, 0] as const },
-    { url: images[8].url, position: [2.10, 0, 2.65] as const, rotation: [0, -Math.PI / 2.6, 0] as const },
-  ], [images]);
+  // Place frames evenly across the belt
+  const frameCount = galleryAssets.length;
+  const spacing = CAROUSEL_WIDTH / frameCount;
 
-  useFrame((state) => {
+  // Store X offsets — each frame wraps around
+  const offsets = useRef<number[]>(
+    Array.from({ length: frameCount }, (_, i) => i * spacing - CAROUSEL_WIDTH / 2),
+  );
+
+  useFrame((state, dt) => {
     if (!groupRef.current) return;
     const v = visibility();
     groupRef.current.visible = v > 0.02;
     if (v < 0.02) return;
 
-    target.current.x = state.pointer.x * 0.16;
-    target.current.y = state.pointer.y * 0.10;
-    current.current.x += (target.current.x - current.current.x) * 0.06;
-    current.current.y += (target.current.y - current.current.y) * 0.06;
+    // Advance the carousel
+    for (let i = 0; i < offsets.current.length; i++) {
+      offsets.current[i] -= CAROUSEL_SPEED * dt;
+      // Wrap around: when a frame exits left, respawn on right
+      if (offsets.current[i] < -CAROUSEL_WIDTH / 2 - 1) {
+        offsets.current[i] += CAROUSEL_WIDTH + spacing;
+      }
+    }
+
+    // Pointer parallax
+    target.current.x = state.pointer.x * 0.12;
+    target.current.y = state.pointer.y * 0.08;
+    current.current.x += (target.current.x - current.current.x) * 0.05;
+    current.current.y += (target.current.y - current.current.y) * 0.05;
 
     if (stageRef.current) {
-      const dropY = (1 - v) * -1.6;
-      stageRef.current.position.y = -0.5 + dropY;
-      stageRef.current.position.z = -1.5;
-      stageRef.current.rotation.y = current.current.x;
-      stageRef.current.rotation.x = -current.current.y;
+      stageRef.current.rotation.y = current.current.x * 0.3;
+      stageRef.current.rotation.x = -current.current.y * 0.15;
     }
   });
 
   return (
     <group ref={groupRef} position={[0, yPos, 0]}>
-      <group ref={stageRef}>
+      <group ref={stageRef} position={[0, -0.5, -2]}>
+        {/* Reflective floor with strong reflections */}
         <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, 0, 0]}>
-          <planeGeometry args={[40, 40]} />
+          <planeGeometry args={[50, 50]} />
           <MeshReflectorMaterial
-            blur={[120, 50]}
-            resolution={256}
-            mixBlur={1.0}
-            mixStrength={20}
+            blur={[300, 100]}
+            resolution={512}
+            mixBlur={1}
+            mixStrength={80}
             roughness={1}
-            depthScale={1.0}
+            depthScale={1.2}
             minDepthThreshold={0.4}
             maxDepthThreshold={1.4}
             color="#050505"
-            metalness={0.4}
+            metalness={0.5}
           />
         </mesh>
-        {frames.map((f, i) => (
-          <Frame key={i} url={f.url} position={f.position as [number, number, number]} rotation={f.rotation as [number, number, number]} />
+
+        {/* Carousel frames */}
+        {galleryAssets.map((asset, i) => (
+          <CarouselFrame
+            key={asset.url}
+            url={asset.url}
+            aspect={asset.aspect}
+            index={i}
+            offsets={offsets}
+          />
         ))}
-        <Text
-          position={[0, 0.01, 3.8]}
-          rotation={[-Math.PI / 2, 0, 0]}
-          fontSize={0.14}
-          color="#d30000"
-          anchorX="center"
-          anchorY="middle"
-          letterSpacing={0.4}
-        >
-          PROJECTS · 2024 — 2026
-        </Text>
       </group>
     </group>
   );
 }
 
-interface FrameProps {
+interface CarouselFrameProps {
   url: string;
-  position: [number, number, number];
-  rotation: [number, number, number];
+  aspect: number;
+  index: number;
+  offsets: React.MutableRefObject<number[]>;
 }
 
-function Frame({ url, position, rotation }: FrameProps) {
+function CarouselFrame({ url, aspect, index, offsets }: CarouselFrameProps) {
   const [hover, setHover] = useState(false);
   useCursor(hover);
+  const groupRef = useRef<THREE.Group>(null);
   const frameRef = useRef<THREE.Mesh>(null);
   const imageRef = useRef<THREE.Mesh>(null);
   const seed = useMemo(() => Math.random(), []);
   const colorTarget = useMemo(() => new THREE.Color('#f6f3ee'), []);
 
+  // Variable frame size based on aspect
+  const w = aspect >= 1 ? 1.1 : 0.75;
+  const h = aspect >= 1 ? 1.1 / aspect : 0.75 / aspect;
+  const clampedH = Math.min(h, GOLDEN * 1.2);
+  const clampedW = Math.min(w, 1.4);
+
   useFrame((state, dt) => {
-    if (!imageRef.current || !frameRef.current) return;
+    if (!groupRef.current || !imageRef.current || !frameRef.current) return;
+
+    // Position from carousel offset
+    const x = offsets.current[index];
+    groupRef.current.position.x = x;
+    // Slight Y bob per frame
+    groupRef.current.position.y = Math.sin(state.clock.elapsedTime * 0.4 + seed * 6.28) * 0.03;
+    // Slight Z stagger for depth
+    groupRef.current.position.z = Math.sin(seed * 12.57) * 0.8;
+
+    // Image zoom breathing
     const mat = imageRef.current.material as THREE.Material & { zoom?: number };
-    if (mat) mat.zoom = 2 + Math.sin(seed * 10000 + state.clock.elapsedTime / 3) / 2;
+    if (mat) mat.zoom = 1.8 + Math.sin(seed * 10000 + state.clock.elapsedTime / 3) / 3;
+
+    // Frame hover color
     colorTarget.set(hover ? '#d30000' : '#f6f3ee');
     const fmat = frameRef.current.material as THREE.MeshBasicMaterial;
     fmat.color.lerp(colorTarget, Math.min(1, 8 * dt));
   });
 
   return (
-    <group position={position} rotation={rotation}>
+    <group ref={groupRef}>
       <mesh
         onPointerOver={(e) => { e.stopPropagation(); setHover(true); }}
         onPointerOut={() => setHover(false)}
         onClick={(e) => { e.stopPropagation(); openLightbox(url); }}
-        scale={[1, GOLDEN, 0.05]}
-        position={[0, GOLDEN / 2, 0]}
+        scale={[clampedW, clampedH, 0.05]}
+        position={[0, clampedH / 2, 0]}
       >
         <boxGeometry />
         <meshStandardMaterial color="#151515" metalness={0.5} roughness={0.5} envMapIntensity={2} />

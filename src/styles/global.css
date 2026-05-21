@@ -513,3 +513,19 @@ video {
 .spa-vocab__list { display: grid; grid-template-columns: 1fr 1fr; gap: 3px 14px; list-style: none; font-family: var(--font-mono); font-size: 10px; letter-spacing: 0.18em; text-transform: uppercase; color: rgba(246,243,238,0.7); }
 .spa-vocab__list li::before { content: "+ "; color: var(--blood); }
 .spa-vocab__svg { width: 100%; max-width: 480px; height: auto; display: block; margin: 0 auto; }
+
+
+/* ----- Category card grid LARGE variant ----- */
+.spa-catgrid--large {
+  gap: 8px !important;
+}
+.spa-catgrid--large .spa-catgrid__num span {
+  font-size: clamp(80px, 11vw, 160px) !important;
+}
+.spa-catgrid--large .spa-catgrid__title h2 {
+  font-size: clamp(28px, 3.6vw, 52px) !important;
+}
+.spa-catgrid--large .spa-catgrid__body p {
+  font-size: 14px !important;
+  line-height: 1.6 !important;
+}

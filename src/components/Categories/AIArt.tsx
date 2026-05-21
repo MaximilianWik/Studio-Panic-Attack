@@ -133,6 +133,7 @@ export function AIArt() {
       title="Prompts that push back."
       body="Experimental AI art pushing the boundaries of creative expression and innovation. Illustrations, photorealistic images, 3D models, and videos created with AI prompts. Crafted using advanced tools like Krea, Adobe Firefly, DALL-E, Midjourney, and more."
       side="left"
+      entrance="slide-up"
       chips={['Krea', 'Firefly', 'DALL·E', 'Midjourney']}
     >
       <ParticleMorph

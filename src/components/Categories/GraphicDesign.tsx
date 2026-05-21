@@ -31,6 +31,7 @@ export function GraphicDesign() {
       title="Design beyond the traditional format."
       body="A diverse collection blending fine art, sketching, AI, and 3D modeling into innovative and dynamic creations. Crafted with powerful tools like Adobe Creative Software, Procreate, Nomad, Midjourney, and more."
       side="left"
+      entrance="slide-left"
       chips={['Adobe', 'Procreate', 'Nomad', 'Midjourney']}
     >
       <group ref={groupRef}>

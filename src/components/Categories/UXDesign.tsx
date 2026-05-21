@@ -178,6 +178,7 @@ export function UXDesign() {
       title="Interfaces with a pulse."
       body="Dynamic website prototypes designed for intuitive user experiences and visually stunning interfaces. From interactive elements to visual coding techniques, enhancing engagement through subtle animations. Innovative approaches, like integrating 3D models, push the boundaries of traditional web design."
       side="right"
+      entrance="fade-scale"
       chips={['Figma', 'Webflow', 'Framer', 'React', 'three.js']}
     >
       <UXMockupRig progress={progress} />

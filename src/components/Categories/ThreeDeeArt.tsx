@@ -96,6 +96,7 @@ export function ThreeDeeArt() {
       title="Worlds, organic and otherwise."
       body="High-poly nature environments to charming low-poly scenes. Each creation reflects a passion for crafting immersive worlds and characters. Organic or inorganic, 3D modeling brings ideas to life. Crafted in Maya, Blender, Unreal Engine 5, and more."
       side="right"
+      entrance="slide-right"
       chips={['Maya', 'Blender', 'Unreal 5', 'ZBrush']}
     >
       <Sculpture visibility={visibility} />
