@@ -1,30 +1,29 @@
 import { Float, PresentationControls } from '@react-three/drei';
 import { useFrame } from '@react-three/fiber';
-import { useMemo, useRef } from 'react';
+import { useMemo, useRef, useState } from 'react';
 import * as THREE from 'three';
 
-import { theme } from '../../config/theme';
 import { useSectionVisibility } from '../../helpers/useScrollSection';
 import { CategorySection } from './CategorySection';
 
 /**
- * 02 — 3D Art
+ * 02 — 3D Art — IRIDESCENT SHATTERING ICOSAHEDRON
  *
- * Hero effect: a procedurally noise-displaced icosahedron with
- * iridescent clearcoat metal, wrapped in <PresentationControls> so
- * the user can drag-rotate it within polar/azimuth bounds. Scroll
- * progress modulates the displacement amplitude — at section center
- * the surface boils harder.
+ * Drag-rotate via PresentationControls. Hover GROWS spikes outward
+ * (vertex displacement amplitude pulses up). Click triggers a SHATTER
+ * animation — vertices fly outward then re-form. Iridescent fresnel
+ * material with red rim.
  */
 
 const VERT = /* glsl */ `
   uniform float uTime;
   uniform float uAmp;
   uniform float uFreq;
+  uniform float uShatter;
+  uniform float uHover;
   varying vec3 vNormal;
   varying vec3 vPos;
 
-  // Inigo Quilez classic-snoise approximation
   vec4 mod289(vec4 x){return x - floor(x * (1.0/289.0)) * 289.0;}
   vec4 perm(vec4 x){return mod289(((x * 34.0) + 1.0) * x);}
 
@@ -48,10 +47,14 @@ const VERT = /* glsl */ `
   void main() {
     vec3 p = position;
     vec3 n = normal;
+    // Base noise displacement
     float a = noise(p * uFreq + uTime * 0.4);
     float b = noise(p * uFreq * 2.3 - uTime * 0.6);
     float disp = (a - 0.5) * uAmp + (b - 0.5) * uAmp * 0.4;
-    p += n * disp;
+    // Hover: spikes grow outward (amplitude boost along normal)
+    disp += uHover * (a + 0.3) * 0.4;
+    // Shatter: vertices fly outward radially
+    p += n * disp + n * uShatter * (0.5 + a * 0.8);
     vNormal = normalize(normalMatrix * n);
     vPos = (modelMatrix * vec4(p, 1.0)).xyz;
     gl_Position = projectionMatrix * modelViewMatrix * vec4(p, 1.0);
@@ -64,8 +67,8 @@ const FRAG = /* glsl */ `
   varying vec3 vPos;
   uniform vec3 uCam;
   uniform float uTime;
+  uniform float uShatter;
 
-  // iridescent dispersion based on view angle
   vec3 iridescent(float t) {
     return 0.5 + 0.5 * cos(6.2831 * (vec3(0.0, 0.33, 0.67) + t));
   }
@@ -76,10 +79,10 @@ const FRAG = /* glsl */ `
     float NdotV = clamp(dot(N, V), 0.0, 1.0);
     float fres = pow(1.0 - NdotV, 4.0);
     vec3 base = mix(vec3(0.06, 0.05, 0.04), vec3(0.97, 0.95, 0.91), NdotV);
-    vec3 ir = iridescent(NdotV * 0.7 + uTime * 0.04);
+    vec3 ir = iridescent(NdotV * 0.7 + uTime * 0.04 + uShatter * 0.5);
     base = mix(base, base * ir, 0.55);
-    // rim
-    base += vec3(0.83, 0.0, 0.0) * fres * 0.45;
+    // Rim — red glow stronger during shatter
+    base += vec3(0.83, 0.0, 0.0) * fres * (0.45 + uShatter * 1.2);
     base += pow(NdotV, 8.0) * 0.4;
     gl_FragColor = vec4(base, 1.0);
   }
@@ -87,7 +90,6 @@ const FRAG = /* glsl */ `
 
 export function ThreeDeeArt() {
   const visibility = useSectionVisibility('threeD');
-
   return (
     <CategorySection
       id="threeD"
@@ -107,7 +109,9 @@ interface SculptureProps {
 
 function Sculpture({ visibility }: SculptureProps) {
   const meshRef = useRef<THREE.Mesh>(null);
-  const matRef = useRef<THREE.ShaderMaterial>(null);
+  const [hovered, setHovered] = useState(false);
+  const shatterStart = useRef<number | null>(null);
+  const shouldShatter = useRef(false);
 
   const material = useMemo(() => {
     return new THREE.ShaderMaterial({
@@ -116,6 +120,8 @@ function Sculpture({ visibility }: SculptureProps) {
         uAmp: { value: 0.18 },
         uFreq: { value: 1.6 },
         uCam: { value: new THREE.Vector3() },
+        uShatter: { value: 0 },
+        uHover: { value: 0 },
       },
       vertexShader: VERT,
       fragmentShader: FRAG,
@@ -127,16 +133,38 @@ function Sculpture({ visibility }: SculptureProps) {
     if (!meshRef.current) return;
     meshRef.current.visible = v > 0.001;
     if (v < 0.001) return;
-    matRef.current = material;
+
     (material.uniforms.uTime.value as number) += dt;
-    // amplitude peaks at section center
     material.uniforms.uAmp.value = 0.06 + v * 0.22;
     (material.uniforms.uCam.value as THREE.Vector3).copy(state.camera.position);
-    // gentle idle rotation when not being dragged
+
+    // Hover smoothing
+    const hoverTarget = hovered ? 1 : 0;
+    const curHover = material.uniforms.uHover.value as number;
+    material.uniforms.uHover.value = curHover + (hoverTarget - curHover) * Math.min(1, dt * 4);
+
+    // Pick up shatter request
+    if (shouldShatter.current && shatterStart.current === null) {
+      shatterStart.current = state.clock.elapsedTime;
+      shouldShatter.current = false;
+    }
+
+    // Shatter animation curve over ~1.2s
+    if (shatterStart.current !== null) {
+      const elapsed = state.clock.elapsedTime - shatterStart.current;
+      const dur = 1.2;
+      if (elapsed >= dur) {
+        material.uniforms.uShatter.value = 0;
+        shatterStart.current = null;
+      } else {
+        const t = elapsed / dur;
+        const val = t < 0.33 ? t / 0.33 : 1 - (t - 0.33) / 0.67;
+        material.uniforms.uShatter.value = Math.max(0, val);
+      }
+    }
+
     meshRef.current.rotation.y += dt * 0.12;
   });
-
-  void theme;
 
   return (
     <PresentationControls
@@ -149,8 +177,18 @@ function Sculpture({ visibility }: SculptureProps) {
       speed={0.9}
     >
       <Float speed={1.2} floatIntensity={0.4} rotationIntensity={0.2}>
-        <mesh ref={meshRef} material={material} scale={1.1}>
-          <icosahedronGeometry args={[1, 28]} />
+        <mesh
+          ref={meshRef}
+          material={material}
+          scale={1.1}
+          onPointerOver={(e) => { e.stopPropagation(); setHovered(true); document.body.style.cursor = 'grab'; }}
+          onPointerOut={() => { setHovered(false); document.body.style.cursor = ''; }}
+          onClick={(e) => {
+            e.stopPropagation();
+            shouldShatter.current = true;
+          }}
+        >
+          <icosahedronGeometry args={[1, 32]} />
         </mesh>
       </Float>
     </PresentationControls>

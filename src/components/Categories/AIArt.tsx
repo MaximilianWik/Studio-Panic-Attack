@@ -1,64 +1,40 @@
-import { useFrame } from '@react-three/fiber';
+import { useFrame, useThree } from '@react-three/fiber';
 import { useMemo, useRef } from 'react';
 import * as THREE from 'three';
 
 import { useDeviceProfile } from '../../helpers/useDeviceProfile';
-import {
-  useSectionProgress,
-  useSectionVisibility,
-} from '../../helpers/useScrollSection';
+import { useSectionVisibility } from '../../helpers/useScrollSection';
 import { CategorySection } from './CategorySection';
 
 /**
- * 03 — AI Art
+ * 03 — AI Art — MAGNETIC PARTICLE SWARM
  *
- * 4500-particle (1800 on tier ≤ 1) GPU morph between two attractor
- * distributions:
- *   - distribution A: sphere shell
- *   - distribution B: torus
+ * A cursor-following swarm of particles. Each particle is attracted to
+ * the cursor position with smooth lag, creating a flowing trail.
+ * Click to "explode" — particles scatter outward, then re-attract.
  *
- * Vertex shader handles the blend, per-particle turbulence, and a
- * pointer-driven scatter on the field plane (simulated via a ripple
- * uniform). Both attractor positions are baked once into BufferAttribute
- * arrays at mount.
+ * Implementation: simulate on CPU per-frame for ~3000 particles
+ * (1500 on low-power). Each particle has position + velocity. Forces:
+ *   - attraction toward cursor target (smoothed)
+ *   - friction
+ *   - noise jitter for organic motion
+ *   - explosion impulse on click
  */
 
-const HIGH_COUNT = 4500;
-const LOW_COUNT = 1800;
+const HIGH_COUNT = 3000;
+const LOW_COUNT = 1500;
 
 const VERT = /* glsl */ `
-  attribute vec3 aTarget;
   attribute float aSeed;
-  uniform float uTime;
-  uniform float uMorph;
-  uniform float uScatter;
-  uniform vec2 uPointer;
+  attribute float aSpeed;
   varying float vSeed;
-  varying float vDist;
-
-  float hash(float n) { return fract(sin(n) * 43758.5453123); }
-
+  varying float vSpeed;
   void main() {
     vSeed = aSeed;
-    vec3 a = position;
-    vec3 b = aTarget;
-    vec3 p = mix(a, b, smoothstep(0.0, 1.0, uMorph));
-
-    // turbulence
-    float t = uTime * 0.6 + aSeed * 6.28;
-    p += vec3(sin(t * 0.7), cos(t * 1.1), sin(t * 0.5)) * 0.04;
-
-    // pointer scatter
-    vec2 d = p.xy - uPointer * 1.6;
-    float r = length(d);
-    float push = exp(-r * r * 1.2) * uScatter;
-    p.xy += normalize(d + 1e-5) * push * 0.7;
-    p.z += push * 0.3;
-
-    vec4 mv = modelViewMatrix * vec4(p, 1.0);
+    vSpeed = aSpeed;
+    vec4 mv = modelViewMatrix * vec4(position, 1.0);
     gl_Position = projectionMatrix * mv;
-    vDist = length(mv.xyz);
-    float size = mix(1.6, 4.5, aSeed);
+    float size = mix(2.0, 5.0, aSeed);
     gl_PointSize = size * (220.0 / -mv.z);
   }
 `;
@@ -66,63 +42,22 @@ const VERT = /* glsl */ `
 const FRAG = /* glsl */ `
   precision mediump float;
   varying float vSeed;
-  varying float vDist;
-  uniform float uTime;
+  varying float vSpeed;
   void main() {
     vec2 c = gl_PointCoord - 0.5;
     float d = length(c);
     float a = smoothstep(0.5, 0.0, d);
     a *= mix(0.4, 1.0, vSeed);
-    // colour shift between paper and blood, sparkles in the seam
+    // Color shifts based on speed: paper at rest → blood red when fast
     vec3 paper = vec3(0.94, 0.92, 0.86);
     vec3 blood = vec3(0.83, 0.0, 0.0);
-    vec3 col = mix(paper, blood, smoothstep(0.55, 1.0, vSeed));
-    // shimmer
-    col += 0.25 * vec3(1.0) * pow(0.5 + 0.5 * sin(uTime * 4.0 + vSeed * 24.0), 6.0);
+    vec3 col = mix(paper, blood, clamp(vSpeed * 1.5, 0.0, 1.0));
     gl_FragColor = vec4(col, a * 0.85);
   }
 `;
 
-function buildSphere(n: number, r = 1.4): Float32Array {
-  const arr = new Float32Array(n * 3);
-  for (let i = 0; i < n; i++) {
-    // uniform on sphere (Marsaglia)
-    let x = 0,
-      y = 0,
-      z = 0,
-      s = 2;
-    while (s >= 1) {
-      x = Math.random() * 2 - 1;
-      y = Math.random() * 2 - 1;
-      s = x * x + y * y;
-    }
-    const f = 2 * Math.sqrt(1 - s);
-    z = 1 - 2 * s;
-    arr[i * 3 + 0] = x * f * r;
-    arr[i * 3 + 1] = y * f * r;
-    arr[i * 3 + 2] = z * r;
-  }
-  return arr;
-}
-
-function buildTorus(n: number, R = 1.0, tubeR = 0.4): Float32Array {
-  const arr = new Float32Array(n * 3);
-  for (let i = 0; i < n; i++) {
-    const u = Math.random() * Math.PI * 2;
-    const v = Math.random() * Math.PI * 2;
-    const x = (R + tubeR * Math.cos(v)) * Math.cos(u);
-    const y = (R + tubeR * Math.cos(v)) * Math.sin(u);
-    const z = tubeR * Math.sin(v);
-    arr[i * 3 + 0] = x * 1.5;
-    arr[i * 3 + 1] = y * 1.5;
-    arr[i * 3 + 2] = z * 1.5;
-  }
-  return arr;
-}
-
 export function AIArt() {
   const profile = useDeviceProfile();
-  const progress = useSectionProgress('ai');
   const visibility = useSectionVisibility('ai');
 
   return (
@@ -133,74 +68,124 @@ export function AIArt() {
       body="Experimental AI art pushing the boundaries of creative expression and innovation. A wide range of creations, from illustrations and photorealistic images, to 3D models and videos created with nothing more than AI prompts. Crafted using advanced AI tools like Krea, Adobe Firefly, DALL-E, Midjourney, and more."
       side="left"
     >
-      <ParticleMorph
+      <ParticleSwarm
         count={profile.isLowPower ? LOW_COUNT : HIGH_COUNT}
-        progress={progress}
         visibility={visibility}
       />
     </CategorySection>
   );
 }
 
-interface ParticleProps {
+interface SwarmProps {
   count: number;
-  progress: () => number;
   visibility: () => number;
 }
 
-function ParticleMorph({ count, progress, visibility }: ParticleProps) {
+function ParticleSwarm({ count, visibility }: SwarmProps) {
   const pointsRef = useRef<THREE.Points>(null);
-  const matRef = useRef<THREE.ShaderMaterial>(null);
+  const { viewport } = useThree();
+  const explodeImpulse = useRef(0);
+
+  // CPU buffers
+  const positions = useMemo(() => new Float32Array(count * 3), [count]);
+  const velocities = useMemo(() => new Float32Array(count * 3), [count]);
+  const speeds = useMemo(() => new Float32Array(count), [count]);
 
   const { geometry, material } = useMemo(() => {
     const g = new THREE.BufferGeometry();
-    const pos = buildSphere(count, 1.4);
-    const tar = buildTorus(count);
-    const seed = new Float32Array(count);
-    for (let i = 0; i < count; i++) seed[i] = Math.random();
-    g.setAttribute('position', new THREE.BufferAttribute(pos, 3));
-    g.setAttribute('aTarget', new THREE.BufferAttribute(tar, 3));
-    g.setAttribute('aSeed', new THREE.BufferAttribute(seed, 1));
+    // Initial positions: scattered in a small cube
+    for (let i = 0; i < count; i++) {
+      positions[i * 3 + 0] = (Math.random() - 0.5) * 3;
+      positions[i * 3 + 1] = (Math.random() - 0.5) * 3;
+      positions[i * 3 + 2] = (Math.random() - 0.5) * 1;
+    }
+    const seeds = new Float32Array(count);
+    for (let i = 0; i < count; i++) seeds[i] = Math.random();
+    g.setAttribute('position', new THREE.BufferAttribute(positions, 3));
+    g.setAttribute('aSeed', new THREE.BufferAttribute(seeds, 1));
+    g.setAttribute('aSpeed', new THREE.BufferAttribute(speeds, 1));
     const m = new THREE.ShaderMaterial({
       transparent: true,
       depthWrite: false,
       blending: THREE.NormalBlending,
-      uniforms: {
-        uTime: { value: 0 },
-        uMorph: { value: 0 },
-        uScatter: { value: 0 },
-        uPointer: { value: new THREE.Vector2() },
-      },
       vertexShader: VERT,
       fragmentShader: FRAG,
     });
     return { geometry: g, material: m };
-  }, [count]);
+  }, [count, positions, speeds]);
 
   useFrame((state, dt) => {
     const v = visibility();
     if (!pointsRef.current) return;
     pointsRef.current.visible = v > 0.001;
     if (v < 0.001) return;
-    matRef.current = material;
-    (material.uniforms.uTime.value as number) += dt;
-    // morph: 0..1 sweep through section
-    const p = progress();
-    // triangular wave for back-and-forth between distributions
-    const m = 0.5 - 0.5 * Math.cos(p * Math.PI * 2);
-    material.uniforms.uMorph.value = m;
-    // scatter follows pointer presence
-    const sc = Math.min(1, Math.hypot(state.pointer.x, state.pointer.y));
-    material.uniforms.uScatter.value = sc * v * 0.6;
-    (material.uniforms.uPointer.value as THREE.Vector2).set(
-      state.pointer.x,
-      state.pointer.y,
-    );
-    pointsRef.current.rotation.y += dt * 0.08;
+
+    const dtClamped = Math.min(dt, 0.05); // cap dt to avoid jumps
+
+    // Cursor target in world space
+    const targetX = state.pointer.x * viewport.width * 0.4;
+    const targetY = state.pointer.y * viewport.height * 0.4;
+
+    const posAttr = geometry.getAttribute('position') as THREE.BufferAttribute;
+    const speedAttr = geometry.getAttribute('aSpeed') as THREE.BufferAttribute;
+
+    const exImpulse = explodeImpulse.current;
+    explodeImpulse.current = Math.max(0, exImpulse - dtClamped * 1.2);
+
+    for (let i = 0; i < count; i++) {
+      const px = positions[i * 3 + 0];
+      const py = positions[i * 3 + 1];
+      const pz = positions[i * 3 + 2];
+
+      // Attraction force toward cursor target
+      const dx = targetX - px;
+      const dy = targetY - py;
+      const dz = 0 - pz;
+      // Force magnitude — stronger when farther, capped
+      const distSq = dx * dx + dy * dy + dz * dz + 0.1;
+      const fx = (dx / Math.sqrt(distSq)) * 0.8;
+      const fy = (dy / Math.sqrt(distSq)) * 0.8;
+      const fz = (dz / Math.sqrt(distSq)) * 0.4;
+
+      // Per-particle noise jitter
+      const seed = i * 0.0173;
+      const jx = Math.sin(state.clock.elapsedTime * 1.7 + seed) * 0.3;
+      const jy = Math.cos(state.clock.elapsedTime * 1.3 + seed * 1.7) * 0.3;
+
+      // Explosion outward from origin
+      const r = Math.sqrt(px * px + py * py + pz * pz) + 0.01;
+      const ex = (px / r) * exImpulse * 8;
+      const ey = (py / r) * exImpulse * 8;
+      const ez = (pz / r) * exImpulse * 4;
+
+      velocities[i * 3 + 0] = (velocities[i * 3 + 0] + (fx + jx + ex) * dtClamped) * 0.92;
+      velocities[i * 3 + 1] = (velocities[i * 3 + 1] + (fy + jy + ey) * dtClamped) * 0.92;
+      velocities[i * 3 + 2] = (velocities[i * 3 + 2] + (fz + ez) * dtClamped) * 0.92;
+
+      positions[i * 3 + 0] += velocities[i * 3 + 0];
+      positions[i * 3 + 1] += velocities[i * 3 + 1];
+      positions[i * 3 + 2] += velocities[i * 3 + 2];
+
+      const vx = velocities[i * 3 + 0];
+      const vy = velocities[i * 3 + 1];
+      speeds[i] = Math.sqrt(vx * vx + vy * vy);
+    }
+    posAttr.needsUpdate = true;
+    speedAttr.needsUpdate = true;
   });
 
   return (
-    <points ref={pointsRef} geometry={geometry} material={material} />
+    <points
+      ref={pointsRef}
+      geometry={geometry}
+      material={material}
+      onClick={(e) => {
+        e.stopPropagation();
+        explodeImpulse.current = 1.0;
+      }}
+      onPointerOver={() => { document.body.style.cursor = 'pointer'; }}
+      onPointerOut={() => { document.body.style.cursor = ''; }}
+    />
   );
 }
 
