@@ -1,6 +1,6 @@
 /**
- * Section registry — v4. Categories spaced out more (0.9 each) to
- * prevent overlap. Total = 6.5 pages.
+ * Section registry — v5. Gallery extended to 1.5 pages to give
+ * breathing room before category 01. Total = 7.1 pages.
  */
 
 export type SectionId =
@@ -21,7 +21,7 @@ export interface SectionDef {
 
 export const sections: SectionDef[] = [
   { id: 'hero', length: 0.6, label: 'Home' },
-  { id: 'gallery', length: 0.9, label: 'Projects' },
+  { id: 'gallery', length: 1.5, label: 'Projects' },
   { id: 'graphic', length: 0.9, label: 'Graphic' },
   { id: 'threeD', length: 0.9, label: '3D' },
   { id: 'ai', length: 0.9, label: 'AI' },

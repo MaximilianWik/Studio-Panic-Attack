@@ -17,13 +17,13 @@ export function Layout() {
   const groupRef = useRef<THREE.Group>(null);
   const scroll = useScroll();
 
-  // Hardcoded travel range:
-  // hero center = 0.3 pages from top → worldY = -3.0 → need group.y = 3.0 at offset=0
-  // highlights center = 6.15 pages from top → worldY = -61.5 → need group.y = 61.5 at offset=1
-  // travel = 61.5 - 3.0 = 58.5
+  // Hardcoded travel range (TOTAL_PAGES = 7.1):
+  // hero center worldY = -3.0 → need group.y = 3.0 at offset=0
+  // highlights center worldY = -67.5 → need group.y = 67.5 at offset=1
+  // travel = 64.5
   useFrame(() => {
     if (!groupRef.current) return;
-    groupRef.current.position.y = 3.0 + scroll.offset * 58.5;
+    groupRef.current.position.y = 3.0 + scroll.offset * 64.5;
   });
 
   return (
