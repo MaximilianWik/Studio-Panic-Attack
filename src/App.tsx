@@ -79,8 +79,6 @@ export default function App() {
         }}
         dpr={[1, profile.isLowPower ? 1.5 : 2]}
         camera={{ position: [0, 0, 8], fov: 35, near: 0.1, far: 100 }}
-        eventSource={document.body}
-        eventPrefix="client"
         frameloop="always"
         onCreated={({ gl }) => {
           gl.setClearColor(theme.bg, 1);

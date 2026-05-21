@@ -1,5 +1,4 @@
-// Detailed inspection: capture canvas at intervals + count distinct
-// non-bg pixels + capture an explicit center crop where the logo would be.
+// Test wheel scroll behavior — this is what the user actually does.
 import { chromium } from 'playwright';
 import { mkdirSync } from 'node:fs';
 
@@ -12,70 +11,39 @@ const ctx = await browser.newContext({ viewport: { width: 1440, height: 900 } })
 const page = await ctx.newPage();
 
 const errors = [];
-const consoles = [];
-page.on('console', (m) => {
-  if (['error', 'warning', 'log', 'info'].includes(m.type())) {
-    consoles.push(`[${m.type()}] ${m.text()}`);
-  }
-});
-page.on('pageerror', (e) => errors.push(`PAGE ERROR: ${e.message}\n${e.stack}`));
-page.on('requestfailed', (req) => errors.push(`REQ FAIL: ${req.url()} ${req.failure()?.errorText}`));
+page.on('pageerror', (e) => errors.push(e.message));
 
 await page.goto(URL, { waitUntil: 'domcontentloaded', timeout: 15000 });
+await page.waitForTimeout(2500);
 
-await page.waitForTimeout(6000);
-await page.screenshot({ path: `${OUT}/full.png`, fullPage: false });
-await page.screenshot({ path: `${OUT}/center.png`, clip: { x: 520, y: 280, width: 400, height: 340 } });
+await page.screenshot({ path: `${OUT}/wheel-0.png` });
 
-// Count textures created in the WebGL context
-const stats = await page.evaluate(() => {
-  const canvases = Array.from(document.querySelectorAll('canvas'));
-  const out = canvases.map((c, i) => ({
-    i,
-    w: c.width,
-    h: c.height,
-    classes: c.className,
-    cssWidth: c.style.width,
-    parent: c.parentElement?.className,
-  }));
-  return out;
-});
-console.log('canvases:', JSON.stringify(stats, null, 2));
+// Move pointer to center then dispatch wheel events
+await page.mouse.move(720, 450);
 
-// Try to read three.js scene state from the global window if r3f exposed it
-const sceneStats = await page.evaluate(() => {
-  // r3f doesn't expose by default; look for `__r3f` on canvases
-  const canvases = Array.from(document.querySelectorAll('canvas'));
-  for (const c of canvases) {
-    const r = (c).__r3f;
-    if (r && r.root) {
-      try {
-        const snapshot = r.root.getState();
-        const scene = snapshot.scene;
-        let count = 0;
-        const types = {};
-        scene.traverse((o) => {
-          count++;
-          types[o.type] = (types[o.type] || 0) + 1;
-        });
-        return {
-          totalObjects: count,
-          types,
-          children: scene.children.length,
-          camera: snapshot.camera ? { pos: snapshot.camera.position.toArray(), fov: snapshot.camera.fov } : null,
-        };
-      } catch (e) {
-        return { error: String(e) };
-      }
-    }
-  }
-  return { error: 'no r3f root found' };
-});
-console.log('scene:', JSON.stringify(sceneStats, null, 2));
+for (let i = 1; i <= 5; i++) {
+  // 5 stops, big wheel scroll between each
+  await page.mouse.wheel(0, 1500);
+  await page.waitForTimeout(700);
+  await page.screenshot({ path: `${OUT}/wheel-${i}.png` });
 
-console.log('\nERRORS:');
-for (const e of errors) console.log('  ', e);
-console.log('\nCONSOLE:');
-for (const m of consoles.slice(0, 40)) console.log('  ', m);
+  // Check what the scroll container's scrollTop is
+  const scroll = await page.evaluate(() => {
+    const all = Array.from(document.querySelectorAll('div'));
+    const scroller = all.find((d) => {
+      const cs = getComputedStyle(d);
+      return (cs.overflowY === 'auto' || cs.overflowY === 'scroll') &&
+             d.scrollHeight > d.clientHeight + 50;
+    });
+    return scroller
+      ? { scrollTop: scroller.scrollTop, scrollHeight: scroller.scrollHeight, clientHeight: scroller.clientHeight }
+      : { error: 'no scroller' };
+  });
+  console.log(`wheel ${i}: ${JSON.stringify(scroll)}`);
+}
+
+if (errors.length) {
+  console.log('ERRORS:', errors);
+}
 
 await browser.close();
