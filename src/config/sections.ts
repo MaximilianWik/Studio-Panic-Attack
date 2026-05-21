@@ -1,107 +1,71 @@
 /**
- * Section registry — single source of truth for scroll layout.
+ * Section registry. Each section occupies a slice of the scroll range.
+ * `pages` units in <ScrollControls pages={N}> determine total scroll length.
  *
- * Each section declares how many `pages` it occupies in drei's <ScrollControls>.
- * `offset` is computed cumulatively at module load so consumers can ask
- * `useScrollSection(section.offset, section.pages)` and get a normalized 0..1
- * progress value scoped to that section.
+ * Layout (top → bottom):
+ *   hero        : 1 page
+ *   gallery     : 1.2 pages
+ *   graphic     : 1.2 pages
+ *   threeD      : 1.2 pages
+ *   ai          : 1.2 pages
+ *   ux          : 1.2 pages
+ *   highlights  : 1.0 pages
  *
- * `damping` on ScrollControls is set globally in App.tsx; per-section eases
- * are handled inside each section component via its own progress curve.
+ * Total = 8.0 pages.
  */
 
 export type SectionId =
   | 'hero'
   | 'gallery'
-  | 'graphic-design'
-  | 'three-dee-art'
-  | 'ai-art'
-  | 'ux-design'
+  | 'graphic'
+  | 'threeD'
+  | 'ai'
+  | 'ux'
   | 'highlights';
 
-export interface Section {
+export interface SectionDef {
   id: SectionId;
-  pages: number;
-  /** filled in below */
-  offset: number;
-  title: string;
-  number?: string;
-  body?: string;
+  /** scroll length in pages (1 page = 1 viewport height) */
+  length: number;
 }
 
-const rawSections: Omit<Section, 'offset'>[] = [
-  {
-    id: 'hero',
-    pages: 1.2,
-    title: 'Studio Panic Attack',
-  },
-  {
-    id: 'gallery',
-    pages: 2.0,
-    title: 'Selected Work',
-  },
-  {
-    id: 'graphic-design',
-    pages: 1.5,
-    number: '01',
-    title: 'Graphic Design',
-    body: 'Design beyond the traditional format. Editorial systems, type as image, posters that talk back. Every brief is an opportunity to break a grid.',
-  },
-  {
-    id: 'three-dee-art',
-    pages: 1.5,
-    number: '02',
-    title: '3D Art',
-    body: 'Sculpting in software. Procedural geometry, iridescent surfaces, and forms that exist only as light hitting a virtual camera.',
-  },
-  {
-    id: 'ai-art',
-    pages: 1.5,
-    number: '03',
-    title: 'AI Art',
-    body: 'Diffusion as a brush. Conditioning, fine-tuning, and the strange textures that emerge when language and pixels collide.',
-  },
-  {
-    id: 'ux-design',
-    pages: 1.5,
-    number: '04',
-    title: 'UX Design',
-    body: 'Interfaces as choreography. Deconstructing the rectangle, then putting it back together with intent.',
-  },
-  {
-    id: 'highlights',
-    pages: 1.0,
-    title: 'Highlights',
-  },
+export const sections: SectionDef[] = [
+  { id: 'hero', length: 1.0 },
+  { id: 'gallery', length: 1.2 },
+  { id: 'graphic', length: 1.2 },
+  { id: 'threeD', length: 1.2 },
+  { id: 'ai', length: 1.2 },
+  { id: 'ux', length: 1.2 },
+  { id: 'highlights', length: 1.0 },
 ];
 
-let cursor = 0;
-export const sections: Section[] = rawSections.map((s) => {
-  const out: Section = { ...s, offset: cursor };
-  cursor += s.pages;
-  return out;
-});
+export const TOTAL_PAGES = sections.reduce((sum, s) => sum + s.length, 0);
 
-export const totalPages = cursor;
-
-export const sectionsById = Object.fromEntries(
-  sections.map((s) => [s.id, s]),
-) as Record<SectionId, Section>;
+/** Returns [startNorm, endNorm] in 0..1 along the full scroll range. */
+export function getSectionRange(id: SectionId): [number, number] {
+  let acc = 0;
+  for (const s of sections) {
+    const start = acc / TOTAL_PAGES;
+    acc += s.length;
+    const end = acc / TOTAL_PAGES;
+    if (s.id === id) return [start, end];
+  }
+  return [0, 1];
+}
 
 /**
- * World-space vertical distance covered by one scroll page. Tuned so that
- * a 1-page section roughly fills the camera frustum at z=0 with our
- * default fov=35 / camera z=8 setup.
+ * World-Y position for a section's center.
+ * Higher index = lower in the world (more negative Y).
+ * VIEWPORT_HEIGHT_UNITS is the world-space camera viewport height at z=0.
  */
-export const Y_PER_PAGE = 5.5;
+export const VIEWPORT_HEIGHT_UNITS = 10;
 
-/** World-space total scrollable height (Y units). */
-export const worldHeight = totalPages * Y_PER_PAGE;
-
-/** World-space Y position where a section is centered in the camera. */
-export function sectionWorldY(s: Section): number {
-  // Section centers in the camera at the START of its scroll range.
-  // Negate so that as the master group translates upward with scroll,
-  // each section's start moment puts its content at world y=0.
-  return -s.offset * Y_PER_PAGE;
+export function getSectionWorldY(id: SectionId): number {
+  let acc = 0;
+  for (const s of sections) {
+    const center = acc + s.length / 2;
+    acc += s.length;
+    if (s.id === id) return -center * VIEWPORT_HEIGHT_UNITS;
+  }
+  return 0;
 }

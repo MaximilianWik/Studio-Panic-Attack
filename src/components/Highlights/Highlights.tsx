@@ -1,136 +1,108 @@
-import { useRef, useState } from 'react';
 import { Html } from '@react-three/drei';
 import { LiquidMetal } from '@paper-design/shaders-react';
-import { useFrame } from '@react-three/fiber';
-import * as THREE from 'three';
-import { useScrollSection } from '../../helpers/useScrollSection';
-import { portfolioImages } from '../../helpers/useImageAssets';
-import type { Section } from '../../config/sections';
+import { useState } from 'react';
 
-interface Props {
-  section: Section;
-}
+import { getSectionWorldY } from '../../config/sections';
 
-interface Highlight {
-  src: string;
+interface HighlightSpec {
+  num: string;
   title: string;
-  category: string;
+  blurb: string;
+  href: string;
+  media: string;
 }
 
 /**
- * Picks four "featured" works for the highlights grid. We don't have
- * tagged metadata so we choose images by their filenames, which happen
- * to be descriptive.
- */
-function pickHighlights(): Highlight[] {
-  // Try to find specific filenames; fall back to first 4 if missing.
-  const find = (needle: string) =>
-    portfolioImages.find((u) => u.toLowerCase().includes(needle.toLowerCase()));
-
-  const list: Highlight[] = [];
-  const candidates: [string, string, string][] = [
-    ['panic-attack-type-final', 'Panic Attack Type', 'Graphic Design'],
-    ['urbanwarholtv', 'Urban Warhol TV', '3D Art'],
-    ['cemetery-scene1.', 'Cemetery Scene', 'AI Art'],
-    ['glasserrorscrnshot', 'Glass Error', 'UX Design'],
-  ];
-  for (const [needle, title, category] of candidates) {
-    const src = find(needle);
-    if (src) list.push({ src, title, category });
-  }
-  // Top up if any didn't resolve
-  for (let i = 0; list.length < 4 && i < portfolioImages.length; i++) {
-    const src = portfolioImages[i]!;
-    if (!list.find((h) => h.src === src)) {
-      list.push({ src, title: 'Selected Work', category: 'Studio' });
-    }
-  }
-  return list.slice(0, 4);
-}
-
-const HIGHLIGHTS = pickHighlights();
-
-/**
- * Highlights — closing grid of four featured pieces. Each card uses
- * paper-design's LiquidMetal shader as a hover overlay, with a CSS
- * crossfade between the static thumbnail and the metal treatment.
+ * Highlights — 4-card DOM grid.
  *
- * Float animation is implemented as a CSS-keyframe stagger rather than
- * drei <Float>, since the cards live inside <Html transform>.
+ *   - Each card is a portrait-aspect tile: image + title + index.
+ *   - Hover overlays a paper-design `LiquidMetal` shader as a "treatment"
+ *     screen-blended over the image.
+ *   - Cards stagger-float gently (CSS @keyframes).
+ *   - The "/highlights/[slug]" route does not exist yet — placeholder
+ *     hrefs keep the markup correct. // TODO: route to future highlights
+ *     detail page.
+ *
+ * Sits inside <Html transform={false}> so it lives in screen-space
+ * regardless of camera framing.
  */
-export function Highlights({ section }: Props) {
-  const groupRef = useRef<THREE.Group>(null);
-  const htmlRef = useRef<HTMLDivElement>(null);
-  const progress = useScrollSection(section.offset, section.pages);
 
-  useFrame(() => {
-    if (!groupRef.current) return;
-    const p = progress.current;
-    const visible = p > -0.5 && p < 1.5;
-    groupRef.current.visible = visible;
-    if (!visible || !htmlRef.current) return;
+const HIGHLIGHTS: HighlightSpec[] = [
+  {
+    num: 'I',
+    title: 'Cemetery — long sequence',
+    blurb: 'Unreal Engine 5',
+    href: '/highlights/cemetery-sequence',
+    media: '/landing/cemetery-scene16.png',
+  },
+  {
+    num: 'II',
+    title: 'Holistic — editorial',
+    blurb: 'Editorial / 3D',
+    href: '/highlights/holistic-editorial',
+    media: '/landing/holistic-letter-from-the-editor-and-3d-article.png',
+  },
+  {
+    num: 'III',
+    title: 'Chrome type',
+    blurb: 'Type / liquid metal',
+    href: '/highlights/chrome-type',
+    media: '/landing/chrome-type-bw-4.png',
+  },
+  {
+    num: 'IV',
+    title: 'Glass error',
+    blurb: 'UX / interaction',
+    href: '/highlights/glass-error',
+    media: '/landing/glasserrorscrnshot.png',
+  },
+];
 
-    const enter = Math.max(0, Math.min(1, (p + 0.2) / 0.6));
-    const exit = Math.max(0, Math.min(1, (p - 0.7) / 0.4));
-    const opacity = enter * (1 - exit);
-    htmlRef.current.style.opacity = `${opacity}`;
-    htmlRef.current.style.transform = `translateY(${(1 - enter) * 24}px)`;
-  });
+export function Highlights() {
+  const yPos = getSectionWorldY('highlights');
 
   return (
-    <group ref={groupRef}>
+    <group position={[0, yPos, 0]}>
       <Html
         center
-        transform={false}
         position={[0, 0, 0]}
-        wrapperClass="overlay"
-        style={{ pointerEvents: 'auto' }}
+        style={{ width: '100vw', pointerEvents: 'none', zIndex: 3 }}
+        transform={false}
+        occlude={false}
       >
         <div
-          ref={htmlRef}
+          className="spa-overlay spa-overlay--interactive"
           style={{
-            width: 'min(900px, 88vw)',
-            transition: 'transform 0.4s ease-out',
+            width: '100vw',
+            display: 'flex',
+            justifyContent: 'center',
+            alignItems: 'center',
+            flexDirection: 'column',
+            gap: '40px',
           }}
         >
-          <div
-            className="overlay-eyebrow"
-            style={{ marginBottom: 12, textAlign: 'center' }}
-          >
-            Highlights
+          <div style={{ textAlign: 'center' }}>
+            <div className="spa-eyebrow">— SELECTED HIGHLIGHTS</div>
+            <h2 className="spa-title" style={{ fontSize: 'clamp(48px, 7vw, 120px)' }}>
+              Featured pieces
+            </h2>
           </div>
-          <div
-            className="overlay-title"
-            style={{ fontSize: 42, marginBottom: 28, textAlign: 'center' }}
-          >
-            Recent Pieces
-          </div>
-          <div
-            style={{
-              display: 'grid',
-              gridTemplateColumns: 'repeat(2, 1fr)',
-              gap: 16,
-            }}
-          >
+
+          <div className="spa-highlights">
             {HIGHLIGHTS.map((h, i) => (
-              <HighlightCard key={i} h={h} delayMs={i * 80} />
+              <HighlightCard key={h.num} h={h} index={i} />
             ))}
           </div>
-          <div style={{ textAlign: 'center', marginTop: 28 }}>
-            <a
-              href="#"
-              data-cursor="hover"
-              className="overlay-eyebrow"
-              style={{
-                color: '#1a1814',
-                textDecoration: 'none',
-                borderBottom: '1px solid #1a1814',
-                paddingBottom: 4,
-                pointerEvents: 'auto',
-              }}
-            >
-              See all work →
-            </a>
+
+          <div className="spa-footer" style={{ marginTop: 60 }}>
+            <h3 className="spa-footer__title">
+              Let&rsquo;s build something <em>loud</em>.
+            </h3>
+            <div className="spa-footer__row">
+              <span>EMA STOYANOVA</span>
+              <span>STUDIO · PANIC · ATTACK</span>
+              <span>2026</span>
+            </div>
           </div>
         </div>
       </Html>
@@ -138,98 +110,62 @@ export function Highlights({ section }: Props) {
   );
 }
 
-function HighlightCard({ h, delayMs }: { h: Highlight; delayMs: number }) {
+interface CardProps {
+  h: HighlightSpec;
+  index: number;
+}
+
+function HighlightCard({ h, index }: CardProps) {
   const [hover, setHover] = useState(false);
+  const stagger = (['spa-card--stagger-0', 'spa-card--stagger-1', 'spa-card--stagger-2', 'spa-card--stagger-3'] as const)[index % 4];
+
   return (
     <a
-      href="#"
-      data-cursor="hover"
+      // TODO: route to future highlights detail page
+      href={h.href}
+      className={'spa-card ' + stagger}
       onPointerEnter={() => setHover(true)}
       onPointerLeave={() => setHover(false)}
-      style={{
-        position: 'relative',
-        aspectRatio: '4 / 3',
-        overflow: 'hidden',
-        textDecoration: 'none',
-        color: '#1a1814',
-        background: '#ebe3d3',
-        animation: `paFloat 4.8s ease-in-out ${delayMs}ms infinite`,
-        transition: 'transform 0.4s ease-out',
-        transform: hover ? 'translateY(-4px)' : 'translateY(0)',
-      }}
+      onClick={(e) => e.preventDefault()}
     >
-      {/* Static thumbnail */}
       <img
-        src={h.src}
+        className="spa-card__media"
+        src={h.media}
         alt={h.title}
-        style={{
-          position: 'absolute',
-          inset: 0,
-          width: '100%',
-          height: '100%',
-          objectFit: 'cover',
-          opacity: hover ? 0.0 : 1,
-          transition: 'opacity 0.45s ease-out',
-        }}
+        loading="lazy"
+        decoding="async"
       />
-      {/* Liquid metal hover layer */}
-      <div
-        style={{
-          position: 'absolute',
-          inset: 0,
-          opacity: hover ? 1 : 0,
-          transition: 'opacity 0.45s ease-out',
-          mixBlendMode: 'normal',
-          pointerEvents: 'none',
-        }}
-      >
-        <LiquidMetal
-          colorBack="#f5efe4"
-          colorTint="#1a1814"
-          repetition={3}
-          softness={0.35}
-          shiftRed={0.35}
-          shiftBlue={0.45}
-          distortion={0.2}
-          contour={0.5}
-          shape="circle"
-          offsetX={0}
-          offsetY={0}
-          scale={1.1}
-          rotation={0}
-          speed={1}
-          style={{ width: '100%', height: '100%' }}
-        />
-      </div>
 
-      {/* Title overlay (always visible) */}
-      <div
-        style={{
-          position: 'absolute',
-          left: 16,
-          right: 16,
-          bottom: 12,
-          display: 'flex',
-          justifyContent: 'space-between',
-          alignItems: 'flex-end',
-          fontFamily: '"Helvetica Neue", Helvetica, Arial, sans-serif',
-          color: hover ? '#1a1814' : '#f5efe4',
-          textShadow: hover ? 'none' : '0 2px 12px rgba(0,0,0,0.45)',
-          transition: 'color 0.45s ease-out',
-        }}
-      >
-        <span style={{ fontSize: 18, fontWeight: 500 }}>{h.title}</span>
-        <span
-          style={{
-            fontSize: 10,
-            letterSpacing: '0.2em',
-            textTransform: 'uppercase',
-            opacity: 0.8,
-          }}
+      {/* paper-design liquid metal treatment, only mounted when hovered
+          to avoid running 4 simultaneous shader contexts at idle */}
+      {hover ? (
+        <div
+          className="spa-card__shader"
+          style={{ opacity: 0.75, mixBlendMode: 'screen' }}
         >
-          {h.category}
-        </span>
+          <LiquidMetal
+            style={{ width: '100%', height: '100%' }}
+            colorBack="#050505"
+            colorTint="#d30000"
+            softness={0.4}
+            repetition={2.8}
+            shiftRed={0.4}
+            shiftBlue={-0.3}
+            distortion={0.5}
+            contour={0.6}
+            shape="metaballs"
+            speed={1.6}
+          />
+        </div>
+      ) : null}
+
+      <div className="spa-card__copy">
+        <span className="spa-card__num">{h.num}</span>
+        <span className="spa-card__title">{h.title}</span>
+        <span className="spa-meta" style={{ marginTop: 4 }}>{h.blurb}</span>
       </div>
     </a>
   );
 }
+
+export default Highlights;

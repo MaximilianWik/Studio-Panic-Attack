@@ -1,148 +1,109 @@
-import { useMemo, useRef } from 'react';
 import { useFrame } from '@react-three/fiber';
 import { useTexture } from '@react-three/drei';
+import { useEffect, useMemo, useRef } from 'react';
 import * as THREE from 'three';
-import {
-  VERT,
-  HALFTONE_FRAG,
-  DITHER_FRAG,
-  PAPER_FRAG,
-  FLUTE_FRAG,
-  LIQUID_METAL_FRAG,
-  type ShaderKind,
-} from '../../shaders/imageShaders';
+
+import { shaders, type ShaderId } from '../../shaders/imageShaders';
 
 interface Props {
   url: string;
-  kind: ShaderKind;
-  /** Max size of longer side; aspect-fits to image. */
-  maxSize?: number;
-  /** Initial opacity multiplier (parents drive entrance via this). */
-  opacityRef?: React.MutableRefObject<number>;
+  /** target plane height in world units (width derived from texture aspect) */
+  height: number;
+  /** which custom shader to apply, or 'plain' for a passthrough */
+  effect: ShaderId | 'plain';
+  /** 0..1 intensity blend between original and shaded */
+  intensity?: number;
+  position?: [number, number, number];
+  rotation?: [number, number, number];
 }
 
 /**
- * One textured plane drawn through one of the custom image shaders.
- * The kind selects which fragment shader is compiled.
+ * Image plane that compiles one of the five custom shaders against the
+ * texture. Aspect-fits the texture to the requested height. Each
+ * shader takes uTex + uIntensity uniforms; some also take uTime and
+ * uResolution (set per-frame).
  *
- * Aspect-fits the source image to `maxSize` along its longer side.
- *
- * `opacityRef`, if provided, lets the parent imperatively drive the
- * material's `uOpacity` per frame without re-rendering.
+ * On low-power devices, ScatteredImages forces effect to 'plain' so we
+ * skip the shader entirely.
  */
-export function ImageEffect({ url, kind, maxSize = 1.4, opacityRef }: Props) {
-  const matRef = useRef<THREE.ShaderMaterial>(null);
-  const tex = useTexture(url);
-  tex.colorSpace = THREE.SRGBColorSpace;
-  tex.anisotropy = 4;
-  // Bilinear; nearest would clash with the dither pixelation step.
-  tex.minFilter = THREE.LinearMipMapLinearFilter;
-  tex.magFilter = THREE.LinearFilter;
+export function ImageEffect({
+  url,
+  height,
+  effect,
+  intensity = 1,
+  position = [0, 0, 0],
+  rotation = [0, 0, 0],
+}: Props) {
+  const tex = useTexture(url) as THREE.Texture;
+  const meshRef = useRef<THREE.Mesh>(null);
 
-  const img = tex.image;
-  const aspect = img ? img.width / img.height : 1;
-  const w = aspect >= 1 ? maxSize : maxSize * aspect;
-  const h = aspect >= 1 ? maxSize / aspect : maxSize;
+  useEffect(() => {
+    if (!tex) return;
+    tex.colorSpace = THREE.SRGBColorSpace;
+    tex.anisotropy = 4;
+    tex.needsUpdate = true;
+  }, [tex]);
 
-  const uniforms = useMemo(() => {
-    const base = {
-      uMap: { value: tex },
-      uTime: { value: 0 },
-      uOpacity: { value: 1 },
-      uResolution: { value: new THREE.Vector2(512 * (w / maxSize), 512 * (h / maxSize)) },
+  const aspect = useMemo(() => {
+    if (!tex || !tex.image) return 1;
+    const w = tex.image.naturalWidth ?? tex.image.width ?? 1;
+    const h = tex.image.naturalHeight ?? tex.image.height ?? 1;
+    return w / Math.max(1, h);
+  }, [tex]);
+
+  const planeArgs = useMemo<[number, number]>(() => {
+    return [height * aspect, height];
+  }, [height, aspect]);
+
+  const material = useMemo(() => {
+    if (effect === 'plain') {
+      return new THREE.MeshBasicMaterial({
+        map: tex,
+        transparent: true,
+        toneMapped: false,
+      });
+    }
+    const mod = shaders[effect];
+    return new THREE.ShaderMaterial({
+      transparent: true,
+      uniforms: {
+        uTex: { value: tex },
+        uTime: { value: 0 },
+        uResolution: { value: new THREE.Vector2(512, 512) },
+        uIntensity: { value: intensity },
+      },
+      vertexShader: mod.vertex,
+      fragmentShader: mod.fragment,
+    });
+  }, [tex, effect, intensity]);
+
+  useEffect(() => {
+    return () => {
+      material.dispose();
     };
-    switch (kind) {
-      case 'halftone':
-        return {
-          ...base,
-          uDotSize: { value: 6.0 },
-          uInk: { value: new THREE.Color('#0a0a0a') },
-          uPaper: { value: new THREE.Color('#e8e2d4') },
-        };
-      case 'dither':
-        return {
-          ...base,
-          uPixel: { value: 4.0 },
-          uInk: { value: new THREE.Color('#1a1a1a') },
-          uPaper: { value: new THREE.Color('#f0ece6') },
-        };
-      case 'flute':
-        return {
-          ...base,
-          uRibCount: { value: 14 },
-          uShear: { value: 0.014 },
-        };
-      case 'liquid':
-        return {
-          ...base,
-          uTintA: { value: new THREE.Color('#c97e3a') },
-          uTintB: { value: new THREE.Color('#e8d8c0') },
-        };
-      case 'paper':
-      case 'plain':
-      default:
-        return base;
-    }
-    // tex/maxSize/kind — uniforms must rebuild only if those change
-  }, [tex, kind, w, h, maxSize]);
-
-  const fragmentShader = useMemo(() => {
-    switch (kind) {
-      case 'halftone':
-        return HALFTONE_FRAG;
-      case 'dither':
-        return DITHER_FRAG;
-      case 'paper':
-        return PAPER_FRAG;
-      case 'flute':
-        return FLUTE_FRAG;
-      case 'liquid':
-        return LIQUID_METAL_FRAG;
-      case 'plain':
-      default:
-        return PLAIN_FRAG;
-    }
-  }, [kind]);
+  }, [material]);
 
   useFrame((_, dt) => {
-    if (!matRef.current) return;
-    const u = matRef.current.uniforms as Record<string, { value: unknown }>;
-    if ('uTime' in u) {
-      (u.uTime as { value: number }).value += dt;
-    }
-    if (opacityRef && 'uOpacity' in u) {
-      (u.uOpacity as { value: number }).value = opacityRef.current;
+    if (effect === 'plain') return;
+    const m = material as THREE.ShaderMaterial;
+    if (m.uniforms.uTime) (m.uniforms.uTime.value as number) += dt;
+    if (m.uniforms.uResolution && tex.image) {
+      const w = tex.image.naturalWidth ?? tex.image.width ?? 512;
+      const h = tex.image.naturalHeight ?? tex.image.height ?? 512;
+      (m.uniforms.uResolution.value as THREE.Vector2).set(w, h);
     }
   });
 
   return (
-    <mesh>
-      <planeGeometry args={[w, h]} />
-      <shaderMaterial
-        ref={matRef}
-        vertexShader={VERT}
-        fragmentShader={fragmentShader}
-        uniforms={uniforms}
-        transparent
-        depthWrite={false}
-        side={THREE.DoubleSide}
-      />
+    <mesh
+      ref={meshRef}
+      position={position}
+      rotation={rotation}
+      material={material}
+    >
+      <planeGeometry args={[planeArgs[0], planeArgs[1], 1, 1]} />
     </mesh>
   );
 }
 
-/**
- * Plain pass-through fragment shader — used for the "plain" kind so we
- * uniformly drive opacity through `uOpacity` no matter the variant.
- */
-const PLAIN_FRAG = /* glsl */ `
-precision highp float;
-varying vec2 vUv;
-uniform sampler2D uMap;
-uniform float uOpacity;
-void main() {
-  vec4 src = texture2D(uMap, vUv);
-  if (src.a < 0.01) discard;
-  gl_FragColor = vec4(src.rgb, src.a * uOpacity);
-}
-`;
+export default ImageEffect;

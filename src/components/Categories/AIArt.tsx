@@ -1,202 +1,213 @@
+import { useFrame } from '@react-three/fiber';
 import { useMemo, useRef } from 'react';
-import { useFrame, useThree } from '@react-three/fiber';
 import * as THREE from 'three';
+
+import { getSectionWorldY } from '../../config/sections';
+import { useDeviceProfile } from '../../helpers/useDeviceProfile';
+import {
+  useSectionProgress,
+  useSectionVisibility,
+} from '../../helpers/useScrollSection';
 import { CategorySection } from './CategorySection';
-import { useScrollSection } from '../../helpers/useScrollSection';
-import { mulberry32 } from '../../helpers/useImageAssets';
-import type { Section } from '../../config/sections';
 
-interface Props {
-  section: Section;
-  reducedEffects: boolean;
-}
+/**
+ * 03 — AI Art
+ *
+ * 18 000-particle (4 500 on tier ≤ 1) GPU morph between two attractor
+ * distributions:
+ *   - distribution A: sphere shell
+ *   - distribution B: torus
+ *
+ * Vertex shader handles the blend, per-particle turbulence, and a
+ * pointer-driven scatter on the field plane (simulated via a ripple
+ * uniform). Both attractor positions are baked once into BufferAttribute
+ * arrays at mount.
+ */
 
-const PARTICLES_FULL = 18_000;
-const PARTICLES_REDUCED = 4_500;
-
-/* -------------------------------------------------------------------------- */
-/* Shape generators — each returns Float32Array of xyz triplets.              */
-/* -------------------------------------------------------------------------- */
-
-function spherePoints(n: number, radius: number, seed: number): Float32Array {
-  const rnd = mulberry32(seed);
-  const out = new Float32Array(n * 3);
-  for (let i = 0; i < n; i++) {
-    // uniform on sphere
-    const u = rnd() * 2 - 1;
-    const t = rnd() * Math.PI * 2;
-    const r = Math.sqrt(1 - u * u);
-    out[i * 3 + 0] = r * Math.cos(t) * radius;
-    out[i * 3 + 1] = u * radius;
-    out[i * 3 + 2] = r * Math.sin(t) * radius;
-  }
-  return out;
-}
-
-function torusPoints(
-  n: number,
-  R: number,
-  r: number,
-  seed: number,
-): Float32Array {
-  const rnd = mulberry32(seed);
-  const out = new Float32Array(n * 3);
-  for (let i = 0; i < n; i++) {
-    const u = rnd() * Math.PI * 2;
-    const v = rnd() * Math.PI * 2;
-    out[i * 3 + 0] = (R + r * Math.cos(v)) * Math.cos(u);
-    out[i * 3 + 1] = r * Math.sin(v);
-    out[i * 3 + 2] = (R + r * Math.cos(v)) * Math.sin(u);
-  }
-  return out;
-}
-
-/* -------------------------------------------------------------------------- */
+const HIGH_COUNT = 18000;
+const LOW_COUNT = 4500;
 
 const VERT = /* glsl */ `
-attribute vec3 positionA;
-attribute vec3 positionB;
-attribute float seed;
-uniform float uMix;        // 0 → A, 1 → B
-uniform float uTime;
-uniform vec3  uPointerW;    // pointer projected to world at field's z
-uniform float uPointerStrength;
-uniform float uSize;
+  attribute vec3 aTarget;
+  attribute float aSeed;
+  uniform float uTime;
+  uniform float uMorph;
+  uniform float uScatter;
+  uniform vec2 uPointer;
+  varying float vSeed;
+  varying float vDist;
 
-varying float vSeed;
+  float hash(float n) { return fract(sin(n) * 43758.5453123); }
 
-void main() {
-  vec3 a = positionA;
-  vec3 b = positionB;
-  // smooth ease for the blend
-  float t = smoothstep(0.0, 1.0, uMix);
-  vec3 p = mix(a, b, t);
+  void main() {
+    vSeed = aSeed;
+    vec3 a = position;
+    vec3 b = aTarget;
+    vec3 p = mix(a, b, smoothstep(0.0, 1.0, uMorph));
 
-  // turbulence — small per-particle wobble
-  float ph = seed * 6.2831853;
-  p += vec3(
-    sin(uTime * 0.6 + ph),
-    cos(uTime * 0.5 + ph * 1.7),
-    sin(uTime * 0.4 + ph * 0.7)
-  ) * 0.03;
+    // turbulence
+    float t = uTime * 0.6 + aSeed * 6.28;
+    p += vec3(sin(t * 0.7), cos(t * 1.1), sin(t * 0.5)) * 0.04;
 
-  // pointer scatter — push away from pointerW with falloff
-  vec3 d = p - uPointerW;
-  float dist = length(d);
-  float push = uPointerStrength / max(dist * dist, 0.04);
-  p += normalize(d + 1e-4) * push;
+    // pointer scatter
+    vec2 d = p.xy - uPointer * 1.6;
+    float r = length(d);
+    float push = exp(-r * r * 1.2) * uScatter;
+    p.xy += normalize(d + 1e-5) * push * 0.7;
+    p.z += push * 0.3;
 
-  vec4 mv = modelViewMatrix * vec4(p, 1.0);
-  gl_Position = projectionMatrix * mv;
-  // size attenuated by depth so far points are smaller
-  gl_PointSize = uSize * (300.0 / -mv.z);
-  vSeed = seed;
-}
+    vec4 mv = modelViewMatrix * vec4(p, 1.0);
+    gl_Position = projectionMatrix * mv;
+    vDist = length(mv.xyz);
+    float size = mix(1.6, 4.5, aSeed);
+    gl_PointSize = size * (220.0 / -mv.z);
+  }
 `;
 
 const FRAG = /* glsl */ `
-precision highp float;
-uniform vec3 uColorA;
-uniform vec3 uColorB;
-uniform float uOpacity;
-varying float vSeed;
-void main() {
-  vec2 c = gl_PointCoord - 0.5;
-  float d = length(c);
-  if (d > 0.5) discard;
-  float a = smoothstep(0.5, 0.2, d);
-  vec3 col = mix(uColorA, uColorB, vSeed);
-  gl_FragColor = vec4(col, a * uOpacity);
-}
+  precision mediump float;
+  varying float vSeed;
+  varying float vDist;
+  uniform float uTime;
+  void main() {
+    vec2 c = gl_PointCoord - 0.5;
+    float d = length(c);
+    float a = smoothstep(0.5, 0.0, d);
+    a *= mix(0.4, 1.0, vSeed);
+    // colour shift between paper and blood, sparkles in the seam
+    vec3 paper = vec3(0.94, 0.92, 0.86);
+    vec3 blood = vec3(0.83, 0.0, 0.0);
+    vec3 col = mix(paper, blood, smoothstep(0.55, 1.0, vSeed));
+    // shimmer
+    col += 0.25 * vec3(1.0) * pow(0.5 + 0.5 * sin(uTime * 4.0 + vSeed * 24.0), 6.0);
+    gl_FragColor = vec4(col, a * 0.85);
+  }
 `;
 
-/**
- * 03 — AI Art.
- *
- * Two particle distributions (sphere → torus) interpolated in the vertex
- * shader by scroll progress within the section. Per-particle turbulence
- * keeps it organic. Pointer is projected into the field's plane and
- * pushes nearby particles outward like a soft repulsion field.
- */
-export function AIArt({ section, reducedEffects }: Props) {
-  const pointsRef = useRef<THREE.Points>(null);
-  const matRef = useRef<THREE.ShaderMaterial>(null);
-  const progress = useScrollSection(section.offset, section.pages);
-  const { pointer, camera } = useThree();
-
-  const count = reducedEffects ? PARTICLES_REDUCED : PARTICLES_FULL;
-
-  const { geometry } = useMemo(() => {
-    const a = spherePoints(count, 1.0, 0xa1a1);
-    const b = torusPoints(count, 0.95, 0.32, 0xb2b2);
-    const seeds = new Float32Array(count);
-    const rnd = mulberry32(0xcccc);
-    for (let i = 0; i < count; i++) seeds[i] = rnd();
-
-    const g = new THREE.BufferGeometry();
-    // dummy position attribute — required by three for setting up draw range
-    g.setAttribute('position', new THREE.BufferAttribute(new Float32Array(count * 3), 3));
-    g.setAttribute('positionA', new THREE.BufferAttribute(a, 3));
-    g.setAttribute('positionB', new THREE.BufferAttribute(b, 3));
-    g.setAttribute('seed', new THREE.BufferAttribute(seeds, 1));
-    g.computeBoundingSphere();
-    return { geometry: g };
-  }, [count]);
-
-  const uniforms = useMemo(
-    () => ({
-      uMix: { value: 0 },
-      uTime: { value: 0 },
-      uPointerW: { value: new THREE.Vector3(100, 100, 100) },
-      uPointerStrength: { value: 0 },
-      uSize: { value: 2.4 },
-      uOpacity: { value: 0.85 },
-      uColorA: { value: new THREE.Color('#1a1814') },
-      uColorB: { value: new THREE.Color('#c97e3a') },
-    }),
-    [],
-  );
-
-  // Reusable scratch
-  const _ray = useRef(new THREE.Raycaster());
-  const _plane = useRef(new THREE.Plane(new THREE.Vector3(0, 0, 1), -0.5));
-  const _hit = useRef(new THREE.Vector3());
-
-  useFrame((_, dt) => {
-    uniforms.uTime.value += dt;
-    const p = Math.max(0, Math.min(1, progress.current));
-    uniforms.uMix.value = p;
-
-    // Project pointer to a plane that sits at the particle field's z
-    // (group is positioned at z=0.4, see below — we use a plane at z=0.4 in world).
-    _ray.current.setFromCamera(pointer as unknown as THREE.Vector2, camera);
-    const fieldPlaneZ = 0.4;
-    _plane.current.set(new THREE.Vector3(0, 0, 1), -fieldPlaneZ);
-    if (_ray.current.ray.intersectPlane(_plane.current, _hit.current)) {
-      // The points group sits at world (-1.4, 0, 0.4) (left side); convert
-      // hit to local space by subtracting the group origin.
-      uniforms.uPointerW.value.set(_hit.current.x + 1.4, _hit.current.y, 0);
-      uniforms.uPointerStrength.value = 0.018;
-    } else {
-      uniforms.uPointerStrength.value = 0;
+function buildSphere(n: number, r = 1.4): Float32Array {
+  const arr = new Float32Array(n * 3);
+  for (let i = 0; i < n; i++) {
+    // uniform on sphere (Marsaglia)
+    let x = 0,
+      y = 0,
+      z = 0,
+      s = 2;
+    while (s >= 1) {
+      x = Math.random() * 2 - 1;
+      y = Math.random() * 2 - 1;
+      s = x * x + y * y;
     }
-  });
+    const f = 2 * Math.sqrt(1 - s);
+    z = 1 - 2 * s;
+    arr[i * 3 + 0] = x * f * r;
+    arr[i * 3 + 1] = y * f * r;
+    arr[i * 3 + 2] = z * r;
+  }
+  return arr;
+}
+
+function buildTorus(n: number, R = 1.0, tubeR = 0.4): Float32Array {
+  const arr = new Float32Array(n * 3);
+  for (let i = 0; i < n; i++) {
+    const u = Math.random() * Math.PI * 2;
+    const v = Math.random() * Math.PI * 2;
+    const x = (R + tubeR * Math.cos(v)) * Math.cos(u);
+    const y = (R + tubeR * Math.cos(v)) * Math.sin(u);
+    const z = tubeR * Math.sin(v);
+    arr[i * 3 + 0] = x * 1.5;
+    arr[i * 3 + 1] = y * 1.5;
+    arr[i * 3 + 2] = z * 1.5;
+  }
+  return arr;
+}
+
+export function AIArt() {
+  const yPos = getSectionWorldY('ai');
+  const profile = useDeviceProfile();
+  const progress = useSectionProgress('ai');
+  const visibility = useSectionVisibility('ai');
 
   return (
-    <CategorySection section={section} textSide="right">
-      <group position={[-1.4, 0, 0.4]}>
-        <points ref={pointsRef} geometry={geometry}>
-          <shaderMaterial
-            ref={matRef}
-            vertexShader={VERT}
-            fragmentShader={FRAG}
-            uniforms={uniforms}
-            transparent
-            depthWrite={false}
-            blending={THREE.NormalBlending}
-          />
-        </points>
-      </group>
+    <CategorySection
+      yPos={yPos}
+      number="03"
+      eyebrow="CATEGORY"
+      title="AI Art"
+      body="Experimental AI art pushing the boundaries of creative expression and innovation. A wide range of creations, from illustrations and photorealistic images, to 3D models and videos created with nothing more than AI prompts. Crafted using advanced AI tools like Krea, Adobe Firefly, DALL-E, Midjourney, and more."
+      side="left"
+      meta={
+        <span className="spa-meta">krea · firefly · dall·e · midjourney</span>
+      }
+    >
+      <ParticleMorph
+        count={profile.isLowPower ? LOW_COUNT : HIGH_COUNT}
+        progress={progress}
+        visibility={visibility}
+      />
     </CategorySection>
   );
 }
+
+interface ParticleProps {
+  count: number;
+  progress: () => number;
+  visibility: () => number;
+}
+
+function ParticleMorph({ count, progress, visibility }: ParticleProps) {
+  const pointsRef = useRef<THREE.Points>(null);
+  const matRef = useRef<THREE.ShaderMaterial>(null);
+
+  const { geometry, material } = useMemo(() => {
+    const g = new THREE.BufferGeometry();
+    const pos = buildSphere(count, 1.4);
+    const tar = buildTorus(count);
+    const seed = new Float32Array(count);
+    for (let i = 0; i < count; i++) seed[i] = Math.random();
+    g.setAttribute('position', new THREE.BufferAttribute(pos, 3));
+    g.setAttribute('aTarget', new THREE.BufferAttribute(tar, 3));
+    g.setAttribute('aSeed', new THREE.BufferAttribute(seed, 1));
+    const m = new THREE.ShaderMaterial({
+      transparent: true,
+      depthWrite: false,
+      blending: THREE.AdditiveBlending,
+      uniforms: {
+        uTime: { value: 0 },
+        uMorph: { value: 0 },
+        uScatter: { value: 0 },
+        uPointer: { value: new THREE.Vector2() },
+      },
+      vertexShader: VERT,
+      fragmentShader: FRAG,
+    });
+    return { geometry: g, material: m };
+  }, [count]);
+
+  useFrame((state, dt) => {
+    const v = visibility();
+    if (!pointsRef.current) return;
+    pointsRef.current.visible = v > 0.001;
+    if (v < 0.001) return;
+    matRef.current = material;
+    (material.uniforms.uTime.value as number) += dt;
+    // morph: 0..1 sweep through section
+    const p = progress();
+    // triangular wave for back-and-forth between distributions
+    const m = 0.5 - 0.5 * Math.cos(p * Math.PI * 2);
+    material.uniforms.uMorph.value = m;
+    // scatter follows pointer presence
+    const sc = Math.min(1, Math.hypot(state.pointer.x, state.pointer.y));
+    material.uniforms.uScatter.value = sc * v * 0.6;
+    (material.uniforms.uPointer.value as THREE.Vector2).set(
+      state.pointer.x,
+      state.pointer.y,
+    );
+    pointsRef.current.rotation.y += dt * 0.08;
+  });
+
+  return (
+    <points ref={pointsRef} geometry={geometry} material={material} />
+  );
+}
+
+export default AIArt;

@@ -1,24 +1,14 @@
 /**
- * Visual theme for Studio Panic Attack.
- *
- * Light editorial palette. Cream paper bg, deep ink foreground, warm
- * accent. Designed to feel like an art-school zine reprinted on textured
- * stock — dark elements (numbers, sculpture, particles) read as ink
- * against the page.
+ * Theme tokens. Mirror of CSS custom properties for use inside r3f
+ * (where we can't read CSS vars synchronously).
  */
-
 export const theme = {
-  bg: '#f5efe4',
-  bgDeep: '#ebe3d3',
-  bgPanel: '#ffffff',
-  fg: '#1a1814',
-  fgMuted: '#5a5450',
-  fgDim: '#8e8780',
-  accent: '#c97e3a', // warm rust / burnt orange
-  ink: '#0d0c0a',
+  ink: '#0a0a0a',
+  paper: '#f6f3ee',
+  bone: '#e8e3da',
+  blood: '#d30000',
+  rust: '#8a1a0a',
+  smoke: '#2a2522',
 } as const;
 
-export const fonts = {
-  serif: '"Times New Roman", Georgia, serif',
-  sans: '"Helvetica Neue", Helvetica, Arial, sans-serif',
-} as const;
+export type ThemeKey = keyof typeof theme;

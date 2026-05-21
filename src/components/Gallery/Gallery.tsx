@@ -1,187 +1,167 @@
-import { useMemo, useRef } from 'react';
 import { useFrame, useThree } from '@react-three/fiber';
-import { Html } from '@react-three/drei';
+import { useScroll } from '@react-three/drei';
+import { useMemo, useRef } from 'react';
 import * as THREE from 'three';
-import { useScrollSection } from '../../helpers/useScrollSection';
-import { pickImages, mulberry32 } from '../../helpers/useImageAssets';
-import type { Section } from '../../config/sections';
+
+import { getSectionWorldY, getSectionRange } from '../../config/sections';
+import { useScrollVelocity } from '../../helpers/useScrollVelocity';
 import { GalleryCard } from './GalleryCard';
-
-interface Props {
-  section: Section;
-  reducedEffects: boolean;
-}
-
-const RING_COUNT = 14;
-const RING_RADIUS = 4.2;
-const RING_HEIGHT = 0.6; // helix pitch — tiny vertical wave around the ring
+import { pickByAffinity } from '../../helpers/useImageAssets';
 
 /**
- * Orbital gallery ring.
+ * Spatial 3D gallery — option α from the brief.
  *
- * RING_COUNT cards orbit the camera focal point at radius RING_RADIUS.
- * Each card is rotated to face outward (away from ring center) so it
- * always presents flat to the camera when it sits at the front of the
- * ring. As cards approach the front focal point (angle = π/2, +z toward
- * camera), they scale up and have a slight z-push so they pop forward.
+ *   - Foreground ring of N cards orbiting around the camera (radius RF)
+ *     at eye height, tilted slightly so we see them from a 3/4 angle.
+ *   - Background ring of half as many cards at radius RB, half speed,
+ *     for a parallax-depth feel.
  *
- * The ring auto-rotates slowly. Scroll within the section adds extra
- * angular velocity proportional to scroll velocity. Pointer position
- * tilts the entire ring on its X/Z axes, parallax-style.
+ * Rotation is driven by:
+ *   - a constant idle rotation (so the ring is in motion at first paint)
+ *   - scroll velocity injected so faster scroll spins the ring
  *
- * A second, smaller, slower-rotating ring sits behind the main one for
- * background depth.
+ * Cards passing through the front of the ring get a focal pop in scale
+ * (computed per-frame from each card's projected z).
+ *
+ * Pointer parallax tilts the whole rig.
+ *
+ * The ring `culls` itself when far outside the gallery scroll range,
+ * so the entire group becomes invisible after we leave the section.
  */
-export function Gallery({ section, reducedEffects }: Props) {
-  const ringRef = useRef<THREE.Group>(null);
-  const tiltRef = useRef<THREE.Group>(null);
-  const bgRingRef = useRef<THREE.Group>(null);
-  const angleRef = useRef(0);
-  const lastProgress = useRef(0);
 
-  const progress = useScrollSection(section.offset, section.pages);
-  const { pointer } = useThree();
+const F_COUNT = 16;
+const B_COUNT = 9;
+const F_RADIUS = 4.6;
+const B_RADIUS = 8.5;
 
-  // Stable pick of images — same on every render.
-  const images = useMemo(() => pickImages('gallery', RING_COUNT), []);
-  const bgImages = useMemo(() => pickImages('gallery-bg', 8), []);
+export function Gallery() {
+  const yPos = getSectionWorldY('gallery');
+  const [rangeStart, rangeEnd] = getSectionRange('gallery');
+  const rangeLen = rangeEnd - rangeStart;
 
-  // Per-card random tilt + z offset, seeded for stability.
-  const cardJitter = useMemo(() => {
-    const rnd = mulberry32(0xa11);
-    return new Array(RING_COUNT).fill(0).map(() => ({
-      tiltX: (rnd() - 0.5) * 0.18,
-      tiltY: (rnd() - 0.5) * 0.12,
-      z: (rnd() - 0.5) * 0.4,
-      yOff: (rnd() - 0.5) * 0.6,
-    }));
+  const groupRef = useRef<THREE.Group>(null);
+  const fRingRef = useRef<THREE.Group>(null);
+  const bRingRef = useRef<THREE.Group>(null);
+
+  const scroll = useScroll();
+  const tickVel = useScrollVelocity();
+  const { viewport } = useThree();
+
+  // pick a deterministic stable subset of gallery images for each ring
+  const fgImages = useMemo(() => {
+    const pool = pickByAffinity('gallery');
+    return Array.from({ length: F_COUNT }, (_, i) => pool[i % pool.length]);
+  }, []);
+  const bgImages = useMemo(() => {
+    const pool = pickByAffinity('gallery');
+    return Array.from({ length: B_COUNT }, (_, i) => pool[(i * 3 + 7) % pool.length]);
   }, []);
 
-  // Reusable scratch object so the matrix sets don't allocate per frame.
-  const cardRefs = useRef<(THREE.Group | null)[]>([]);
+  const fgJitter = useMemo(
+    () =>
+      Array.from({ length: F_COUNT }, (_, i) => ({
+        tilt: ((i * 73) % 100) / 100 - 0.5,
+        liftY: (((i * 41) % 100) / 100 - 0.5) * 0.6,
+        wobbleSpeed: 0.4 + ((i * 17) % 100) / 200,
+        wobbleSeed: (i * 7) % 100,
+      })),
+    [],
+  );
 
-  useFrame((_, dt) => {
-    const p = progress.current;
-    const visible = p > -0.3 && p < 1.3;
-    if (ringRef.current) ringRef.current.visible = visible;
-    if (bgRingRef.current) bgRingRef.current.visible = visible;
-    if (!visible) return;
+  // Pointer parallax target (smoothed)
+  const target = useRef({ x: 0, y: 0 });
+  const current = useRef({ x: 0, y: 0 });
 
-    // Angular velocity = base + scroll velocity within section
-    const scrollDelta = p - lastProgress.current;
-    lastProgress.current = p;
-    const scrollOmega = scrollDelta / Math.max(dt, 1e-4); // pages/s within section
-    const baseOmega = 0.18; // rad/s
-    const omega = baseOmega + scrollOmega * 1.6;
-    angleRef.current += omega * dt;
+  useFrame((state, dt) => {
+    const offset = scroll.offset;
+    // visibility curve: wide in/out so cards pop from offscreen with momentum
+    const local = (offset - rangeStart + rangeLen * 0.4) / (rangeLen * 1.8);
+    const localClamped = Math.max(0, Math.min(1, local));
+    // 0..1..0 triangular
+    const visibility = 1 - Math.abs(localClamped * 2 - 1);
 
-    if (ringRef.current) ringRef.current.rotation.y = angleRef.current;
-    if (bgRingRef.current) bgRingRef.current.rotation.y = -angleRef.current * 0.45;
-
-    // Pointer tilt — small parallax response.
-    if (tiltRef.current) {
-      const tx = pointer.x * 0.18;
-      const ty = pointer.y * 0.12;
-      tiltRef.current.rotation.x += (-ty - tiltRef.current.rotation.x) * 0.06;
-      tiltRef.current.rotation.z += (tx - tiltRef.current.rotation.z) * 0.06;
+    if (groupRef.current) {
+      groupRef.current.visible = visibility > 0.001;
+      // raise / lower the whole rig as we enter / exit
+      const enterY = (1 - visibility) * 2.5;
+      groupRef.current.position.y = yPos + enterY * (offset < (rangeStart + rangeEnd) / 2 ? -1 : 1);
     }
 
-    // Per-card focal pop: scale up cards near front (+z) of the ring.
-    for (let i = 0; i < RING_COUNT; i++) {
-      const card = cardRefs.current[i];
-      if (!card) continue;
-      const cardAngle = (i / RING_COUNT) * Math.PI * 2 + angleRef.current;
-      // Front of ring is +z direction → angle = π/2
-      // Distance from front in angle space:
-      let d = cardAngle - Math.PI / 2;
-      d = Math.atan2(Math.sin(d), Math.cos(d)); // wrap to [-π, π]
-      const focal = 1 - Math.min(1, Math.abs(d) / (Math.PI / 3));
-      const scale = 1 + focal * focal * 0.45;
-      card.scale.setScalar(scale);
-      // Push forward when focal
-      const j = cardJitter[i]!;
-      card.position.z = j.z + focal * 0.6;
+    // rotation: idle + scroll-velocity boost
+    const vel = tickVel(dt);
+    const idle = 0.06;
+    const boost = vel * 12;
+    if (fRingRef.current) {
+      fRingRef.current.rotation.y += dt * (idle + boost) + dt * 0.15 * Math.sin(state.clock.elapsedTime * 0.4);
+    }
+    if (bRingRef.current) {
+      bRingRef.current.rotation.y -= dt * (idle * 0.6 + boost * 0.5);
+    }
+
+    // pointer parallax (read mouse from r3f)
+    target.current.x = state.pointer.x * 0.18;
+    target.current.y = state.pointer.y * 0.12;
+    current.current.x += (target.current.x - current.current.x) * 0.06;
+    current.current.y += (target.current.y - current.current.y) * 0.06;
+    if (groupRef.current) {
+      groupRef.current.rotation.x = current.current.y;
+      groupRef.current.rotation.z = current.current.x * -0.35;
     }
   });
 
-  return (
-    <group ref={tiltRef}>
-      {/* Tiny "selected work" eyebrow label */}
-      <Html
-        position={[0, 2.6, 0]}
-        center
-        wrapperClass="overlay"
-        style={{ pointerEvents: 'none' }}
-      >
-        <div className="overlay-eyebrow">Selected Work</div>
-      </Html>
+  // safety: viewport.width when canvas is alpha can be small on first frame
+  const camFwd = Math.max(viewport.width, 1);
 
-      {/* Background ring — smaller, dimmer cards for parallax depth */}
-      <group ref={bgRingRef} position={[0, 0, -2]}>
-        {bgImages.map((url, i) => {
-          const a = (i / bgImages.length) * Math.PI * 2;
-          const r = RING_RADIUS + 1.8;
-          const x = Math.cos(a) * r;
-          const z = Math.sin(a) * r;
-          const lookAtY = Math.atan2(x, z);
+  return (
+    <group ref={groupRef} position={[0, yPos, 0]}>
+      {/* Foreground ring — at camera eye level, tilted up slightly */}
+      <group ref={fRingRef} rotation={[-0.05, 0, 0]}>
+        {fgImages.map((asset, i) => {
+          const angle = (i / F_COUNT) * Math.PI * 2;
+          const j = fgJitter[i];
+          const x = Math.cos(angle) * F_RADIUS;
+          const z = Math.sin(angle) * F_RADIUS;
           return (
-            <group
-              key={`${url}-${i}`}
-              position={[x, Math.sin(a * 1.7) * 0.4, z]}
-              rotation={[0, lookAtY, 0]}
-            >
-              {reducedEffects ? (
-                <mesh>
-                  <planeGeometry args={[0.9, 0.6]} />
-                  <meshBasicMaterial
-                    color="#dccfb6"
-                    transparent
-                    opacity={0.5}
-                    toneMapped={false}
-                  />
-                </mesh>
-              ) : (
-                <BgCard url={url} />
-              )}
-            </group>
+            <GalleryCard
+              key={'f-' + i + '-' + asset.url}
+              url={asset.url}
+              aspect={asset.aspect}
+              position={[x, j.liftY, z]}
+              rotationY={-angle + Math.PI / 2 + j.tilt * 0.18}
+              size={1.7}
+              jitterSeed={j.wobbleSeed}
+              wobbleSpeed={j.wobbleSpeed}
+            />
           );
         })}
       </group>
 
-      {/* Main ring */}
-      <group ref={ringRef}>
-        {images.map((url, i) => {
-          const a = (i / RING_COUNT) * Math.PI * 2;
-          const r = RING_RADIUS;
-          const x = Math.cos(a) * r;
-          const z = Math.sin(a) * r;
-          const j = cardJitter[i]!;
-          const y = Math.sin(a * 2 + 0.6) * RING_HEIGHT + j.yOff;
-          // Face outward — rotation around Y so plane faces away from origin
-          const lookAtY = Math.atan2(x, z);
+      {/* Background ring — wider, slower, smaller cards */}
+      <group ref={bRingRef} rotation={[0.06, 0, 0]} scale={0.78}>
+        {bgImages.map((asset, i) => {
+          const angle = (i / B_COUNT) * Math.PI * 2 + 0.21;
+          const x = Math.cos(angle) * B_RADIUS;
+          const z = Math.sin(angle) * B_RADIUS;
           return (
-            <group
-              key={`${url}-${i}`}
-              position={[x, y, z]}
-              rotation={[j.tiltX, lookAtY + j.tiltY, 0]}
-              ref={(g: THREE.Group | null) => {
-                cardRefs.current[i] = g;
-              }}
-            >
-              <GalleryCard url={url} size={[1.5, 1.0]} />
-            </group>
+            <GalleryCard
+              key={'b-' + i + '-' + asset.url}
+              url={asset.url}
+              aspect={asset.aspect}
+              position={[x, ((i * 13) % 100) / 100 - 0.5, z]}
+              rotationY={-angle + Math.PI / 2}
+              size={1.4}
+              jitterSeed={(i * 11) % 100}
+              wobbleSpeed={0.25}
+              dim={0.55}
+            />
           );
         })}
       </group>
+
+      {/* keep camFwd referenced so layout doesn't pretend it's unused */}
+      <object3D position={[0, 0, -camFwd * 0.001]} />
     </group>
   );
 }
 
-/** Smaller faded card for the background ring — textured but dim. */
-function BgCard({ url }: { url: string }) {
-  return (
-    <group>
-      <GalleryCard url={url} size={[0.95, 0.65]} />
-    </group>
-  );
-}
+export default Gallery;

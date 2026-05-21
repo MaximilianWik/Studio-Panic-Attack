@@ -1,124 +1,106 @@
 /**
- * Static asset manifest. Mirrors the contents of `public/landing/`.
+ * Static asset registry. We *could* glob `public/landing/*` at build time
+ * via `import.meta.glob`, but Vite's default behaviour with `/public/` is
+ * to expose files at root URLs without imports. We list them explicitly
+ * here so we can tag them with section affinities and aspect hints.
  *
- * Filenames are pre-sanitized to ASCII-safe lowercase kebab-case so we
- * never deal with URL-encoding edge cases (spaces, parens, ampersands)
- * which Vite's static middleware handles inconsistently.
+ * Filenames mirror the on-disk names in `public/landing/` (already
+ * sanitized to ASCII-safe lowercase kebab-case during the previous pass).
  */
 
-const RAW_IMAGES = [
-  '000008390027_26a.jpg',
-  '000008390032_31a.jpg',
-  '000008390034_33a-copy-2.jpg',
-  'add-more-chaos.png',
-  'artist-frame-1.png',
-  'artist-frame-2.png',
-  'blob-ogzeet.png',
-  'cemetery-scene1.png',
-  'cemetery-scene16.png',
-  'cemetery-scene20.png',
-  'chrome-type-bw-4.png',
-  'glasserrorscrnshot.png',
-  'holistic-letter-from-the-editor-and-3d-article.png',
-  'img_1027-2.png',
-  'img_1034.png',
-  'img_1041-1.png',
-  'img_2778.png',
-  'img_2832.png',
-  'img_3370.png',
-  'img_3375.png',
-  'img_4145-1.jpg',
-  'img_4253-1.jpg',
-  'img_4256.jpg',
-  'img_4258.jpg',
-  'img_4263.jpg',
-  'img_4269.jpg',
-  'img_4285.jpg',
-  'img_4287-1.jpg',
-  'img_4288.jpg',
-  'img_4294.jpg',
-  'img_4296.jpg',
-  'img_4297.jpg',
-  'img_4298.jpg',
-  'img_4303.jpg',
-  'img_4559-1.jpg',
-  'img_8105.png',
-  'img_9089.png',
-  'img_9247.png',
-  'img_9258.jpeg',
-  'img_9712-min.png',
-  'img_9748a-min.png',
-  'img_9754-min.png',
-  'img_9788-min.png',
-  'img_9790-min.png',
-  'img_9791-min.png',
-  'img_9793-min.png',
-  'img_9794-min.png',
-  'img_9796-min.png',
-  'img_9800-min-1.png',
-  'img_9805-min.jpeg',
-  'img_9826-min.png',
-  'jolly-smile-design.png',
-  'levelsequence-1.0011.png',
-  'panic-attack-type-final-in-a-row.png',
-  'paper.portfolio_journal.9.png',
-  'poster-story.png',
-  'rustycementt.png',
-  'skjermbilde-2024-05-07-011311.png',
-  'underwater13.jpg',
-  'untitled5.png',
-  'urbanwarholtv.png',
-];
+import type { SectionId } from '../config/sections';
 
-const RAW_VIDEOS = [
-  '01-done-downloaded-from-ig.mp4',
-  '68-epic_motion.mp4',
-  'the_lovers_i.mp4',
-];
-
-export const LOGO_URL = '/logo/PanicAttackLogo.png';
-
-export const portfolioImages: readonly string[] = RAW_IMAGES.map(
-  (n) => `/landing/${n}`,
-);
-
-export const portfolioVideos: readonly string[] = RAW_VIDEOS.map(
-  (n) => `/landing/${n}`,
-);
-
-/** Deterministic 32-bit hash from a string — used as a seed source. */
-function hash(s: string): number {
-  let h = 2166136261;
-  for (let i = 0; i < s.length; i++) {
-    h ^= s.charCodeAt(i);
-    h = Math.imul(h, 16777619);
-  }
-  return h >>> 0;
+export interface AssetEntry {
+  /** root-relative URL, e.g. /landing/img_4145-1.jpg */
+  url: string;
+  /** rough section affinity (used for clustering scattered images) */
+  affinity: SectionId | 'gallery';
+  /** w/h hint (used for aspect-fit before loader resolves) */
+  aspect: number;
+  /** kind */
+  kind: 'image' | 'video';
 }
 
-/**
- * Pick `count` images deterministically based on a tag string. Uses a
- * golden-ratio multiplier to distribute picks across the image pool with
- * minimal repetition for small counts.
- */
-export function pickImages(tag: string, count: number): string[] {
-  if (portfolioImages.length === 0) return [];
-  const seed = hash(tag);
-  const out: string[] = [];
-  for (let i = 0; i < count; i++) {
-    out.push(portfolioImages[(seed + i * 2654435761) % portfolioImages.length]!);
-  }
-  return out;
-}
+const L = (f: string) => '/landing/' + f;
 
-/** Mulberry32 PRNG — small, fast, deterministic. */
-export function mulberry32(seed: number): () => number {
-  let t = seed >>> 0;
-  return () => {
-    t = (t + 0x6d2b79f5) >>> 0;
-    let r = t;
-    r = Math.imul(r ^ (r >>> 15), r | 1);
-    r ^= r + Math.imul(r ^ (r >>> 7), r | 61);
-    return ((r ^ (r >>> 14)) >>> 0) / 4294967296;
-  };
+export const assets: AssetEntry[] = [
+  // photography / film stills → photography flavor for graphic + 3D
+  { url: L('000008390027_26a.jpg'), affinity: 'graphic', aspect: 1.5, kind: 'image' },
+  { url: L('000008390032_31a.jpg'), affinity: 'graphic', aspect: 1.5, kind: 'image' },
+  { url: L('000008390034_33a-copy-2.jpg'), affinity: 'graphic', aspect: 1.5, kind: 'image' },
+  { url: L('underwater13.jpg'), affinity: 'graphic', aspect: 1.5, kind: 'image' },
+
+  // 3D scenes
+  { url: L('cemetery-scene1.png'), affinity: 'threeD', aspect: 1.78, kind: 'image' },
+  { url: L('cemetery-scene16.png'), affinity: 'threeD', aspect: 1.78, kind: 'image' },
+  { url: L('cemetery-scene20.png'), affinity: 'threeD', aspect: 1.78, kind: 'image' },
+  { url: L('levelsequence-1.0011.png'), affinity: 'threeD', aspect: 1.78, kind: 'image' },
+  { url: L('rustycementt.png'), affinity: 'threeD', aspect: 1.0, kind: 'image' },
+  { url: L('blob-ogzeet.png'), affinity: 'threeD', aspect: 1.0, kind: 'image' },
+
+  // ai art
+  { url: L('chrome-type-bw-4.png'), affinity: 'ai', aspect: 1.0, kind: 'image' },
+  { url: L('img_2778.png'), affinity: 'ai', aspect: 1.0, kind: 'image' },
+  { url: L('img_2832.png'), affinity: 'ai', aspect: 1.0, kind: 'image' },
+  { url: L('img_3370.png'), affinity: 'ai', aspect: 1.0, kind: 'image' },
+  { url: L('img_3375.png'), affinity: 'ai', aspect: 1.0, kind: 'image' },
+  { url: L('add-more-chaos.png'), affinity: 'ai', aspect: 1.5, kind: 'image' },
+  { url: L('jolly-smile-design.png'), affinity: 'ai', aspect: 1.0, kind: 'image' },
+  { url: L('panic-attack-type-final-in-a-row.png'), affinity: 'ai', aspect: 2.0, kind: 'image' },
+
+  // ux / editorial
+  { url: L('glasserrorscrnshot.png'), affinity: 'ux', aspect: 1.78, kind: 'image' },
+  { url: L('holistic-letter-from-the-editor-and-3d-article.png'), affinity: 'ux', aspect: 1.5, kind: 'image' },
+  { url: L('paper.portfolio_journal.9.png'), affinity: 'ux', aspect: 1.4, kind: 'image' },
+  { url: L('poster-story.png'), affinity: 'ux', aspect: 0.75, kind: 'image' },
+  { url: L('urbanwarholtv.png'), affinity: 'ux', aspect: 1.0, kind: 'image' },
+  { url: L('skjermbilde-2024-05-07-011311.png'), affinity: 'ux', aspect: 1.6, kind: 'image' },
+
+  // gallery hero
+  { url: L('artist-frame-1.png'), affinity: 'gallery', aspect: 0.75, kind: 'image' },
+  { url: L('artist-frame-2.png'), affinity: 'gallery', aspect: 0.75, kind: 'image' },
+  { url: L('img_1027-2.png'), affinity: 'gallery', aspect: 0.75, kind: 'image' },
+  { url: L('img_1034.png'), affinity: 'gallery', aspect: 0.75, kind: 'image' },
+  { url: L('img_1041-1.png'), affinity: 'gallery', aspect: 0.75, kind: 'image' },
+  { url: L('img_4145-1.jpg'), affinity: 'gallery', aspect: 1.5, kind: 'image' },
+  { url: L('img_4253-1.jpg'), affinity: 'gallery', aspect: 1.5, kind: 'image' },
+  { url: L('img_4256.jpg'), affinity: 'gallery', aspect: 1.5, kind: 'image' },
+  { url: L('img_4258.jpg'), affinity: 'gallery', aspect: 1.5, kind: 'image' },
+  { url: L('img_4263.jpg'), affinity: 'gallery', aspect: 1.5, kind: 'image' },
+  { url: L('img_4269.jpg'), affinity: 'gallery', aspect: 1.5, kind: 'image' },
+  { url: L('img_4285.jpg'), affinity: 'gallery', aspect: 1.5, kind: 'image' },
+  { url: L('img_4287-1.jpg'), affinity: 'gallery', aspect: 1.5, kind: 'image' },
+  { url: L('img_4288.jpg'), affinity: 'gallery', aspect: 1.5, kind: 'image' },
+  { url: L('img_4294.jpg'), affinity: 'gallery', aspect: 1.5, kind: 'image' },
+  { url: L('img_4296.jpg'), affinity: 'gallery', aspect: 1.5, kind: 'image' },
+  { url: L('img_4297.jpg'), affinity: 'gallery', aspect: 1.5, kind: 'image' },
+  { url: L('img_4298.jpg'), affinity: 'gallery', aspect: 1.5, kind: 'image' },
+  { url: L('img_4303.jpg'), affinity: 'gallery', aspect: 1.5, kind: 'image' },
+  { url: L('img_4559-1.jpg'), affinity: 'gallery', aspect: 1.5, kind: 'image' },
+  { url: L('img_8105.png'), affinity: 'gallery', aspect: 1.0, kind: 'image' },
+  { url: L('img_9089.png'), affinity: 'gallery', aspect: 1.0, kind: 'image' },
+  { url: L('img_9247.png'), affinity: 'gallery', aspect: 1.0, kind: 'image' },
+  { url: L('img_9258.jpeg'), affinity: 'gallery', aspect: 1.0, kind: 'image' },
+  { url: L('img_9712-min.png'), affinity: 'gallery', aspect: 1.0, kind: 'image' },
+  { url: L('img_9748a-min.png'), affinity: 'gallery', aspect: 1.0, kind: 'image' },
+  { url: L('img_9754-min.png'), affinity: 'gallery', aspect: 1.0, kind: 'image' },
+  { url: L('img_9788-min.png'), affinity: 'gallery', aspect: 1.0, kind: 'image' },
+  { url: L('img_9790-min.png'), affinity: 'gallery', aspect: 1.0, kind: 'image' },
+  { url: L('img_9791-min.png'), affinity: 'gallery', aspect: 1.0, kind: 'image' },
+  { url: L('img_9793-min.png'), affinity: 'gallery', aspect: 1.0, kind: 'image' },
+  { url: L('img_9794-min.png'), affinity: 'gallery', aspect: 1.0, kind: 'image' },
+  { url: L('img_9796-min.png'), affinity: 'gallery', aspect: 1.0, kind: 'image' },
+  { url: L('img_9800-min-1.png'), affinity: 'gallery', aspect: 1.0, kind: 'image' },
+  { url: L('img_9805-min.jpeg'), affinity: 'gallery', aspect: 1.0, kind: 'image' },
+  { url: L('img_9826-min.png'), affinity: 'gallery', aspect: 1.0, kind: 'image' },
+  { url: L('untitled5.png'), affinity: 'gallery', aspect: 1.0, kind: 'image' },
+];
+
+export function pickByAffinity(
+  affinity: AssetEntry['affinity'],
+  fallbackToAll = true,
+): AssetEntry[] {
+  const matched = assets.filter((a) => a.affinity === affinity);
+  if (matched.length || !fallbackToAll) return matched;
+  return assets;
 }

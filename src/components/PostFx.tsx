@@ -1,48 +1,78 @@
 import {
   EffectComposer,
+  Bloom,
   ChromaticAberration,
   Vignette,
   Noise,
 } from '@react-three/postprocessing';
 import { BlendFunction } from 'postprocessing';
+import { useFrame } from '@react-three/fiber';
+import { useMemo } from 'react';
 import * as THREE from 'three';
 
-interface PostFxProps {
-  /** Disable expensive passes on low-power devices. */
-  reduced?: boolean;
-}
+import { useScrollVelocity } from '../helpers/useScrollVelocity';
+import { useDeviceProfile } from '../helpers/useDeviceProfile';
 
 /**
- * Post-processing pipeline. Static effects only.
+ * One global postprocessing pipeline, scroll-velocity modulated.
  *
- * Earlier versions held a ref to the ChromaticAberration effect so we
- * could couple aberration intensity to scroll velocity. That ref made
- * @react-three/postprocessing's children-key memoization choke on
- * `Converting circular structure to JSON` because effect instances
- * carry circular `parent`/`children` references. The dynamic effect was
- * a luxury — kept the API straight and the page rendering instead.
+ *   Bloom (mild, low threshold)              ─ tier ≥ 2
+ *   ChromaticAberration (velocity-driven)    ─ tier ≥ 2
+ *   Vignette (constant subtle)
+ *   Noise (very low filmic grain)
  *
- * On low-power devices we drop CA entirely.
+ * On tier ≤ 1 we strip the bloom + chromatic aberration entirely.
  */
-export function PostFx({ reduced = false }: PostFxProps) {
-  if (reduced) {
+export function PostFx() {
+  const profile = useDeviceProfile();
+  const tickVel = useScrollVelocity();
+  // Stable Vector2 we mutate each frame — react-three/postprocessing
+  // forwards this directly to the effect instance.
+  const caOffset = useMemo(() => new THREE.Vector2(0.0008, 0.0008), []);
+
+  useFrame((_, dt) => {
+    const v = tickVel(dt);
+    const amount = Math.min(0.0008 + v * 0.012, 0.005);
+    caOffset.set(amount, amount);
+  });
+
+  if (profile.isLowPower) {
     return (
-      <EffectComposer multisampling={0}>
-        <Vignette eskil={false} offset={0.3} darkness={0.35} />
-        <Noise opacity={0.05} blendFunction={BlendFunction.MULTIPLY} />
+      <EffectComposer multisampling={0} enabled>
+        <Vignette
+          eskil={false}
+          offset={0.18}
+          darkness={0.55}
+          blendFunction={BlendFunction.NORMAL}
+        />
+        <Noise opacity={0.025} blendFunction={BlendFunction.OVERLAY} />
       </EffectComposer>
     );
   }
 
   return (
-    <EffectComposer multisampling={0}>
+    <EffectComposer multisampling={2} enabled>
+      <Bloom
+        intensity={0.45}
+        luminanceThreshold={0.7}
+        luminanceSmoothing={0.7}
+        mipmapBlur
+      />
       <ChromaticAberration
-        offset={new THREE.Vector2(0.0008, 0.0008)}
+        offset={caOffset}
         radialModulation={false}
         modulationOffset={0}
+        blendFunction={BlendFunction.NORMAL}
       />
-      <Vignette eskil={false} offset={0.35} darkness={0.4} />
-      <Noise opacity={0.045} blendFunction={BlendFunction.MULTIPLY} />
+      <Vignette
+        eskil={false}
+        offset={0.18}
+        darkness={0.65}
+        blendFunction={BlendFunction.NORMAL}
+      />
+      <Noise opacity={0.035} blendFunction={BlendFunction.OVERLAY} />
     </EffectComposer>
   );
 }
+
+export default PostFx;

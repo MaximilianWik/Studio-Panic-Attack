@@ -1,96 +1,167 @@
-import { useRef } from 'react';
+import { Float, PresentationControls } from '@react-three/drei';
 import { useFrame } from '@react-three/fiber';
-import { MeshDistortMaterial, PresentationControls } from '@react-three/drei';
+import { useMemo, useRef } from 'react';
 import * as THREE from 'three';
-import { CategorySection } from './CategorySection';
-import { useScrollSection } from '../../helpers/useScrollSection';
-import type { Section } from '../../config/sections';
 
-interface Props {
-  section: Section;
-  reducedEffects: boolean;
-}
+import { getSectionWorldY } from '../../config/sections';
+import { theme } from '../../config/theme';
+import { useSectionVisibility } from '../../helpers/useScrollSection';
+import { CategorySection } from './CategorySection';
 
 /**
- * 02 — 3D Art.
+ * 02 — 3D Art
  *
- * A high-poly icosahedron displaced by simplex noise (drei
- * MeshDistortMaterial). Iridescent + clearcoat gives the surface a
- * holographic-metal vibe. The auto-rotation is gentle; <PresentationControls>
- * lets the user drag to spin it within bounded angles.
- *
- * Scroll progress within the section shifts the distortion amplitude so
- * the sculpture "evolves" as the viewer passes through.
+ * Hero effect: a procedurally noise-displaced icosahedron with
+ * iridescent clearcoat metal, wrapped in <PresentationControls> so
+ * the user can drag-rotate it within polar/azimuth bounds. Scroll
+ * progress modulates the displacement amplitude — at section center
+ * the surface boils harder.
  */
-export function ThreeDeeArt({ section, reducedEffects }: Props) {
-  const meshRef = useRef<THREE.Mesh>(null);
-  const matRef = useRef<THREE.Material | null>(null);
-  const progress = useScrollSection(section.offset, section.pages);
-  const innerRef = useRef<THREE.Group>(null);
 
-  useFrame((state, dt) => {
-    const t = state.clock.elapsedTime;
-    if (innerRef.current) {
-      // gentle auto-rotation on top of whatever PresentationControls applies
-      innerRef.current.rotation.y += dt * 0.18;
-      innerRef.current.position.y = Math.sin(t * 0.6) * 0.08;
-    }
+const VERT = /* glsl */ `
+  uniform float uTime;
+  uniform float uAmp;
+  uniform float uFreq;
+  varying vec3 vNormal;
+  varying vec3 vPos;
 
-    // Modulate distort over scroll progress
-    if (matRef.current) {
-      const p = Math.max(0, Math.min(1, progress.current));
-      const amp = 0.25 + Math.sin(p * Math.PI) * 0.35;
-      // MeshDistortMaterial exposes `distort` as a settable scalar
-      (matRef.current as unknown as { distort: number }).distort = amp;
-    }
-  });
+  // Inigo Quilez classic-snoise approximation
+  vec4 mod289(vec4 x){return x - floor(x * (1.0/289.0)) * 289.0;}
+  vec4 perm(vec4 x){return mod289(((x * 34.0) + 1.0) * x);}
 
-  const detail = reducedEffects ? 32 : 64;
+  float noise(vec3 p){
+    vec3 a = floor(p);
+    vec3 d = p - a;
+    d = d * d * (3.0 - 2.0 * d);
+    vec4 b = a.xxyy + vec4(0.0, 1.0, 0.0, 1.0);
+    vec4 k1 = perm(b.xyxy);
+    vec4 k2 = perm(k1.xyxy + b.zzww);
+    vec4 c = k2 + a.zzzz;
+    vec4 k3 = perm(c);
+    vec4 k4 = perm(c + 1.0);
+    vec4 o1 = fract(k3 * (1.0 / 41.0));
+    vec4 o2 = fract(k4 * (1.0 / 41.0));
+    vec4 o3 = o2 * d.z + o1 * (1.0 - d.z);
+    vec2 o4 = o3.yw * d.x + o3.xz * (1.0 - d.x);
+    return o4.y * d.y + o4.x * (1.0 - d.y);
+  }
+
+  void main() {
+    vec3 p = position;
+    vec3 n = normal;
+    float a = noise(p * uFreq + uTime * 0.4);
+    float b = noise(p * uFreq * 2.3 - uTime * 0.6);
+    float disp = (a - 0.5) * uAmp + (b - 0.5) * uAmp * 0.4;
+    p += n * disp;
+    vNormal = normalize(normalMatrix * n);
+    vPos = (modelMatrix * vec4(p, 1.0)).xyz;
+    gl_Position = projectionMatrix * modelViewMatrix * vec4(p, 1.0);
+  }
+`;
+
+const FRAG = /* glsl */ `
+  precision mediump float;
+  varying vec3 vNormal;
+  varying vec3 vPos;
+  uniform vec3 uCam;
+  uniform float uTime;
+
+  // iridescent dispersion based on view angle
+  vec3 iridescent(float t) {
+    return 0.5 + 0.5 * cos(6.2831 * (vec3(0.0, 0.33, 0.67) + t));
+  }
+
+  void main() {
+    vec3 N = normalize(vNormal);
+    vec3 V = normalize(uCam - vPos);
+    float NdotV = clamp(dot(N, V), 0.0, 1.0);
+    float fres = pow(1.0 - NdotV, 4.0);
+    vec3 base = mix(vec3(0.06, 0.05, 0.04), vec3(0.97, 0.95, 0.91), NdotV);
+    vec3 ir = iridescent(NdotV * 0.7 + uTime * 0.04);
+    base = mix(base, base * ir, 0.55);
+    // rim
+    base += vec3(0.83, 0.0, 0.0) * fres * 0.45;
+    base += pow(NdotV, 8.0) * 0.4;
+    gl_FragColor = vec4(base, 1.0);
+  }
+`;
+
+export function ThreeDeeArt() {
+  const yPos = getSectionWorldY('threeD');
+  const visibility = useSectionVisibility('threeD');
 
   return (
-    <CategorySection section={section} textSide="left">
-      <PresentationControls
-        global={false}
-        snap
-        rotation={[0, 0, 0]}
-        polar={[-Math.PI / 6, Math.PI / 6]}
-        azimuth={[-Math.PI / 3, Math.PI / 3]}
-      >
-        <group ref={innerRef} position={[1.4, 0, 0.4]}>
-          <mesh ref={meshRef}>
-            <icosahedronGeometry args={[1.0, detail]} />
-            <MeshDistortMaterial
-              ref={(m: THREE.Material | null) => {
-                matRef.current = m;
-              }}
-              color="#1a1620"
-              metalness={1}
-              roughness={0.22}
-              clearcoat={1}
-              clearcoatRoughness={0.15}
-              iridescence={1}
-              iridescenceIOR={1.7}
-              iridescenceThicknessRange={[100, 1000]}
-              envMapIntensity={1.4}
-              speed={0.8}
-              distort={0.4}
-            />
-          </mesh>
-          {/* secondary glow shell */}
-          {!reducedEffects && (
-            <mesh scale={1.18}>
-              <icosahedronGeometry args={[1.0, 16]} />
-              <meshBasicMaterial
-                color="#c97e3a"
-                transparent
-                opacity={0.05}
-                depthWrite={false}
-                side={THREE.BackSide}
-              />
-            </mesh>
-          )}
-        </group>
-      </PresentationControls>
+    <CategorySection
+      yPos={yPos}
+      number="02"
+      eyebrow="CATEGORY"
+      title="3D Art"
+      body="From high-poly nature environments to charming low-poly scenes, each creation reflects my passion for crafting immersive worlds and characters. Whether organic or inorganic, 3D modeling allows me to bring my ideas to life, sharing unique experiences with others. Crafted in Autodesk Maya, Blender, Unreal Engine 5, and more."
+      side="right"
+      meta={
+        <span className="spa-meta">maya · blender · unreal engine 5 · zbrush</span>
+      }
+    >
+      <Sculpture visibility={visibility} />
     </CategorySection>
   );
 }
+
+interface SculptureProps {
+  visibility: () => number;
+}
+
+function Sculpture({ visibility }: SculptureProps) {
+  const meshRef = useRef<THREE.Mesh>(null);
+  const matRef = useRef<THREE.ShaderMaterial>(null);
+
+  const material = useMemo(() => {
+    return new THREE.ShaderMaterial({
+      uniforms: {
+        uTime: { value: 0 },
+        uAmp: { value: 0.18 },
+        uFreq: { value: 1.6 },
+        uCam: { value: new THREE.Vector3() },
+      },
+      vertexShader: VERT,
+      fragmentShader: FRAG,
+    });
+  }, []);
+
+  useFrame((state, dt) => {
+    const v = visibility();
+    if (!meshRef.current) return;
+    meshRef.current.visible = v > 0.001;
+    if (v < 0.001) return;
+    matRef.current = material;
+    (material.uniforms.uTime.value as number) += dt;
+    // amplitude peaks at section center
+    material.uniforms.uAmp.value = 0.06 + v * 0.22;
+    (material.uniforms.uCam.value as THREE.Vector3).copy(state.camera.position);
+    // gentle idle rotation when not being dragged
+    meshRef.current.rotation.y += dt * 0.12;
+  });
+
+  // pad theme reference in case build cache holds a stale graph
+  void theme;
+
+  return (
+    <PresentationControls
+      enabled
+      cursor
+      snap
+      polar={[-0.5, 0.6]}
+      azimuth={[-0.9, 0.9]}
+      damping={0.18}
+      speed={0.9}
+    >
+      <Float speed={1.2} floatIntensity={0.4} rotationIntensity={0.2}>
+        <mesh ref={meshRef} material={material} scale={1.1}>
+          <icosahedronGeometry args={[1, 36]} />
+        </mesh>
+      </Float>
+    </PresentationControls>
+  );
+}
+
+export default ThreeDeeArt;

@@ -1,355 +1,339 @@
+import { useFrame } from '@react-three/fiber';
 import { useMemo, useRef } from 'react';
-import { useFrame, useThree } from '@react-three/fiber';
-import { Line } from '@react-three/drei';
 import * as THREE from 'three';
+
+import { getSectionWorldY } from '../../config/sections';
+import { theme } from '../../config/theme';
+import { useSectionProgress } from '../../helpers/useScrollSection';
 import { CategorySection } from './CategorySection';
-import { useScrollSection } from '../../helpers/useScrollSection';
-import { mulberry32 } from '../../helpers/useImageAssets';
-import type { Section } from '../../config/sections';
-
-interface Props {
-  section: Section;
-  reducedEffects: boolean;
-}
-
-interface UiElement {
-  target: [number, number, number];
-  size: [number, number];
-  shape: 'rect' | 'circle' | 'pill';
-  color: string;
-  /** Where it flies in from (and explodes out toward). */
-  offDir: [number, number, number];
-}
-
-/* -------------------------------------------------------------------------- */
-/* CRT scan-line background plane                                             */
-/* -------------------------------------------------------------------------- */
-
-const SCREEN_VERT = /* glsl */ `
-varying vec2 vUv;
-void main() {
-  vUv = uv;
-  gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
-}
-`;
-
-const SCREEN_FRAG = /* glsl */ `
-precision highp float;
-varying vec2 vUv;
-uniform float uTime;
-uniform float uOpacity;
-
-void main() {
-  // light-paper screen base
-  vec3 base = vec3(0.96, 0.93, 0.86);
-  // soft edge tint toward warmer tone
-  float v = smoothstep(0.05, 0.5, length(vUv - 0.5));
-  base *= 1.0 - v * 0.06;
-  // subtle scan lines (darker grooves)
-  float scan = 1.0 - 0.06 * step(0.5, fract(vUv.y * 400.0));
-  base *= scan;
-  // slow horizontal sweep — warm wash
-  float sweep = smoothstep(0.0, 0.05, 0.05 - abs(fract(vUv.y - uTime * 0.04) - 0.5)) * 0.07;
-  base += vec3(sweep * 0.8, sweep * 0.5, sweep * 0.2);
-  gl_FragColor = vec4(base, uOpacity);
-}
-`;
-
-/* -------------------------------------------------------------------------- */
-/* UI element layout                                                          */
-/* -------------------------------------------------------------------------- */
-
-function generateElements(): UiElement[] {
-  const rnd = mulberry32(0x40ce);
-  const out: UiElement[] = [];
-
-  // Header bar — light gray nav strip
-  out.push({
-    target: [0, 0.6, 0.05],
-    size: [1.6, 0.18],
-    shape: 'rect',
-    color: '#1a1814',
-    offDir: [0, 1.5, 0],
-  });
-
-  // Two cards side-by-side — soft beige
-  out.push({
-    target: [-0.45, 0.15, 0.06],
-    size: [0.65, 0.5],
-    shape: 'rect',
-    color: '#e6dccb',
-    offDir: [-1.5, 0, 0],
-  });
-  out.push({
-    target: [0.45, 0.15, 0.06],
-    size: [0.65, 0.5],
-    shape: 'rect',
-    color: '#e6dccb',
-    offDir: [1.5, 0, 0],
-  });
-
-  // Avatar circle on top-left card — accent
-  out.push({
-    target: [-0.6, 0.27, 0.07],
-    size: [0.16, 0.16],
-    shape: 'circle',
-    color: '#c97e3a',
-    offDir: [-2, 1, 0],
-  });
-
-  // Two buttons (pill) — primary + secondary
-  out.push({
-    target: [-0.4, -0.4, 0.06],
-    size: [0.45, 0.13],
-    shape: 'pill',
-    color: '#1a1814',
-    offDir: [0, -1.5, 0],
-  });
-  out.push({
-    target: [0.18, -0.4, 0.06],
-    size: [0.34, 0.13],
-    shape: 'pill',
-    color: '#a89c88',
-    offDir: [0, -1.8, 0],
-  });
-
-  // Scattered small dots / accents
-  for (let i = 0; i < 4; i++) {
-    out.push({
-      target: [(rnd() - 0.5) * 1.2, (rnd() - 0.5) * 0.9, 0.07],
-      size: [0.06, 0.06],
-      shape: 'circle',
-      color: i % 2 ? '#5a5450' : '#c97e3a',
-      offDir: [(rnd() - 0.5) * 3, (rnd() - 0.5) * 3, 0],
-    });
-  }
-
-  return out;
-}
 
 /**
- * 04 — UX Design.
+ * 04 — UX Design
  *
- * A schematic UI mockup is assembled from off-screen during the section's
- * first half, then exploded apart in the second half to reveal the
- * underlying grid. Hovering near an element subtly attracts it.
+ * Hero effect: 6 schematic UI mockup planes that assemble from offscreen
+ * during the first half of the section's scroll progress, then explode
+ * apart in the second half to reveal a wireframe grid behind.
  *
- * Wrapped in a "screen" — a dark plane with CRT scan-line + sweep
- * shader. The grid lines appear as the explode phase begins.
+ *   - Each plane has a "scene" ShaderMaterial drawing a fake UI layout
+ *     (header bar, sidebar, title block, image grid, body lines).
+ *   - A CRT scan-line + RGB-shift effect plays over the result.
+ *   - The wireframe grid is a separate plane behind the mockups,
+ *     fading in as the explode phase progresses.
+ *   - On pointer-near, mockup pieces magnetically nudge toward the cursor.
  */
-export function UXDesign({ section, reducedEffects }: Props) {
-  const groupRef = useRef<THREE.Group>(null);
-  const screenMatRef = useRef<THREE.ShaderMaterial>(null);
-  const progress = useScrollSection(section.offset, section.pages);
-  const { pointer, camera } = useThree();
 
-  const elements = useMemo(() => generateElements(), []);
-  const elemRefs = useRef<(THREE.Group | null)[]>([]);
+const FRAG_UI = /* glsl */ `
+  precision mediump float;
+  varying vec2 vUv;
+  uniform float uTime;
+  uniform float uHue;
+  uniform float uScan;
+  uniform float uIntensity;
 
-  // Grid lines for the wireframe reveal
-  const gridLines = useMemo(() => {
-    const lines: [THREE.Vector3, THREE.Vector3][] = [];
-    const w = 1.8;
-    const h = 1.2;
-    const cols = 8;
-    const rows = 6;
-    for (let i = 0; i <= cols; i++) {
-      const x = -w / 2 + (i / cols) * w;
-      lines.push([
-        new THREE.Vector3(x, -h / 2, 0.01),
-        new THREE.Vector3(x, h / 2, 0.01),
-      ]);
-    }
-    for (let i = 0; i <= rows; i++) {
-      const y = -h / 2 + (i / rows) * h;
-      lines.push([
-        new THREE.Vector3(-w / 2, y, 0.01),
-        new THREE.Vector3(w / 2, y, 0.01),
-      ]);
-    }
-    return lines;
-  }, []);
-  const gridGroupRef = useRef<THREE.Group>(null);
+  // round-rect distance
+  float rrect(vec2 p, vec2 b, float r) {
+    vec2 q = abs(p) - b + r;
+    return min(max(q.x, q.y), 0.0) + length(max(q, 0.0)) - r;
+  }
 
-  const screenUniforms = useMemo(
-    () => ({
-      uTime: { value: 0 },
-      uOpacity: { value: 1 },
-    }),
-    [],
-  );
+  void main() {
+    vec2 uv = vUv;
+    vec2 p = uv * 2.0 - 1.0;
+    p.x *= 1.5;
 
-  // Scratch — pointer projection
-  const _ray = useRef(new THREE.Raycaster());
-  const _plane = useRef(new THREE.Plane(new THREE.Vector3(0, 0, 1), -0.06));
-  const _hit = useRef(new THREE.Vector3());
+    // body
+    vec3 col = vec3(0.06);
 
-  useFrame((_, dt) => {
-    screenUniforms.uTime.value += dt;
-    const p = Math.max(0, Math.min(1, progress.current));
+    // header bar
+    float head = step(uv.y, 0.92) - step(uv.y, 1.0);
+    col = mix(col, vec3(0.12, 0.05, 0.05), 1.0 - smoothstep(0.86, 0.92, uv.y));
 
-    // Phase split — 0..0.5 assemble, 0.5..1 explode
-    const assembleT = Math.min(1, p / 0.5);
-    const explodeT = Math.max(0, (p - 0.5) / 0.5);
+    // sidebar
+    float sb = 1.0 - smoothstep(0.16, 0.18, uv.x);
+    col = mix(col, vec3(0.04), sb * step(uv.y, 0.86));
 
-    // Project pointer to plane at the UI's z so we can do magnetic pulls
-    _ray.current.setFromCamera(pointer as unknown as THREE.Vector2, camera);
-    const fieldPlaneZ = 1.4 + 0.06; // group origin x depends, but z is shared
-    _plane.current.set(new THREE.Vector3(0, 0, 1), -fieldPlaneZ);
-    let hasHit = false;
-    if (_ray.current.ray.intersectPlane(_plane.current, _hit.current)) {
-      hasHit = true;
-    }
+    // title block
+    float t = 1.0 - smoothstep(0.0, 0.018, abs(rrect(p - vec2(-0.4, 0.4), vec2(0.55, 0.06), 0.02)));
+    col = mix(col, vec3(0.94, 0.0, 0.0), t * 0.9);
 
-    for (let i = 0; i < elements.length; i++) {
-      const ref = elemRefs.current[i];
-      const el = elements[i]!;
-      if (!ref) continue;
+    // sub bar
+    float t2 = 1.0 - smoothstep(0.0, 0.012, abs(rrect(p - vec2(-0.65, 0.25), vec2(0.3, 0.02), 0.01)));
+    col = mix(col, vec3(0.55), t2 * 0.6);
 
-      // assemble: lerp from offDir to target
-      const ax = el.offDir[0] + (el.target[0] - el.offDir[0]) * easeOut(assembleT);
-      const ay = el.offDir[1] + (el.target[1] - el.offDir[1]) * easeOut(assembleT);
-      const az = el.offDir[2] + (el.target[2] - el.offDir[2]) * easeOut(assembleT);
-
-      // explode: push outward along offDir during second half
-      const ex = el.offDir[0] * 0.9 * easeIn(explodeT);
-      const ey = el.offDir[1] * 0.9 * easeIn(explodeT);
-      const ez = el.offDir[2] * 0.9 * easeIn(explodeT);
-
-      let x = ax + ex;
-      let y = ay + ey;
-      let z = az + ez;
-
-      // pointer pull while not exploded
-      if (hasHit && explodeT < 0.4) {
-        const localPx = _hit.current.x - 1.4;
-        const localPy = _hit.current.y;
-        const dx = localPx - el.target[0];
-        const dy = localPy - el.target[1];
-        const dist = Math.sqrt(dx * dx + dy * dy);
-        const range = 0.45;
-        const pull = Math.max(0, 1 - dist / range);
-        x += dx * pull * pull * 0.15 * (1 - explodeT);
-        y += dy * pull * pull * 0.15 * (1 - explodeT);
-      }
-
-      ref.position.set(x, y, z);
-
-      // rotate during explode for chaos
-      ref.rotation.z = explodeT * (i % 2 ? 0.5 : -0.5) * Math.PI * 0.5;
-
-      // fade during explode tail
-      const op = 1 - Math.max(0, (explodeT - 0.7) / 0.3);
-      const child = ref.children[0] as THREE.Mesh | undefined;
-      if (child) {
-        const m = child.material as THREE.MeshBasicMaterial;
-        m.opacity = op;
+    // image grid (3 cols x 2 rows)
+    for (int y = 0; y < 2; y++) {
+      for (int x = 0; x < 3; x++) {
+        vec2 c = vec2(-0.65 + float(x) * 0.45, -0.1 - float(y) * 0.35);
+        float box = 1.0 - smoothstep(0.0, 0.012, rrect(p - c, vec2(0.18, 0.13), 0.03));
+        // alternating fills
+        float fill = mod(float(x + y * 3), 2.0);
+        vec3 fc = mix(vec3(0.16), vec3(0.22, 0.08, 0.06), fill);
+        col = mix(col, fc, box);
       }
     }
 
-    // Grid reveals during explode
-    if (gridGroupRef.current) {
-      const op = Math.min(1, explodeT * 1.5);
-      gridGroupRef.current.visible = op > 0.01;
-      gridGroupRef.current.scale.setScalar(0.95 + op * 0.05);
-      // Lines API: each Line component handles its own material; rely on
-      // child opacity by walking children
-      gridGroupRef.current.traverse((o) => {
-        const m = (o as THREE.Mesh).material as THREE.Material | undefined;
-        if (m && 'opacity' in m) {
-          (m as { opacity: number; transparent: boolean }).opacity = op * 0.6;
-          (m as { transparent: boolean }).transparent = true;
-        }
-      });
-    }
+    // scan line
+    float scan = sin((vUv.y + uTime * 0.3) * 360.0) * 0.5 + 0.5;
+    col -= 0.06 * scan * uScan;
 
-    // Slight overall float on the whole screen
-    if (groupRef.current) {
-      groupRef.current.rotation.y = pointer.x * 0.06;
-      groupRef.current.rotation.x = -pointer.y * 0.04;
-    }
-  });
+    // RGB shift on horizontal sweep
+    float shift = 0.004 * sin(uTime * 0.7);
+    col.r *= 1.0 + shift;
+    col.b *= 1.0 - shift;
+
+    // hue shift
+    col = mix(col, col * vec3(1.0, 0.85, 0.85), uHue * 0.4);
+
+    // border
+    float border = step(0.99, max(abs(p.x) / 1.5, abs(p.y))) * 0.4;
+    col += vec3(0.94, 0.94, 0.9) * border * 0.6;
+
+    col *= uIntensity;
+    gl_FragColor = vec4(col, 1.0);
+  }
+`;
+
+const VERT_UI = /* glsl */ `
+  varying vec2 vUv;
+  void main() {
+    vUv = uv;
+    gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
+  }
+`;
+
+interface MockupSpec {
+  /** assembled local-space pos */
+  homeX: number;
+  homeY: number;
+  homeZ: number;
+  /** offscreen entry origin */
+  entryX: number;
+  entryY: number;
+  /** explode target */
+  explodeX: number;
+  explodeY: number;
+  explodeZ: number;
+  /** rotation when assembled */
+  rotZ: number;
+  /** rotation when exploded */
+  explodeRotX: number;
+  explodeRotY: number;
+  /** size */
+  w: number;
+  h: number;
+  hue: number;
+  scan: number;
+}
+
+const MOCKUPS: MockupSpec[] = [
+  {
+    homeX: -1.2, homeY: 0.6, homeZ: 0,
+    entryX: -10, entryY: 5,
+    explodeX: -3.5, explodeY: 1.5, explodeZ: -2,
+    rotZ: -0.04,
+    explodeRotX: 0.4, explodeRotY: -0.6,
+    w: 2.4, h: 1.6, hue: 0.0, scan: 0.5,
+  },
+  {
+    homeX: 0.7, homeY: 0.45, homeZ: -0.3,
+    entryX: 8, entryY: 6,
+    explodeX: 3.5, explodeY: 1.2, explodeZ: 1,
+    rotZ: 0.02,
+    explodeRotX: -0.3, explodeRotY: 0.5,
+    w: 2.0, h: 1.4, hue: 0.7, scan: 0.8,
+  },
+  {
+    homeX: -1.6, homeY: -0.7, homeZ: 0.2,
+    entryX: -9, entryY: -6,
+    explodeX: -2.5, explodeY: -2.4, explodeZ: 1.2,
+    rotZ: 0.05,
+    explodeRotX: 0.5, explodeRotY: 0.3,
+    w: 2.0, h: 1.2, hue: 0.3, scan: 0.4,
+  },
+  {
+    homeX: 1.3, homeY: -0.8, homeZ: 0.1,
+    entryX: 9, entryY: -7,
+    explodeX: 3.0, explodeY: -2.6, explodeZ: -1.8,
+    rotZ: -0.03,
+    explodeRotX: -0.4, explodeRotY: -0.4,
+    w: 2.2, h: 1.4, hue: 0.5, scan: 0.6,
+  },
+  {
+    homeX: 0.0, homeY: 1.1, homeZ: -0.2,
+    entryX: 0, entryY: 9,
+    explodeX: 0, explodeY: 3.6, explodeZ: -3,
+    rotZ: 0.0,
+    explodeRotX: 0.7, explodeRotY: 0.0,
+    w: 3.0, h: 1.0, hue: 0.2, scan: 0.7,
+  },
+  {
+    homeX: 0.0, homeY: -1.4, homeZ: 0.4,
+    entryX: 0, entryY: -10,
+    explodeX: 0, explodeY: -3.4, explodeZ: 2,
+    rotZ: 0.0,
+    explodeRotX: -0.6, explodeRotY: 0.0,
+    w: 2.6, h: 0.9, hue: 0.4, scan: 0.5,
+  },
+];
+
+export function UXDesign() {
+  const yPos = getSectionWorldY('ux');
+  const progress = useSectionProgress('ux');
 
   return (
-    <CategorySection section={section} textSide="left">
-      <group ref={groupRef} position={[1.4, 0, 0]}>
-        {/* The "screen" — CRT shader plane behind everything */}
-        <mesh position={[0, 0, 0]}>
-          <planeGeometry args={[2.0, 1.4]} />
-          <shaderMaterial
-            ref={screenMatRef}
-            vertexShader={SCREEN_VERT}
-            fragmentShader={SCREEN_FRAG}
-            uniforms={screenUniforms}
-            transparent
-            depthWrite={false}
-          />
-        </mesh>
-
-        {/* Wireframe grid (revealed during explode) */}
-        <group ref={gridGroupRef} visible={false}>
-          {!reducedEffects &&
-            gridLines.map((pts, i) => (
-              <Line
-                key={i}
-                points={pts}
-                color="#1a1814"
-                lineWidth={0.6}
-                transparent
-                opacity={0}
-              />
-            ))}
-        </group>
-
-        {/* UI elements */}
-        {elements.map((el, i) => (
-          <group
-            key={i}
-            ref={(g: THREE.Group | null) => {
-              elemRefs.current[i] = g;
-            }}
-            position={[el.offDir[0], el.offDir[1], el.offDir[2]]}
-          >
-            <UiShape el={el} />
-          </group>
-        ))}
-      </group>
+    <CategorySection
+      yPos={yPos}
+      number="04"
+      eyebrow="CATEGORY"
+      title="UX Design"
+      body="Dynamic website prototypes designed for intuitive user experiences and visually stunning interfaces. From interactive elements to visual coding techniques, I enhance user engagement through subtle animations and bold transitions. Innovative approaches, like integrating 3D models, push the boundaries of traditional web design, creating memorable digital experiences."
+      side="right"
+      meta={
+        <span className="spa-meta">figma · webflow · framer · react · three.js</span>
+      }
+    >
+      <UXMockupRig progress={progress} />
     </CategorySection>
   );
 }
 
-/* -------------------------------------------------------------------------- */
+interface RigProps {
+  progress: () => number;
+}
 
-function UiShape({ el }: { el: UiElement }) {
-  const [w, h] = el.size;
-  if (el.shape === 'circle') {
-    return (
-      <mesh>
-        <circleGeometry args={[Math.min(w, h) / 2, 32]} />
-        <meshBasicMaterial color={el.color} transparent opacity={1} toneMapped={false} />
-      </mesh>
+function UXMockupRig({ progress }: RigProps) {
+  const groupRef = useRef<THREE.Group>(null);
+  const mockupRefs = useRef<(THREE.Mesh | null)[]>([]);
+  const matRefs = useRef<THREE.ShaderMaterial[]>([]);
+  const wireRef = useRef<THREE.Mesh>(null);
+  const wireMatRef = useRef<THREE.ShaderMaterial>(null);
+
+  const materials = useMemo(() => {
+    return MOCKUPS.map((m) =>
+      new THREE.ShaderMaterial({
+        uniforms: {
+          uTime: { value: 0 },
+          uHue: { value: m.hue },
+          uScan: { value: m.scan },
+          uIntensity: { value: 1 },
+        },
+        vertexShader: VERT_UI,
+        fragmentShader: FRAG_UI,
+        transparent: true,
+      }),
     );
-  }
-  if (el.shape === 'pill') {
-    // approximate pill via wide box; for v1, plane is fine
-    return (
-      <mesh>
-        <planeGeometry args={[w, h]} />
-        <meshBasicMaterial color={el.color} transparent opacity={1} toneMapped={false} />
-      </mesh>
-    );
-  }
+  }, []);
+
+  const wireMaterial = useMemo(() => {
+    return new THREE.ShaderMaterial({
+      transparent: true,
+      uniforms: {
+        uOpacity: { value: 0 },
+      },
+      vertexShader: /* glsl */ `
+        varying vec2 vUv;
+        void main() {
+          vUv = uv;
+          gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
+        }
+      `,
+      fragmentShader: /* glsl */ `
+        precision mediump float;
+        varying vec2 vUv;
+        uniform float uOpacity;
+        void main() {
+          vec2 g = fract(vUv * vec2(36.0, 24.0));
+          float lx = step(0.97, g.x);
+          float ly = step(0.97, g.y);
+          float l = max(lx, ly);
+          // accent every 6th line
+          vec2 g6 = fract(vUv * vec2(6.0, 4.0));
+          float lx6 = step(0.97, g6.x);
+          float ly6 = step(0.97, g6.y);
+          float l6 = max(lx6, ly6);
+          vec3 col = mix(vec3(0.18), vec3(0.83, 0.0, 0.0), l6);
+          float falloff = smoothstep(0.6, 0.0, length(vUv - 0.5));
+          gl_FragColor = vec4(col, l * 0.55 * uOpacity * falloff);
+        }
+      `,
+    });
+  }, []);
+
+  useFrame((state, dt) => {
+    matRefs.current = materials;
+    wireMatRef.current = wireMaterial;
+    if (!groupRef.current) return;
+
+    const p = progress();
+    // assemble: 0..0.5
+    // explode:  0.5..1.0
+    const assemble = THREE.MathUtils.smoothstep(p, 0.0, 0.5);
+    const explode = THREE.MathUtils.smoothstep(p, 0.5, 1.0);
+
+    // pointer for magnetic pull on mockups
+    const px = state.pointer.x;
+    const py = state.pointer.y;
+
+    for (let i = 0; i < MOCKUPS.length; i++) {
+      const m = MOCKUPS[i];
+      const meshRef = mockupRefs.current[i];
+      if (!meshRef) continue;
+
+      // entry → home → explode
+      const x1 = THREE.MathUtils.lerp(m.entryX, m.homeX, assemble);
+      const y1 = THREE.MathUtils.lerp(m.entryY, m.homeY, assemble);
+      const z1 = m.homeZ;
+      const x2 = THREE.MathUtils.lerp(x1, m.explodeX, explode);
+      const y2 = THREE.MathUtils.lerp(y1, m.explodeY, explode);
+      const z2 = THREE.MathUtils.lerp(z1, m.explodeZ, explode);
+
+      // magnetic pull when assembled & not yet exploded
+      const magnetWindow = (1 - explode) * assemble;
+      meshRef.position.set(
+        x2 + px * 0.18 * magnetWindow,
+        y2 + py * 0.12 * magnetWindow,
+        z2,
+      );
+
+      const rx = THREE.MathUtils.lerp(0, m.explodeRotX, explode);
+      const ry = THREE.MathUtils.lerp(0, m.explodeRotY, explode);
+      const rz = THREE.MathUtils.lerp(m.rotZ, m.rotZ * 2.0, explode);
+      meshRef.rotation.set(rx, ry, rz);
+
+      const mat = materials[i];
+      (mat.uniforms.uTime.value as number) += dt;
+      // fade as exploded
+      mat.uniforms.uIntensity.value = 1 - explode * 0.55;
+    }
+
+    // wireframe fades in during the explode phase
+    wireMaterial.uniforms.uOpacity.value = explode;
+  });
+
   return (
-    <mesh>
-      <planeGeometry args={[w, h]} />
-      <meshBasicMaterial color={el.color} transparent opacity={1} toneMapped={false} />
-    </mesh>
+    <group ref={groupRef}>
+      {/* wireframe grid behind */}
+      <mesh ref={wireRef} position={[0, 0, -2]} material={wireMaterial}>
+        <planeGeometry args={[10, 7]} />
+      </mesh>
+
+      {MOCKUPS.map((m, i) => (
+        <mesh
+          key={i}
+          ref={(el) => {
+            mockupRefs.current[i] = el;
+          }}
+          position={[m.homeX, m.homeY, m.homeZ]}
+          rotation={[0, 0, m.rotZ]}
+          material={materials[i]}
+        >
+          <planeGeometry args={[m.w, m.h]} />
+        </mesh>
+      ))}
+    </group>
   );
 }
 
-function easeOut(t: number): number {
-  return 1 - Math.pow(1 - t, 3);
-}
-function easeIn(t: number): number {
-  return t * t * t;
-}
+void theme;
+
+export default UXDesign;

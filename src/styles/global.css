@@ -1,7 +1,25 @@
-/* ---------- reset ---------- */
-*,
-*::before,
-*::after {
+/* ============================================================
+   Studio Panic Attack — global styles
+   All CSS lives here. NEVER inside an R3F <Canvas> subtree.
+   ============================================================ */
+
+:root {
+  --ink: #0a0a0a;
+  --paper: #f6f3ee;
+  --bone: #e8e3da;
+  --blood: #d30000;
+  --rust: #8a1a0a;
+  --smoke: #2a2522;
+  --ghost: rgba(255, 255, 255, 0.06);
+
+  --font-display: "Times New Roman", "PP Editorial Old", Georgia, serif;
+  --font-body: "Inter", "Geist", system-ui, -apple-system, "Segoe UI", Roboto,
+    sans-serif;
+  --font-mono: "JetBrains Mono", ui-monospace, "Cascadia Mono", Menlo,
+    Consolas, monospace;
+}
+
+* {
   box-sizing: border-box;
   margin: 0;
   padding: 0;
@@ -12,159 +30,420 @@ body,
 #root {
   width: 100%;
   height: 100%;
-  background: #f5efe4;
-  color: #1a1814;
-  font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
-  font-feature-settings: 'kern', 'liga', 'calt';
+  background: var(--ink);
+  color: var(--paper);
+  font-family: var(--font-body);
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
-  text-rendering: geometricPrecision;
-  margin: 0;
-  padding: 0;
+  overscroll-behavior: none;
 }
 
 html {
-  overflow: hidden;
+  cursor: none;
 }
 
 body {
-  cursor: none;
-  overflow: hidden;
+  overflow: hidden; /* ScrollControls drives scroll */
 }
 
-/* ---------- visible HTML loader so the user always sees something ---------- */
-.app-loading {
-  position: fixed;
-  inset: 0;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  gap: 24px;
-  background: #f5efe4;
-  color: #1a1814;
-  font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
-  z-index: 1;
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+img,
+video {
+  display: block;
+  max-width: 100%;
+}
+
+/* ----- HTML overlays inside <Html> drei portals ----- */
+
+.spa-overlay {
+  font-family: var(--font-body);
+  color: var(--paper);
+  user-select: none;
   pointer-events: none;
-  transition: opacity 600ms ease-out;
 }
 
-.app-loading.hidden {
-  opacity: 0;
+.spa-overlay--interactive {
+  pointer-events: auto;
 }
 
-.app-loading-mark {
-  width: 80px;
-  height: 80px;
-  border: 1px solid #1a1814;
-  border-radius: 50%;
-  position: relative;
-}
-
-.app-loading-mark::before {
-  content: '';
-  position: absolute;
-  inset: 8px;
-  border: 1px solid #1a1814;
-  border-radius: 50%;
-  animation: appLoadPulse 1.6s ease-in-out infinite;
-}
-
-@keyframes appLoadPulse {
-  0%, 100% { transform: scale(1); opacity: 0.4; }
-  50%      { transform: scale(0.6); opacity: 1; }
-}
-
-.app-loading-label {
+.spa-eyebrow {
+  font-family: var(--font-mono);
   font-size: 11px;
   letter-spacing: 0.32em;
   text-transform: uppercase;
-  color: #5a5450;
+  color: var(--blood);
+  margin-bottom: 14px;
+  display: inline-block;
 }
 
-/* ---------- canvas fills viewport ---------- */
-canvas {
-  display: block;
-  outline: none;
-  touch-action: none;
-}
-
-/* ---------- HTML overlays inside drei <Html /> ---------- */
-.overlay {
-  pointer-events: none;
-  user-select: none;
-}
-
-.overlay-title {
-  font-family: 'Times New Roman', 'Georgia', serif;
+.spa-title {
+  font-family: var(--font-display);
   font-weight: 400;
+  font-style: italic;
+  font-size: clamp(56px, 9vw, 168px);
+  line-height: 0.92;
   letter-spacing: -0.02em;
-  line-height: 0.95;
-  color: #1a1814;
+  color: var(--paper);
+  margin: 0 0 28px 0;
 }
 
-.overlay-eyebrow {
-  font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
-  font-weight: 500;
-  font-size: 11px;
-  letter-spacing: 0.22em;
-  text-transform: uppercase;
-  color: #5a5450;
-}
-
-.overlay-body {
-  font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+.spa-body {
+  font-family: var(--font-body);
   font-size: 15px;
   line-height: 1.55;
-  color: #2a2620;
-  max-width: 36ch;
+  letter-spacing: 0.005em;
+  color: rgba(246, 243, 238, 0.78);
+  max-width: 460px;
 }
 
-/* ---------- custom cursor ---------- */
-.cursor {
+.spa-body strong {
+  color: var(--paper);
+  font-weight: 500;
+}
+
+.spa-meta {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  letter-spacing: 0.28em;
+  text-transform: uppercase;
+  color: rgba(246, 243, 238, 0.45);
+}
+
+/* ----- Hero scroll prompt ----- */
+
+.spa-scroll-prompt {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  letter-spacing: 0.5em;
+  text-transform: uppercase;
+  color: rgba(246, 243, 238, 0.55);
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  white-space: nowrap;
+  animation: spa-drift 4.2s ease-in-out infinite;
+}
+
+.spa-scroll-prompt::before,
+.spa-scroll-prompt::after {
+  content: "";
+  display: inline-block;
+  width: 32px;
+  height: 1px;
+  background: rgba(246, 243, 238, 0.35);
+}
+
+@keyframes spa-drift {
+  0%,
+  100% {
+    transform: translateY(0);
+    opacity: 0.55;
+  }
+  50% {
+    transform: translateY(8px);
+    opacity: 0.95;
+  }
+}
+
+/* ----- Hero brand mark ----- */
+
+.spa-brand {
+  font-family: var(--font-display);
+  font-style: italic;
+  letter-spacing: -0.02em;
+  line-height: 0.88;
+  color: var(--paper);
+  text-align: center;
+}
+
+.spa-brand__tag {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  font-style: normal;
+  letter-spacing: 0.4em;
+  text-transform: uppercase;
+  color: var(--blood);
+  display: block;
+  margin-bottom: 10px;
+}
+
+.spa-brand__name {
+  font-size: clamp(72px, 11vw, 220px);
+  display: block;
+}
+
+.spa-brand__sub {
+  font-family: var(--font-mono);
+  font-style: normal;
+  font-size: 11px;
+  letter-spacing: 0.5em;
+  text-transform: uppercase;
+  color: rgba(246, 243, 238, 0.6);
+  display: block;
+  margin-top: 18px;
+}
+
+/* ----- Section number (massive outlined glyph) ----- */
+
+.spa-section-number {
+  font-family: var(--font-display);
+  font-style: italic;
+  font-size: clamp(220px, 32vw, 560px);
+  line-height: 0.8;
+  letter-spacing: -0.04em;
+  color: transparent;
+  -webkit-text-stroke: 1.2px rgba(246, 243, 238, 0.18);
+  user-select: none;
+  pointer-events: none;
+  white-space: nowrap;
+}
+
+.spa-section-number--blood {
+  -webkit-text-stroke: 1.4px var(--blood);
+}
+
+/* ----- Highlights cards ----- */
+
+.spa-highlights {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 18px;
+  width: min(1200px, 92vw);
+}
+
+.spa-card {
+  position: relative;
+  aspect-ratio: 3 / 4;
+  background: var(--smoke);
+  border: 1px solid rgba(246, 243, 238, 0.08);
+  overflow: hidden;
+  cursor: none;
+  transition: transform 0.6s cubic-bezier(0.2, 0.8, 0.2, 1),
+    border-color 0.4s ease;
+  pointer-events: auto;
+}
+
+.spa-card:hover {
+  transform: translateY(-6px);
+  border-color: rgba(211, 0, 0, 0.5);
+}
+
+.spa-card__shader {
+  position: absolute;
+  inset: 0;
+  opacity: 0;
+  mix-blend-mode: screen;
+  transition: opacity 0.45s ease;
+}
+
+.spa-card:hover .spa-card__shader {
+  opacity: 0.75;
+}
+
+.spa-card__media {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  filter: grayscale(0.15) contrast(1.05);
+  transition: transform 0.8s cubic-bezier(0.2, 0.8, 0.2, 1),
+    filter 0.4s ease;
+}
+
+.spa-card:hover .spa-card__media {
+  transform: scale(1.04);
+  filter: grayscale(0) contrast(1.1);
+}
+
+.spa-card__copy {
+  position: absolute;
+  left: 18px;
+  right: 18px;
+  bottom: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  z-index: 2;
+}
+
+.spa-card__num {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  letter-spacing: 0.3em;
+  color: var(--blood);
+}
+
+.spa-card__title {
+  font-family: var(--font-display);
+  font-style: italic;
+  font-size: 22px;
+  letter-spacing: -0.01em;
+}
+
+.spa-card--stagger-0 {
+  animation: spa-float 6s ease-in-out infinite;
+}
+.spa-card--stagger-1 {
+  animation: spa-float 6.4s 0.4s ease-in-out infinite;
+}
+.spa-card--stagger-2 {
+  animation: spa-float 6.8s 0.8s ease-in-out infinite;
+}
+.spa-card--stagger-3 {
+  animation: spa-float 7.2s 1.2s ease-in-out infinite;
+}
+
+@keyframes spa-float {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-10px);
+  }
+}
+
+@media (max-width: 900px) {
+  .spa-highlights {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+/* ----- Highlights footer / contact strip ----- */
+
+.spa-footer {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 32px;
+  width: min(1200px, 92vw);
+}
+
+.spa-footer__title {
+  font-family: var(--font-display);
+  font-style: italic;
+  font-size: clamp(48px, 7vw, 120px);
+  line-height: 0.92;
+  letter-spacing: -0.02em;
+  text-align: center;
+}
+
+.spa-footer__title em {
+  color: var(--blood);
+  font-style: italic;
+}
+
+.spa-footer__row {
+  display: flex;
+  gap: 40px;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: 0.3em;
+  text-transform: uppercase;
+  color: rgba(246, 243, 238, 0.6);
+}
+
+/* ----- Custom cursor ----- */
+
+.spa-cursor {
   position: fixed;
   top: 0;
   left: 0;
   width: 14px;
   height: 14px;
   border-radius: 50%;
-  background: #1a1814;
+  background: var(--blood);
+  transform: translate(-50%, -50%);
+  pointer-events: none;
+  z-index: 10000;
+  mix-blend-mode: difference;
+  transition: width 0.25s ease, height 0.25s ease, background 0.25s ease;
+}
+
+.spa-cursor--ring {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 38px;
+  height: 38px;
+  border: 1px solid rgba(246, 243, 238, 0.6);
+  border-radius: 50%;
+  transform: translate(-50%, -50%);
   pointer-events: none;
   z-index: 9999;
-  transform: translate(-50%, -50%);
-  transition: width 200ms ease, height 200ms ease, background 200ms ease,
-              border-width 200ms ease;
-  will-change: transform;
+  transition: transform 0.18s ease-out, width 0.3s ease, height 0.3s ease;
 }
 
-.cursor.hover {
-  width: 36px;
-  height: 36px;
-  background: transparent;
-  border: 1.5px solid #1a1814;
+/* ----- Error boundary fallback ----- */
+
+.spa-error {
+  position: fixed;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  background: var(--ink);
+  color: var(--paper);
+  text-align: center;
+  padding: 24px;
+  font-family: var(--font-mono);
+  font-size: 12px;
+  letter-spacing: 0.3em;
+  text-transform: uppercase;
+  gap: 16px;
 }
 
-/* ---------- selection ---------- */
-::selection {
-  background: #1a1814;
-  color: #f5efe4;
+.spa-error__title {
+  font-family: var(--font-display);
+  font-style: italic;
+  font-size: 64px;
+  letter-spacing: -0.02em;
+  color: var(--blood);
+  text-transform: none;
+  letter-spacing: -0.02em;
 }
 
-/* ---------- scrollbar (drei ScrollControls renders inside a scroll container) ---------- */
-::-webkit-scrollbar {
-  width: 0;
-  height: 0;
+/* ----- Loader fallback (drei Suspense in Canvas) ----- */
+/* Note: Suspense fallback is null — we never show a loader. */
+
+/* ----- Marquee strip ----- */
+
+.spa-marquee {
+  width: 100%;
+  overflow: hidden;
+  white-space: nowrap;
+  font-family: var(--font-display);
+  font-style: italic;
+  font-size: clamp(40px, 6vw, 96px);
+  letter-spacing: -0.01em;
+  color: rgba(246, 243, 238, 0.85);
 }
 
-@media (prefers-reduced-motion: reduce) {
-  * {
-    animation-duration: 0.01ms !important;
-    transition-duration: 0.01ms !important;
+.spa-marquee__track {
+  display: inline-block;
+  animation: spa-marquee 28s linear infinite;
+}
+
+.spa-marquee__item {
+  display: inline-block;
+  padding: 0 28px;
+}
+
+.spa-marquee__item--blood {
+  color: var(--blood);
+}
+
+@keyframes spa-marquee {
+  from {
+    transform: translateX(0);
   }
-}
-
-/* ---------- shared keyframes ---------- */
-@keyframes paFloat {
-  0%, 100% { transform: translateY(0); }
-  50%      { transform: translateY(-6px); }
+  to {
+    transform: translateX(-50%);
+  }
 }
