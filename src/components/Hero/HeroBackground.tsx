@@ -93,8 +93,8 @@ export function HeroBackground({ section }: Props) {
       uTime: { value: 0 },
       uOpacity: { value: 1 },
       uColorA: { value: new THREE.Color('#f5efe4') },
-      uColorB: { value: new THREE.Color('#ede2cf') },
-      uColorC: { value: new THREE.Color('#dcc8a6') },
+      uColorB: { value: new THREE.Color('#e2d2b3') },
+      uColorC: { value: new THREE.Color('#c9a874') },
     }),
     [],
   );

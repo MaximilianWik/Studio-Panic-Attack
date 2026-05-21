@@ -3,10 +3,8 @@ import {
   ScrollControls,
   AdaptiveDpr,
   AdaptiveEvents,
-  Preload,
-  Environment,
 } from '@react-three/drei';
-import { Suspense, useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Layout, totalPages } from './components/Layout';
 import { PostFx } from './components/PostFx';
 import { Cursor } from './components/Cursor';
@@ -16,13 +14,11 @@ import { theme } from './config/theme';
 /**
  * Application root.
  *
- * Renders an HTML loader that fades out once the Canvas has reported
- * its first frame, then a single full-viewport <Canvas> wrapped in
- * <ScrollControls> with a damped scroll buffer matching the section
- * registry, and overlays a custom DOM cursor.
- *
- * Light editorial palette throughout — cream paper bg, deep ink
- * foreground.
+ * NOTE: drei <Environment> with a CDN preset is intentionally NOT used.
+ * In some corporate networks the preset HDRI fails to load, leaving the
+ * Suspense in a permanent pending state and producing a blank canvas.
+ * Lighting is fully provided by the explicit lights below — iridescent
+ * materials lose a little punch without an envmap, but the page works.
  */
 export default function App() {
   const profile = useDeviceProfile();
@@ -30,8 +26,6 @@ export default function App() {
   const [hasWebGL, setHasWebGL] = useState(true);
 
   useEffect(() => {
-    // Sanity-check WebGL availability so we can show a clear message
-    // rather than a confusing blank canvas if it is disabled.
     try {
       const c = document.createElement('canvas');
       const gl = c.getContext('webgl2') ?? c.getContext('webgl');
@@ -43,7 +37,6 @@ export default function App() {
 
   return (
     <>
-      {/* DOM loader — fades when the first frame ticks */}
       <div className={`app-loading${ready ? ' hidden' : ''}`} aria-hidden={ready}>
         <div className="app-loading-mark" />
         <div className="app-loading-label">Studio Panic Attack</div>
@@ -88,10 +81,13 @@ export default function App() {
         camera={{ position: [0, 0, 8], fov: 35, near: 0.1, far: 100 }}
         eventSource={document.body}
         eventPrefix="client"
+        frameloop="always"
         onCreated={({ gl }) => {
           gl.setClearColor(theme.bg, 1);
-          // Mark ready on the next frame so the fade is smooth.
-          requestAnimationFrame(() => setReady(true));
+          // Wait two frames so the scene actually paints before the loader fades.
+          requestAnimationFrame(() =>
+            requestAnimationFrame(() => setReady(true)),
+          );
         }}
         style={{
           position: 'fixed',
@@ -104,16 +100,11 @@ export default function App() {
         <color attach="background" args={[theme.bg]} />
         <fog attach="fog" args={[theme.bg, 22, 55]} />
 
-        {/* Always-on lighting so the scene is lit even if HDRI fails. */}
-        <ambientLight intensity={0.65} />
-        <directionalLight position={[4, 6, 8]} intensity={1.0} />
-        <directionalLight position={[-6, -3, 2]} intensity={0.4} color="#ffd9b8" />
+        {/* Lighting (always rendered, no async deps). */}
+        <ambientLight intensity={0.7} />
+        <directionalLight position={[4, 6, 8]} intensity={1.1} />
+        <directionalLight position={[-6, -3, 2]} intensity={0.45} color="#ffd9b8" />
         <directionalLight position={[0, -4, 4]} intensity={0.3} color="#a0b4d6" />
-
-        {/* Optional HDRI on its own Suspense — degrades gracefully. */}
-        <Suspense fallback={null}>
-          <Environment preset="apartment" environmentIntensity={0.6} />
-        </Suspense>
 
         <ScrollControls
           pages={totalPages}
@@ -127,7 +118,6 @@ export default function App() {
 
         <AdaptiveDpr pixelated={false} />
         <AdaptiveEvents />
-        <Preload all />
       </Canvas>
 
       <Cursor />
