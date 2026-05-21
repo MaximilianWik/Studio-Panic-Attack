@@ -12,8 +12,8 @@ body,
 #root {
   width: 100%;
   height: 100%;
-  background: #0a0a0a;
-  color: #f0ece6;
+  background: #f5efe4;
+  color: #1a1814;
   font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
   font-feature-settings: 'kern', 'liga', 'calt';
   -webkit-font-smoothing: antialiased;
@@ -24,6 +24,56 @@ body,
 
 body {
   cursor: none;
+}
+
+/* ---------- visible HTML loader so the user always sees something ---------- */
+.app-loading {
+  position: fixed;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 24px;
+  background: #f5efe4;
+  color: #1a1814;
+  font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+  z-index: 1;
+  pointer-events: none;
+  transition: opacity 600ms ease-out;
+}
+
+.app-loading.hidden {
+  opacity: 0;
+}
+
+.app-loading-mark {
+  width: 80px;
+  height: 80px;
+  border: 1px solid #1a1814;
+  border-radius: 50%;
+  position: relative;
+}
+
+.app-loading-mark::before {
+  content: '';
+  position: absolute;
+  inset: 8px;
+  border: 1px solid #1a1814;
+  border-radius: 50%;
+  animation: appLoadPulse 1.6s ease-in-out infinite;
+}
+
+@keyframes appLoadPulse {
+  0%, 100% { transform: scale(1); opacity: 0.4; }
+  50%      { transform: scale(0.6); opacity: 1; }
+}
+
+.app-loading-label {
+  font-size: 11px;
+  letter-spacing: 0.32em;
+  text-transform: uppercase;
+  color: #5a5450;
 }
 
 /* ---------- canvas fills viewport ---------- */
@@ -44,7 +94,7 @@ canvas {
   font-weight: 400;
   letter-spacing: -0.02em;
   line-height: 0.95;
-  color: #f0ece6;
+  color: #1a1814;
 }
 
 .overlay-eyebrow {
@@ -53,14 +103,14 @@ canvas {
   font-size: 11px;
   letter-spacing: 0.22em;
   text-transform: uppercase;
-  color: #888;
+  color: #5a5450;
 }
 
 .overlay-body {
   font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
   font-size: 15px;
   line-height: 1.55;
-  color: #cfcabf;
+  color: #2a2620;
   max-width: 36ch;
 }
 
@@ -69,28 +119,29 @@ canvas {
   position: fixed;
   top: 0;
   left: 0;
-  width: 12px;
-  height: 12px;
+  width: 14px;
+  height: 14px;
   border-radius: 50%;
-  background: #f0ece6;
-  mix-blend-mode: difference;
+  background: #1a1814;
   pointer-events: none;
   z-index: 9999;
   transform: translate(-50%, -50%);
-  transition: width 200ms ease, height 200ms ease, background 200ms ease;
+  transition: width 200ms ease, height 200ms ease, background 200ms ease,
+              border-width 200ms ease;
+  will-change: transform;
 }
 
 .cursor.hover {
   width: 36px;
   height: 36px;
   background: transparent;
-  border: 1px solid #f0ece6;
+  border: 1.5px solid #1a1814;
 }
 
 /* ---------- selection ---------- */
 ::selection {
-  background: #f0ece6;
-  color: #0a0a0a;
+  background: #1a1814;
+  color: #f5efe4;
 }
 
 /* ---------- scrollbar (drei ScrollControls renders inside a scroll container) ---------- */

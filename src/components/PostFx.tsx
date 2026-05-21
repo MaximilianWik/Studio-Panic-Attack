@@ -43,29 +43,31 @@ export function PostFx({ reduced = false }: PostFxProps) {
   if (reduced) {
     return (
       <EffectComposer multisampling={0}>
-        <Vignette eskil={false} offset={0.2} darkness={0.7} />
-        <Noise opacity={0.04} blendFunction={BlendFunction.OVERLAY} />
+        <Vignette eskil={false} offset={0.3} darkness={0.35} />
+        <Noise opacity={0.05} blendFunction={BlendFunction.MULTIPLY} />
       </EffectComposer>
     );
   }
 
   return (
     <EffectComposer multisampling={0}>
+      {/* On a light bg, only super-bright highlights should bloom — keep
+          threshold high and intensity low so the page stays crisp. */}
       <Bloom
-        intensity={0.35}
-        luminanceThreshold={0.85}
-        luminanceSmoothing={0.2}
+        intensity={0.18}
+        luminanceThreshold={0.95}
+        luminanceSmoothing={0.15}
         kernelSize={KernelSize.LARGE}
         mipmapBlur
       />
       <ChromaticAberration
         ref={caRef}
-        offset={[0.0008, 0.0008] as unknown as THREE.Vector2}
+        offset={[0.0006, 0.0006] as unknown as THREE.Vector2}
         radialModulation={false}
         modulationOffset={0}
       />
-      <Vignette eskil={false} offset={0.2} darkness={0.75} />
-      <Noise opacity={0.035} blendFunction={BlendFunction.OVERLAY} />
+      <Vignette eskil={false} offset={0.35} darkness={0.4} />
+      <Noise opacity={0.045} blendFunction={BlendFunction.MULTIPLY} />
     </EffectComposer>
   );
 }

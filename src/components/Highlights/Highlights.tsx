@@ -122,9 +122,9 @@ export function Highlights({ section }: Props) {
               data-cursor="hover"
               className="overlay-eyebrow"
               style={{
-                color: '#cfcabf',
+                color: '#1a1814',
                 textDecoration: 'none',
-                borderBottom: '1px solid #cfcabf',
+                borderBottom: '1px solid #1a1814',
                 paddingBottom: 4,
                 pointerEvents: 'auto',
               }}
@@ -151,8 +151,8 @@ function HighlightCard({ h, delayMs }: { h: Highlight; delayMs: number }) {
         aspectRatio: '4 / 3',
         overflow: 'hidden',
         textDecoration: 'none',
-        color: '#f0ece6',
-        background: '#111',
+        color: '#1a1814',
+        background: '#ebe3d3',
         animation: `paFloat 4.8s ease-in-out ${delayMs}ms infinite`,
         transition: 'transform 0.4s ease-out',
         transform: hover ? 'translateY(-4px)' : 'translateY(0)',
@@ -168,7 +168,7 @@ function HighlightCard({ h, delayMs }: { h: Highlight; delayMs: number }) {
           width: '100%',
           height: '100%',
           objectFit: 'cover',
-          opacity: hover ? 0.0 : 0.92,
+          opacity: hover ? 0.0 : 1,
           transition: 'opacity 0.45s ease-out',
         }}
       />
@@ -184,8 +184,8 @@ function HighlightCard({ h, delayMs }: { h: Highlight; delayMs: number }) {
         }}
       >
         <LiquidMetal
-          colorBack="#0a0a0a"
-          colorTint="#cfcabf"
+          colorBack="#f5efe4"
+          colorTint="#1a1814"
           repetition={3}
           softness={0.35}
           shiftRed={0.35}
@@ -213,7 +213,9 @@ function HighlightCard({ h, delayMs }: { h: Highlight; delayMs: number }) {
           justifyContent: 'space-between',
           alignItems: 'flex-end',
           fontFamily: '"Helvetica Neue", Helvetica, Arial, sans-serif',
-          textShadow: '0 2px 12px rgba(0,0,0,0.6)',
+          color: hover ? '#1a1814' : '#f5efe4',
+          textShadow: hover ? 'none' : '0 2px 12px rgba(0,0,0,0.45)',
+          transition: 'color 0.45s ease-out',
         }}
       >
         <span style={{ fontSize: 18, fontWeight: 500 }}>{h.title}</span>
@@ -222,7 +224,7 @@ function HighlightCard({ h, delayMs }: { h: Highlight; delayMs: number }) {
             fontSize: 10,
             letterSpacing: '0.2em',
             textTransform: 'uppercase',
-            color: '#cfcabf',
+            opacity: 0.8,
           }}
         >
           {h.category}

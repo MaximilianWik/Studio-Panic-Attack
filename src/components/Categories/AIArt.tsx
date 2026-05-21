@@ -151,8 +151,8 @@ export function AIArt({ section, reducedEffects }: Props) {
       uPointerStrength: { value: 0 },
       uSize: { value: 2.4 },
       uOpacity: { value: 0.85 },
-      uColorA: { value: new THREE.Color('#cab8a4') },
-      uColorB: { value: new THREE.Color('#48345e') },
+      uColorA: { value: new THREE.Color('#1a1814') },
+      uColorB: { value: new THREE.Color('#c97e3a') },
     }),
     [],
   );
@@ -193,7 +193,7 @@ export function AIArt({ section, reducedEffects }: Props) {
             uniforms={uniforms}
             transparent
             depthWrite={false}
-            blending={THREE.AdditiveBlending}
+            blending={THREE.NormalBlending}
           />
         </points>
       </group>

@@ -76,21 +76,21 @@ export function CategorySection({ section, children, textSide = 'right', number 
             anchorX="center"
             anchorY="middle"
             letterSpacing={-0.04}
-            outlineWidth={0.012}
-            outlineColor="#f0ece6"
+            outlineWidth={0.008}
+            outlineColor="#1a1814"
             outlineOpacity={0.9}
-            fillOpacity={0.9}
+            fillOpacity={0.95}
           >
             {num}
             <meshPhysicalMaterial
               attach="material"
-              color="#1a1a1f"
-              metalness={1}
-              roughness={0.18}
-              iridescence={1}
-              iridescenceIOR={1.6}
-              clearcoat={1}
-              clearcoatRoughness={0.15}
+              color="#1a1814"
+              metalness={0.85}
+              roughness={0.22}
+              iridescence={0.8}
+              iridescenceIOR={1.5}
+              clearcoat={0.6}
+              clearcoatRoughness={0.2}
               envMapIntensity={1.0}
               transparent
             />

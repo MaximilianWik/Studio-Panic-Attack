@@ -60,7 +60,7 @@ export function GraphicDesign({ section, reducedEffects }: Props) {
           textAlign="left"
           anchorX="center"
           anchorY="middle"
-          color="#f0ece6"
+          color="#1a1814"
           outlineWidth={0.0}
         >
           {HEADLINE}

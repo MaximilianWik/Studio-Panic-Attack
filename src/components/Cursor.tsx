@@ -3,11 +3,12 @@ import { useEffect, useRef } from 'react';
 /**
  * Custom DOM cursor — not part of the R3F tree.
  *
- * Why DOM and not a 3D crosshair: the 3D scene renders inside drei's
- * <ScrollControls> which positions <Canvas> in a transformed scroll
- * container. Pointer events still come from the native DOM, so a fixed
- * DOM dot tracking pointer-move is the cheapest way to get a smooth
- * cursor that responds to interactive elements anywhere on the page.
+ * The body has `cursor: none`; this div replaces the OS pointer with a
+ * dot that scales up to a ring when hovering interactive elements.
+ *
+ * Why DOM rather than a 3D crosshair: pointer events come from the native
+ * DOM regardless of where they bubble through r3f, and a fixed-position
+ * div with a single transform per frame is the cheapest possible cursor.
  */
 export function Cursor() {
   const ref = useRef<HTMLDivElement | null>(null);
@@ -21,6 +22,9 @@ export function Cursor() {
     let ty = window.innerHeight / 2;
     let cx = tx;
     let cy = ty;
+
+    // Seed an initial position immediately so the cursor never sits at (0,0).
+    el.style.transform = `translate(${cx}px, ${cy}px) translate(-50%, -50%)`;
 
     const onMove = (e: PointerEvent) => {
       tx = e.clientX;

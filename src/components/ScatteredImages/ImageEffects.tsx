@@ -75,8 +75,8 @@ export function ImageEffect({ url, kind, maxSize = 1.4, opacityRef }: Props) {
       case 'liquid':
         return {
           ...base,
-          uTintA: { value: new THREE.Color('#9aa3b2') },
-          uTintB: { value: new THREE.Color('#3a2a3e') },
+          uTintA: { value: new THREE.Color('#c97e3a') },
+          uTintB: { value: new THREE.Color('#e8d8c0') },
         };
       case 'paper':
       case 'plain':

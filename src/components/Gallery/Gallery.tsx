@@ -134,9 +134,9 @@ export function Gallery({ section, reducedEffects }: Props) {
                 <mesh>
                   <planeGeometry args={[0.9, 0.6]} />
                   <meshBasicMaterial
-                    color="#1a1a1a"
+                    color="#dccfb6"
                     transparent
-                    opacity={0.4}
+                    opacity={0.5}
                     toneMapped={false}
                   />
                 </mesh>

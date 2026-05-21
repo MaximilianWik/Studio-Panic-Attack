@@ -101,7 +101,7 @@ export function Hero({ section }: Props) {
             letterSpacing={0.4}
             anchorX="center"
             anchorY="middle"
-            color="#cfcabf"
+            color="#1a1814"
           >
             S C R O L L
             <meshBasicMaterial
@@ -109,7 +109,7 @@ export function Hero({ section }: Props) {
               ref={(m: THREE.MeshBasicMaterial | null) => {
                 if (m) promptMatRef.current[0] = m;
               }}
-              color="#cfcabf"
+              color="#1a1814"
               transparent
               opacity={0}
               toneMapped={false}
@@ -122,7 +122,7 @@ export function Hero({ section }: Props) {
               ref={(m: THREE.MeshBasicMaterial | null) => {
                 if (m) promptMatRef.current[1] = m;
               }}
-              color="#cfcabf"
+              color="#1a1814"
               transparent
               opacity={0}
               toneMapped={false}

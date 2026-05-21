@@ -40,17 +40,17 @@ uniform float uTime;
 uniform float uOpacity;
 
 void main() {
-  // dark screen base
-  vec3 base = vec3(0.04, 0.04, 0.06);
-  // soft edge vignette
+  // light-paper screen base
+  vec3 base = vec3(0.96, 0.93, 0.86);
+  // soft edge tint toward warmer tone
   float v = smoothstep(0.05, 0.5, length(vUv - 0.5));
-  base *= 1.0 - v * 0.6;
-  // scan lines
-  float scan = 0.92 + 0.08 * sin(vUv.y * 800.0);
+  base *= 1.0 - v * 0.06;
+  // subtle scan lines (darker grooves)
+  float scan = 1.0 - 0.06 * step(0.5, fract(vUv.y * 400.0));
   base *= scan;
-  // slow horizontal sweep
-  float sweep = smoothstep(0.0, 0.05, 0.05 - abs(fract(vUv.y - uTime * 0.04) - 0.5)) * 0.06;
-  base += vec3(sweep);
+  // slow horizontal sweep — warm wash
+  float sweep = smoothstep(0.0, 0.05, 0.05 - abs(fract(vUv.y - uTime * 0.04) - 0.5)) * 0.07;
+  base += vec3(sweep * 0.8, sweep * 0.5, sweep * 0.2);
   gl_FragColor = vec4(base, uOpacity);
 }
 `;
@@ -63,53 +63,53 @@ function generateElements(): UiElement[] {
   const rnd = mulberry32(0x40ce);
   const out: UiElement[] = [];
 
-  // Header bar
+  // Header bar — light gray nav strip
   out.push({
     target: [0, 0.6, 0.05],
     size: [1.6, 0.18],
     shape: 'rect',
-    color: '#2c2a32',
+    color: '#1a1814',
     offDir: [0, 1.5, 0],
   });
 
-  // Two cards side-by-side
+  // Two cards side-by-side — soft beige
   out.push({
     target: [-0.45, 0.15, 0.06],
     size: [0.65, 0.5],
     shape: 'rect',
-    color: '#3a3548',
+    color: '#e6dccb',
     offDir: [-1.5, 0, 0],
   });
   out.push({
     target: [0.45, 0.15, 0.06],
     size: [0.65, 0.5],
     shape: 'rect',
-    color: '#3a3548',
+    color: '#e6dccb',
     offDir: [1.5, 0, 0],
   });
 
-  // Avatar circle on top-left card
+  // Avatar circle on top-left card — accent
   out.push({
     target: [-0.6, 0.27, 0.07],
     size: [0.16, 0.16],
     shape: 'circle',
-    color: '#cfcabf',
+    color: '#c97e3a',
     offDir: [-2, 1, 0],
   });
 
-  // Two buttons (pill)
+  // Two buttons (pill) — primary + secondary
   out.push({
     target: [-0.4, -0.4, 0.06],
     size: [0.45, 0.13],
     shape: 'pill',
-    color: '#cfcabf',
+    color: '#1a1814',
     offDir: [0, -1.5, 0],
   });
   out.push({
     target: [0.18, -0.4, 0.06],
     size: [0.34, 0.13],
     shape: 'pill',
-    color: '#7a7466',
+    color: '#a89c88',
     offDir: [0, -1.8, 0],
   });
 
@@ -119,7 +119,7 @@ function generateElements(): UiElement[] {
       target: [(rnd() - 0.5) * 1.2, (rnd() - 0.5) * 0.9, 0.07],
       size: [0.06, 0.06],
       shape: 'circle',
-      color: i % 2 ? '#a8a195' : '#48345e',
+      color: i % 2 ? '#5a5450' : '#c97e3a',
       offDir: [(rnd() - 0.5) * 3, (rnd() - 0.5) * 3, 0],
     });
   }
@@ -293,7 +293,7 @@ export function UXDesign({ section, reducedEffects }: Props) {
               <Line
                 key={i}
                 points={pts}
-                color="#cfcabf"
+                color="#1a1814"
                 lineWidth={0.6}
                 transparent
                 opacity={0}

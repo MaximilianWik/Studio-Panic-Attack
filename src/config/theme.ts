@@ -1,16 +1,21 @@
 /**
  * Visual theme for Studio Panic Attack.
- * Editorial dark palette with cream foreground.
+ *
+ * Light editorial palette. Cream paper bg, deep ink foreground, warm
+ * accent. Designed to feel like an art-school zine reprinted on textured
+ * stock — dark elements (numbers, sculpture, particles) read as ink
+ * against the page.
  */
 
 export const theme = {
-  bg: '#0a0a0a',
-  bgDeep: '#050505',
-  fg: '#f0ece6',
-  fgMuted: '#cfcabf',
-  fgDim: '#888888',
-  accent: '#d8c8a8', // warm pale gold — used sparingly
-  glass: '#ffffff',
+  bg: '#f5efe4',
+  bgDeep: '#ebe3d3',
+  bgPanel: '#ffffff',
+  fg: '#1a1814',
+  fgMuted: '#5a5450',
+  fgDim: '#8e8780',
+  accent: '#c97e3a', // warm rust / burnt orange
+  ink: '#0d0c0a',
 } as const;
 
 export const fonts = {

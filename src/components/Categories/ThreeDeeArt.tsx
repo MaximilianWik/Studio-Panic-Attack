@@ -65,13 +65,13 @@ export function ThreeDeeArt({ section, reducedEffects }: Props) {
               }}
               color="#1a1620"
               metalness={1}
-              roughness={0.18}
+              roughness={0.22}
               clearcoat={1}
-              clearcoatRoughness={0.12}
+              clearcoatRoughness={0.15}
               iridescence={1}
               iridescenceIOR={1.7}
               iridescenceThicknessRange={[100, 1000]}
-              envMapIntensity={1.2}
+              envMapIntensity={1.4}
               speed={0.8}
               distort={0.4}
             />
@@ -81,9 +81,9 @@ export function ThreeDeeArt({ section, reducedEffects }: Props) {
             <mesh scale={1.18}>
               <icosahedronGeometry args={[1.0, 16]} />
               <meshBasicMaterial
-                color="#3a2a3e"
+                color="#c97e3a"
                 transparent
-                opacity={0.06}
+                opacity={0.05}
                 depthWrite={false}
                 side={THREE.BackSide}
               />

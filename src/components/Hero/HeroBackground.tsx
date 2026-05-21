@@ -69,12 +69,12 @@ void main() {
   float w3 = smoothstep(-0.6, 0.6, n3) * 0.5;
 
   vec3 col = mix(uColorA, uColorB, w1);
-  col = mix(col, uColorC, w2 * 0.55);
-  col += vec3(w3 * 0.04);
+  col = mix(col, uColorC, w2 * 0.4);
+  col -= vec3(w3 * 0.03);
 
-  // soft radial darkening toward edges
+  // very soft radial vignette toward edges — pull toward warmer tone
   float r = length(vUv - 0.5);
-  col *= smoothstep(0.95, 0.15, r);
+  col = mix(col * 0.92, col, smoothstep(0.95, 0.15, r));
 
   gl_FragColor = vec4(col, uOpacity);
 }
@@ -92,9 +92,9 @@ export function HeroBackground({ section }: Props) {
     () => ({
       uTime: { value: 0 },
       uOpacity: { value: 1 },
-      uColorA: { value: new THREE.Color('#0a0a10') },
-      uColorB: { value: new THREE.Color('#1a1014') },
-      uColorC: { value: new THREE.Color('#221820') },
+      uColorA: { value: new THREE.Color('#f5efe4') },
+      uColorB: { value: new THREE.Color('#ede2cf') },
+      uColorC: { value: new THREE.Color('#dcc8a6') },
     }),
     [],
   );
