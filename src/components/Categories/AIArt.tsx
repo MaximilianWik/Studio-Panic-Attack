@@ -117,8 +117,7 @@ function ParticleSwarm({ count, visibility }: SwarmProps) {
   useFrame((state, dt) => {
     const v = visibility();
     if (!pointsRef.current) return;
-    pointsRef.current.visible = v > 0.001;
-    if (v < 0.001) return;
+    if (v < 0.001) return; // parent group handles visibility
 
     const dtClamped = Math.min(dt, 0.05); // cap dt to avoid jumps
 

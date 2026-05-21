@@ -1,5 +1,7 @@
 import { Html } from '@react-three/drei';
-import type { ReactNode } from 'react';
+import { useFrame, useThree } from '@react-three/fiber';
+import { useRef, type ReactNode } from 'react';
+import * as THREE from 'three';
 import type { SectionId } from '../../config/sections';
 import { getSectionWorldY } from '../../config/sections';
 
@@ -13,20 +15,38 @@ interface Props {
 }
 
 /**
- * CategorySection — dead simple. Always renders. Html projection
- * handles off-screen positioning naturally based on world Y.
+ * CategorySection — text on one side, 3D sculpture BEHIND the text in
+ * the background. Sculpture only updates / renders when the section is
+ * close to the camera in world Y (within 6 units).
  */
 export function CategorySection({
   id, number, title, body, children, side = 'left',
 }: Props) {
   const yPos = getSectionWorldY(id);
-  const heroX = side === 'left' ? 2.4 : -2.4;
-  const htmlX = side === 'left' ? -1.6 : 1.6;
+  // Both text and sculpture share the same horizontal anchor; sculpture
+  // sits behind the text in z so it acts as a backdrop.
+  const anchorX = side === 'left' ? -1.6 : 1.6;
+  const sculptureGroupRef = useRef<THREE.Group>(null);
+  const { camera } = useThree();
+  const _w = useRef(new THREE.Vector3()).current;
+
+  useFrame(() => {
+    if (!sculptureGroupRef.current) return;
+    sculptureGroupRef.current.getWorldPosition(_w);
+    const dy = Math.abs(_w.y - camera.position.y);
+    // Render whenever section is near camera (within ~6 units = ~viewport-height)
+    sculptureGroupRef.current.visible = dy < 6;
+  });
 
   return (
     <group position={[0, yPos, 0]}>
+      {/* Sculpture sits behind the text — same X, z = -2 */}
+      <group ref={sculptureGroupRef} position={[anchorX, 0, -2]}>
+        {children}
+      </group>
+
       <Html
-        position={[htmlX, 0, 0]}
+        position={[anchorX, 0, 0]}
         style={{
           width: 'min(760px, 56vw)',
           pointerEvents: 'none',
@@ -42,10 +62,6 @@ export function CategorySection({
           </div>
         </div>
       </Html>
-
-      <group position={[heroX, 0, 0]}>
-        {children}
-      </group>
     </group>
   );
 }

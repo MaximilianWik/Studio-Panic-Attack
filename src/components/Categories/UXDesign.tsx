@@ -102,8 +102,7 @@ function GeometricTower({ visibility }: TowerProps) {
   useFrame((_, dt) => {
     const v = visibility();
     if (!groupRef.current) return;
-    groupRef.current.visible = v > 0.001;
-    if (v < 0.001) return;
+    if (v < 0.001) return; // parent group handles visibility
 
     const scatterTarget = hovered ? 1 : 0;
 

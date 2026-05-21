@@ -131,8 +131,7 @@ function Sculpture({ visibility }: SculptureProps) {
   useFrame((state, dt) => {
     const v = visibility();
     if (!meshRef.current) return;
-    meshRef.current.visible = v > 0.001;
-    if (v < 0.001) return;
+    if (v < 0.001) return; // parent group handles visibility
 
     (material.uniforms.uTime.value as number) += dt;
     material.uniforms.uAmp.value = 0.06 + v * 0.22;

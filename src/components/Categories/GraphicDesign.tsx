@@ -149,8 +149,7 @@ function RipplingCanvas({ visibility }: RippleProps) {
   useFrame((state, dt) => {
     const v = visibility();
     if (!meshRef.current) return;
-    meshRef.current.visible = v > 0.01;
-    if (v < 0.01) return;
+    if (v < 0.01) return; // skip sim work; parent group handles visibility
 
     (material.uniforms.uTime.value as number) += dt;
     // Cursor in -1..1 range maps directly to plane UV via the shader
