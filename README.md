@@ -13,6 +13,10 @@
 - GSAP for scroll-synced timelines
 - Three.js
 
+
+<img width="640" height="634" alt="bingus-ugly" src="https://github.com/user-attachments/assets/0e1dc33f-d1fc-442f-a525-afab8f91957a" />
+
+
 ## Local development
 
 ```sh
