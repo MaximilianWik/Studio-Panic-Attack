@@ -92,12 +92,9 @@ export function ThreeDeeArt() {
     <CategorySection
       id="threeD"
       number="02"
-      eyebrow="3D Art"
-      title="Worlds, organic and otherwise."
-      body="High-poly nature environments to charming low-poly scenes. Each creation reflects a passion for crafting immersive worlds and characters. Organic or inorganic, 3D modeling brings ideas to life. Crafted in Maya, Blender, Unreal Engine 5, and more."
+      title="3D Art"
+      body="From high-poly nature environments to charming low-poly scenes, each creation reflects my passion for crafting immersive worlds and characters. Whether organic or inorganic, 3D modeling allows me to bring my ideas to life, sharing unique experiences with others. Crafted in Autodesk Maya, Blender, Unreal Engine 5, and more."
       side="right"
-      entrance="slide-right"
-      chips={['Maya', 'Blender', 'Unreal 5', 'ZBrush']}
     >
       <Sculpture visibility={visibility} />
     </CategorySection>

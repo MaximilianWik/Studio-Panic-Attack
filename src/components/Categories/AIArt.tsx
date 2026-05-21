@@ -129,12 +129,9 @@ export function AIArt() {
     <CategorySection
       id="ai"
       number="03"
-      eyebrow="AI Art"
-      title="Prompts that push back."
-      body="Experimental AI art pushing the boundaries of creative expression and innovation. Illustrations, photorealistic images, 3D models, and videos created with AI prompts. Crafted using advanced tools like Krea, Adobe Firefly, DALL-E, Midjourney, and more."
+      title="AI Art"
+      body="Experimental AI art pushing the boundaries of creative expression and innovation. A wide range of creations, from illustrations and photorealistic images, to 3D models and videos created with nothing more than AI prompts. Crafted using advanced AI tools like Krea, Adobe Firefly, DALL-E, Midjourney, and more."
       side="left"
-      entrance="slide-up"
-      chips={['Krea', 'Firefly', 'DALL·E', 'Midjourney']}
     >
       <ParticleMorph
         count={profile.isLowPower ? LOW_COUNT : HIGH_COUNT}

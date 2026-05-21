@@ -1,3 +1,8 @@
+/**
+ * Section registry — COMPACT v3.
+ * Reduced total scroll from 7.1 → 5.3 pages.
+ */
+
 export type SectionId =
   | 'hero'
   | 'gallery'
@@ -15,14 +20,14 @@ export interface SectionDef {
 }
 
 export const sections: SectionDef[] = [
-  { id: 'hero', length: 0.85, label: 'Home' },
-  { id: 'gallery', length: 1.0, label: 'Projects' },
-  { id: 'graphic', length: 0.85, label: 'Graphic' },
-  { id: 'threeD', length: 0.85, label: '3D' },
-  { id: 'ai', length: 0.85, label: 'AI' },
-  { id: 'ux', length: 0.85, label: 'UX' },
-  { id: 'vocabulary', length: 0.85, label: 'Vocabulary' },
-  { id: 'highlights', length: 1.0, label: 'Highlights' },
+  { id: 'hero', length: 0.6, label: 'Home' },
+  { id: 'gallery', length: 0.8, label: 'Projects' },
+  { id: 'graphic', length: 0.65, label: 'Graphic' },
+  { id: 'threeD', length: 0.65, label: '3D' },
+  { id: 'ai', length: 0.65, label: 'AI' },
+  { id: 'ux', length: 0.65, label: 'UX' },
+  { id: 'vocabulary', length: 0.6, label: 'Vocabulary' },
+  { id: 'highlights', length: 0.7, label: 'Highlights' },
 ];
 
 export const TOTAL_PAGES = sections.reduce((sum, s) => sum + s.length, 0);

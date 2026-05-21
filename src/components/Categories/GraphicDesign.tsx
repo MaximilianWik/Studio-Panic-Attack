@@ -27,12 +27,9 @@ export function GraphicDesign() {
     <CategorySection
       id="graphic"
       number="01"
-      eyebrow="Graphic Design"
-      title="Design beyond the traditional format."
-      body="A diverse collection blending fine art, sketching, AI, and 3D modeling into innovative and dynamic creations. Crafted with powerful tools like Adobe Creative Software, Procreate, Nomad, Midjourney, and more."
+      title="Graphic Design"
+      body="A diverse collection showcasing a unique blend of renowned and niche styles. Each piece reflects experimentation and versatility, integrating fine art, sketching, AI, and even 3D modeling to create innovative and dynamic creations. Crafted with powerful tools like Adobe Creative Software, Procreate, Nomad, Midjourney, and more."
       side="left"
-      entrance="slide-left"
-      chips={['Adobe', 'Procreate', 'Nomad', 'Midjourney']}
     >
       <group ref={groupRef}>
         {/* The headline text floats behind, slowly drifting */}

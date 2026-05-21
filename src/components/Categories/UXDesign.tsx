@@ -174,12 +174,9 @@ export function UXDesign() {
     <CategorySection
       id="ux"
       number="04"
-      eyebrow="UX Design"
-      title="Interfaces with a pulse."
-      body="Dynamic website prototypes designed for intuitive user experiences and visually stunning interfaces. From interactive elements to visual coding techniques, enhancing engagement through subtle animations. Innovative approaches, like integrating 3D models, push the boundaries of traditional web design."
+      title="UX Design"
+      body="Dynamic website prototypes designed for intuitive user experiences and visually stunning interfaces. From interactive elements to visual coding techniques, I enhance user engagement through subtle animations and bold transitions. Innovative approaches, like integrating 3D models, push the boundaries of traditional web design, creating memorable digital experiences."
       side="right"
-      entrance="fade-scale"
-      chips={['Figma', 'Webflow', 'Framer', 'React', 'three.js']}
     >
       <UXMockupRig progress={progress} />
     </CategorySection>

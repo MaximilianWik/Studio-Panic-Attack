@@ -529,3 +529,43 @@ video {
   font-size: 14px !important;
   line-height: 1.6 !important;
 }
+/* ----- Category ELEGANT (v4 — dramatic, minimal) ----- */
+.spa-cat-elegant {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+  position: relative;
+}
+
+.spa-cat-elegant__number {
+  font-family: var(--font-display);
+  font-style: italic;
+  font-size: clamp(180px, 28vw, 420px);
+  line-height: 0.75;
+  letter-spacing: -0.06em;
+  color: transparent;
+  -webkit-text-stroke: 1.5px var(--blood);
+  display: block;
+  margin-bottom: -0.1em;
+  user-select: none;
+}
+
+.spa-cat-elegant__title {
+  font-family: var(--font-display);
+  font-style: italic;
+  font-weight: 400;
+  font-size: clamp(36px, 5vw, 72px);
+  line-height: 0.95;
+  letter-spacing: -0.02em;
+  color: var(--paper);
+  margin: 0 0 16px 0;
+}
+
+.spa-cat-elegant__body {
+  font-family: var(--font-body);
+  font-size: 15px;
+  line-height: 1.6;
+  letter-spacing: 0.005em;
+  color: rgba(246, 243, 238, 0.72);
+  max-width: 480px;
+}
