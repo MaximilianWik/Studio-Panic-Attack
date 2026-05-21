@@ -1,165 +1,137 @@
-import { useFrame, useThree } from '@react-three/fiber';
-import { useScroll } from '@react-three/drei';
-import { useMemo, useRef } from 'react';
+import { useFrame } from '@react-three/fiber';
+import { Image, MeshReflectorMaterial, Text, useCursor } from '@react-three/drei';
+import { useMemo, useRef, useState } from 'react';
 import * as THREE from 'three';
 
-import { getSectionWorldY, getSectionRange } from '../../config/sections';
-import { useScrollVelocity } from '../../helpers/useScrollVelocity';
-import { GalleryCard } from './GalleryCard';
+import { getSectionWorldY } from '../../config/sections';
+import { useSectionVisibility } from '../../helpers/useScrollSection';
 import { pickByAffinity } from '../../helpers/useImageAssets';
 
-/**
- * Spatial 3D gallery — option α from the brief.
- *
- *   - Foreground ring of N cards orbiting around the camera (radius RF)
- *     at eye height, tilted slightly so we see them from a 3/4 angle.
- *   - Background ring of half as many cards at radius RB, half speed,
- *     for a parallax-depth feel.
- *
- * Rotation is driven by:
- *   - a constant idle rotation (so the ring is in motion at first paint)
- *   - scroll velocity injected so faster scroll spins the ring
- *
- * Cards passing through the front of the ring get a focal pop in scale
- * (computed per-frame from each card's projected z).
- *
- * Pointer parallax tilts the whole rig.
- *
- * The ring `culls` itself when far outside the gallery scroll range,
- * so the entire group becomes invisible after we leave the section.
- */
-
-const F_COUNT = 16;
-const B_COUNT = 9;
-const F_RADIUS = 4.6;
-const B_RADIUS = 8.5;
+const GOLDEN = 1.61803398875;
 
 export function Gallery() {
   const yPos = getSectionWorldY('gallery');
-  const [rangeStart, rangeEnd] = getSectionRange('gallery');
-  const rangeLen = rangeEnd - rangeStart;
-
+  const visibility = useSectionVisibility('gallery');
   const groupRef = useRef<THREE.Group>(null);
-  const fRingRef = useRef<THREE.Group>(null);
-  const bRingRef = useRef<THREE.Group>(null);
-
-  const scroll = useScroll();
-  const tickVel = useScrollVelocity();
-  const { viewport } = useThree();
-
-  // pick a deterministic stable subset of gallery images for each ring
-  const fgImages = useMemo(() => {
-    const pool = pickByAffinity('gallery');
-    return Array.from({ length: F_COUNT }, (_, i) => pool[i % pool.length]);
-  }, []);
-  const bgImages = useMemo(() => {
-    const pool = pickByAffinity('gallery');
-    return Array.from({ length: B_COUNT }, (_, i) => pool[(i * 3 + 7) % pool.length]);
-  }, []);
-
-  const fgJitter = useMemo(
-    () =>
-      Array.from({ length: F_COUNT }, (_, i) => ({
-        tilt: ((i * 73) % 100) / 100 - 0.5,
-        liftY: (((i * 41) % 100) / 100 - 0.5) * 0.6,
-        wobbleSpeed: 0.4 + ((i * 17) % 100) / 200,
-        wobbleSeed: (i * 7) % 100,
-      })),
-    [],
-  );
-
-  // Pointer parallax target (smoothed)
+  const stageRef = useRef<THREE.Group>(null);
   const target = useRef({ x: 0, y: 0 });
   const current = useRef({ x: 0, y: 0 });
 
-  useFrame((state, dt) => {
-    const offset = scroll.offset;
-    // visibility curve: wide in/out so cards pop from offscreen with momentum
-    const local = (offset - rangeStart + rangeLen * 0.4) / (rangeLen * 1.8);
-    const localClamped = Math.max(0, Math.min(1, local));
-    // 0..1..0 triangular
-    const visibility = 1 - Math.abs(localClamped * 2 - 1);
+  const images = useMemo(() => {
+    const pool = pickByAffinity('gallery');
+    return Array.from({ length: 9 }, (_, i) => pool[(i * 5 + 3) % pool.length]);
+  }, []);
 
-    if (groupRef.current) {
-      groupRef.current.visible = visibility > 0.001;
-      // raise / lower the whole rig as we enter / exit
-      const enterY = (1 - visibility) * 2.5;
-      groupRef.current.position.y = yPos + enterY * (offset < (rangeStart + rangeEnd) / 2 ? -1 : 1);
-    }
+  const frames = useMemo(() => [
+    { url: images[0].url, position: [0, 0, 1.4] as [number, number, number], rotation: [0, 0, 0] as [number, number, number] },
+    { url: images[1].url, position: [-0.85, 0, -0.55] as [number, number, number], rotation: [0, 0, 0] as [number, number, number] },
+    { url: images[2].url, position: [0.85, 0, -0.55] as [number, number, number], rotation: [0, 0, 0] as [number, number, number] },
+    { url: images[3].url, position: [-1.85, 0, 0.25] as [number, number, number], rotation: [0, Math.PI / 2.6, 0] as [number, number, number] },
+    { url: images[4].url, position: [-2.30, 0, 1.45] as [number, number, number], rotation: [0, Math.PI / 2.6, 0] as [number, number, number] },
+    { url: images[5].url, position: [-2.10, 0, 2.65] as [number, number, number], rotation: [0, Math.PI / 2.6, 0] as [number, number, number] },
+    { url: images[6].url, position: [1.85, 0, 0.25] as [number, number, number], rotation: [0, -Math.PI / 2.6, 0] as [number, number, number] },
+    { url: images[7].url, position: [2.30, 0, 1.45] as [number, number, number], rotation: [0, -Math.PI / 2.6, 0] as [number, number, number] },
+    { url: images[8].url, position: [2.10, 0, 2.65] as [number, number, number], rotation: [0, -Math.PI / 2.6, 0] as [number, number, number] },
+  ], [images]);
 
-    // rotation: idle + scroll-velocity boost
-    const vel = tickVel(dt);
-    const idle = 0.06;
-    const boost = vel * 12;
-    if (fRingRef.current) {
-      fRingRef.current.rotation.y += dt * (idle + boost) + dt * 0.15 * Math.sin(state.clock.elapsedTime * 0.4);
-    }
-    if (bRingRef.current) {
-      bRingRef.current.rotation.y -= dt * (idle * 0.6 + boost * 0.5);
-    }
+  useFrame((state) => {
+    if (!groupRef.current) return;
+    const v = visibility();
+    groupRef.current.visible = v > 0.02;
+    if (v < 0.02) return;
 
-    // pointer parallax (read mouse from r3f)
-    target.current.x = state.pointer.x * 0.18;
-    target.current.y = state.pointer.y * 0.12;
+    target.current.x = state.pointer.x * 0.16;
+    target.current.y = state.pointer.y * 0.10;
     current.current.x += (target.current.x - current.current.x) * 0.06;
     current.current.y += (target.current.y - current.current.y) * 0.06;
-    if (groupRef.current) {
-      groupRef.current.rotation.x = current.current.y;
-      groupRef.current.rotation.z = current.current.x * -0.35;
+
+    if (stageRef.current) {
+      const dropY = (1 - v) * -1.6;
+      stageRef.current.position.y = -0.5 + dropY;
+      stageRef.current.position.z = -1.5;
+      stageRef.current.rotation.y = current.current.x;
+      stageRef.current.rotation.x = -current.current.y;
     }
   });
 
-  // safety: viewport.width when canvas is alpha can be small on first frame
-  const camFwd = Math.max(viewport.width, 1);
-
   return (
     <group ref={groupRef} position={[0, yPos, 0]}>
-      {/* Foreground ring — at camera eye level, tilted up slightly */}
-      <group ref={fRingRef} rotation={[-0.05, 0, 0]}>
-        {fgImages.map((asset, i) => {
-          const angle = (i / F_COUNT) * Math.PI * 2;
-          const j = fgJitter[i];
-          const x = Math.cos(angle) * F_RADIUS;
-          const z = Math.sin(angle) * F_RADIUS;
-          return (
-            <GalleryCard
-              key={'f-' + i + '-' + asset.url}
-              url={asset.url}
-              aspect={asset.aspect}
-              position={[x, j.liftY, z]}
-              rotationY={-angle + Math.PI / 2 + j.tilt * 0.18}
-              size={1.7}
-              jitterSeed={j.wobbleSeed}
-              wobbleSpeed={j.wobbleSpeed}
-            />
-          );
-        })}
+      <group ref={stageRef}>
+        <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, 0, 0]}>
+          <planeGeometry args={[40, 40]} />
+          <MeshReflectorMaterial
+            blur={[120, 50]}
+            resolution={256}
+            mixBlur={1.0}
+            mixStrength={20}
+            roughness={1}
+            depthScale={1.0}
+            minDepthThreshold={0.4}
+            maxDepthThreshold={1.4}
+            color="#050505"
+            metalness={0.4}
+          />
+        </mesh>
+        {frames.map((f, i) => (
+          <Frame key={i} {...f} />
+        ))}
+        <Text
+          position={[0, 0.01, 3.8]}
+          rotation={[-Math.PI / 2, 0, 0]}
+          fontSize={0.14}
+          color="#d30000"
+          anchorX="center"
+          anchorY="middle"
+          letterSpacing={0.4}
+        >
+          PROJECTS · 2024 — 2026
+        </Text>
       </group>
+    </group>
+  );
+}
 
-      {/* Background ring — wider, slower, smaller cards */}
-      <group ref={bRingRef} rotation={[0.06, 0, 0]} scale={0.78}>
-        {bgImages.map((asset, i) => {
-          const angle = (i / B_COUNT) * Math.PI * 2 + 0.21;
-          const x = Math.cos(angle) * B_RADIUS;
-          const z = Math.sin(angle) * B_RADIUS;
-          return (
-            <GalleryCard
-              key={'b-' + i + '-' + asset.url}
-              url={asset.url}
-              aspect={asset.aspect}
-              position={[x, ((i * 13) % 100) / 100 - 0.5, z]}
-              rotationY={-angle + Math.PI / 2}
-              size={1.4}
-              jitterSeed={(i * 11) % 100}
-              wobbleSpeed={0.25}
-              dim={0.55}
-            />
-          );
-        })}
-      </group>
+interface FrameProps {
+  url: string;
+  position: [number, number, number];
+  rotation: [number, number, number];
+}
 
-      {/* keep camFwd referenced so layout doesn't pretend it's unused */}
-      <object3D position={[0, 0, -camFwd * 0.001]} />
+function Frame({ url, position, rotation }: FrameProps) {
+  const [hover, setHover] = useState(false);
+  useCursor(hover);
+  const frameRef = useRef<THREE.Mesh>(null);
+  const imageRef = useRef<THREE.Mesh>(null);
+  const seed = useMemo(() => Math.random(), []);
+  const colorTarget = useMemo(() => new THREE.Color('#f6f3ee'), []);
+
+  useFrame((state, dt) => {
+    if (!imageRef.current || !frameRef.current) return;
+    // breathing zoom
+    const mat = imageRef.current.material as THREE.Material & { zoom?: number };
+    if (mat) mat.zoom = 2 + Math.sin(seed * 10000 + state.clock.elapsedTime / 3) / 2;
+    // frame color
+    colorTarget.set(hover ? '#d30000' : '#f6f3ee');
+    const fmat = frameRef.current.material as THREE.MeshBasicMaterial;
+    fmat.color.lerp(colorTarget, Math.min(1, 8 * dt));
+  });
+
+  return (
+    <group position={position} rotation={rotation}>
+      <mesh
+        onPointerOver={(e) => { e.stopPropagation(); setHover(true); }}
+        onPointerOut={() => setHover(false)}
+        scale={[1, GOLDEN, 0.05]}
+        position={[0, GOLDEN / 2, 0]}
+      >
+        <boxGeometry />
+        <meshStandardMaterial color="#151515" metalness={0.5} roughness={0.5} envMapIntensity={2} />
+        <mesh ref={frameRef} raycast={() => null} scale={[0.9, 0.93, 0.9]} position={[0, 0, 0.2]}>
+          <boxGeometry />
+          <meshBasicMaterial toneMapped={false} fog={false} />
+        </mesh>
+        <Image ref={imageRef} raycast={() => null} position={[0, 0, 0.7]} url={url} />
+      </mesh>
     </group>
   );
 }

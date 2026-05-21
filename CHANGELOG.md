@@ -2,6 +2,53 @@
 
 All notable changes to Studio Panic Attack are tracked here.
 
+## [0.2.0] — dark editorial pass + interactivity
+
+### Visual
+
+- Hero: logo image replaces "EMA STOYANOVA" wordmark. Red MeshGradient
+  backdrop kept. MeshGradient perf-capped (maxPixelCount, minPixelRatio).
+  No particles in hero — zero GPU cost from r3f in that section.
+- Categories rebuilt as a 12-column DOM card grid: ink number card,
+  blood eyebrow pill, italic title card, body card, toolkit chips card,
+  file index strip. Cards animate in and lift on hover. Fixes the
+  "rogue 03 in section 02" overlap (Html is hidden when visibility < 0.25).
+- Gallery: drei reflector pattern — 9 framed photographs in a U-formation
+  around a reflective dark floor. Frame color lerps to red on hover.
+  Breathing image zoom per-frame. Pointer parallax tilts the rig.
+- Scattered images: reduced 18 → 6, size doubled (h 2.4–3.6 units).
+  Hover ramps shader intensity to 0 (reveals bare image). Click opens
+  lightbox. Pushed farther out to avoid category grid overlap.
+- Vocabulary section (new): swiss-knife textpath SVG (16k outline) with
+  animated textPath laps in red Cormorant Garamond, + 12-term vocab list.
+- NavHeader: fixed glass-blur dark nav, 6 items with red eyebrow nums,
+  brand mark, "Get in touch" CTA. Scroll-to on click via __spaScrollEl.
+
+### Interactivity
+
+- Click-to-enlarge lightbox: helpers/lightbox.ts pubsub + DOM Lightbox
+  modal. ESC / backdrop / × close.
+- Hover on scattered images removes shader treatment (uIntensity → 0).
+
+### Performance
+
+- PostFx stripped: no bloom, no chromatic aberration, no noise. Only
+  BrightnessContrast + Vignette remain. Low-power: chain fully bypassed.
+- AI Art particles halved: 18000 → 4500 (high), 4500 → 1800 (low).
+- Gallery reflector resolution: 256 (was 2048 in reference), blur [120,50].
+- Environment: frames=1 (static, rendered once), resolution 32.
+- Hero r3f scene is empty group. MeshGradient capped at 1280×720 px.
+- Sections compacted: 8.0 → 7.1 total scroll pages.
+- AdaptiveDpr range [1, 1.6] (high) / [0.85, 1.1] (low).
+
+### Architecture
+
+- helpers/lightbox.ts: open/close/subscribe pubsub.
+- ScrollBridge: publishes drei's scroll el to window.__spaScrollEl.
+- Vocabulary section: knifePathD.ts (16k SVG path) + Vocabulary.tsx.
+- NavHeader: reads --spa-scroll CSS var for active state detection.
+- GalleryCard.tsx removed — replaced by inline Frame inside Gallery.tsx.
+
 ## [0.1.0] — initial build
 
 ### Phase 1 — scaffold

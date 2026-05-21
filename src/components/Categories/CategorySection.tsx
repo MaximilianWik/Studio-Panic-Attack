@@ -1,85 +1,64 @@
 import { Html } from '@react-three/drei';
-import type { ReactNode } from 'react';
+import { useFrame } from '@react-three/fiber';
+import { useRef, type ReactNode } from 'react';
+import type * as THREE from 'three';
+import { useSectionVisibility } from '../../helpers/useScrollSection';
+import type { SectionId } from '../../config/sections';
+import { getSectionWorldY } from '../../config/sections';
 
 interface Props {
-  /** the section's world-Y center; passed in so the parent controls placement */
-  yPos: number;
-  number: string; // "01" .. "04"
+  id: SectionId;
+  number: string;
   eyebrow: string;
   title: string;
   body: string;
-  /** the 3D hero effect for this section */
   children?: ReactNode;
-  /** override copy column position (left | right) */
+  chips?: string[];
   side?: 'left' | 'right';
-  /** add an extra HTML element below the body (link row etc.) */
-  meta?: ReactNode;
 }
 
-/**
- * Shared category section layout. Three layers in world Y:
- *
- *   1. massive outlined number glyph (DOM via <Html>) sitting back at z = -1.5
- *   2. eyebrow + title + body (DOM via <Html>) anchored to one column
- *   3. the 3D hero effect (children) on the opposite column
- *
- * Body and number are HTML overlays (sharper text, no jagged anti-aliasing).
- * The 3D hero effect renders on canvas.
- */
-export function CategorySection({
-  yPos,
-  number,
-  eyebrow,
-  title,
-  body,
-  children,
-  side = 'left',
-  meta,
-}: Props) {
-  const copyOffset: [number, number, number] =
-    side === 'left' ? [-3.2, 0, 0] : [3.2, 0, 0];
-  const heroOffset: [number, number, number] =
-    side === 'left' ? [3.0, 0, 0] : [-3.0, 0, 0];
+export function CategorySection({ id, number, eyebrow, title, body, children, chips = [], side = 'left' }: Props) {
+  const yPos = getSectionWorldY(id);
+  const visibility = useSectionVisibility(id);
+  const htmlRef = useRef<HTMLDivElement>(null);
+  const heroGroupRef = useRef<THREE.Group>(null);
+
+  useFrame(() => {
+    const v = visibility();
+    if (htmlRef.current) {
+      const visible = v > 0.25;
+      htmlRef.current.style.display = visible ? '' : 'none';
+      if (visible) htmlRef.current.style.opacity = String(Math.min(1, v * 1.4).toFixed(2));
+    }
+    if (heroGroupRef.current) heroGroupRef.current.visible = v > 0.05;
+  });
+
+  const heroX = side === 'left' ? 3.0 : -3.0;
 
   return (
     <group position={[0, yPos, 0]}>
-      {/* massive section number — DOM via <Html> on a fixed back plate */}
-      <Html
-        center
-        position={[0, 1.4, -2.5]}
-        style={{ pointerEvents: 'none', zIndex: 0 }}
-        transform={false}
-        occlude={false}
-      >
-        <div
-          className="spa-section-number"
-          style={{ transform: 'translate(-50%, -50%)' }}
-        >
-          {number}
+      <Html center position={[0, 0, 0]} style={{ width: '92vw', maxWidth: '560px', pointerEvents: 'none', zIndex: 5 }} transform={false} occlude={false}>
+        <div ref={htmlRef} style={{ transition: 'opacity 0.18s ease' }}>
+          <div className="spa-catgrid">
+            <div className="spa-catgrid__num"><span>{number}</span></div>
+            <div className="spa-catgrid__eyebrow">{eyebrow}</div>
+            <div className="spa-catgrid__title"><h2>{title}</h2></div>
+            <div className="spa-catgrid__body"><p>{body}</p></div>
+            <div className="spa-catgrid__chips">
+              <span className="spa-catgrid__chips-label">Toolkit</span>
+              <div className="spa-catgrid__chips-list">
+                {chips.map((c) => (<span key={c} className="spa-catgrid__chip">{c}</span>))}
+              </div>
+            </div>
+            <div className="spa-catgrid__index">
+              <span>file · {number}</span>
+              <span style={{ color: '#d30000' }}>/ 04</span>
+              <span>{eyebrow}</span>
+            </div>
+          </div>
         </div>
       </Html>
-
-      {/* copy column */}
-      <Html
-        center
-        position={copyOffset}
-        style={{
-          width: '420px',
-          pointerEvents: 'none',
-          zIndex: 2,
-        }}
-        transform={false}
-      >
-        <div className="spa-overlay" style={{ width: '100%' }}>
-          <div className="spa-eyebrow">{number} — {eyebrow}</div>
-          <h2 className="spa-title">{title}</h2>
-          <p className="spa-body">{body}</p>
-          {meta ? <div style={{ marginTop: 18 }}>{meta}</div> : null}
-        </div>
-      </Html>
-
-      {/* hero effect column */}
-      <group position={heroOffset}>{children}</group>
+      <group ref={heroGroupRef} position={[heroX, 0, 0]}>{children}</group>
     </group>
   );
 }

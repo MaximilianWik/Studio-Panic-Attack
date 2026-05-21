@@ -2,7 +2,6 @@ import { useFrame } from '@react-three/fiber';
 import { useMemo, useRef } from 'react';
 import * as THREE from 'three';
 
-import { getSectionWorldY } from '../../config/sections';
 import { theme } from '../../config/theme';
 import { useSectionProgress } from '../../helpers/useScrollSection';
 import { CategorySection } from './CategorySection';
@@ -10,7 +9,7 @@ import { CategorySection } from './CategorySection';
 /**
  * 04 — UX Design
  *
- * Hero effect: 6 schematic UI mockup planes that assemble from offscreen
+ * Hero effect: 5 schematic UI mockup planes that assemble from offscreen
  * during the first half of the section's scroll progress, then explode
  * apart in the second half to reveal a wireframe grid behind.
  *
@@ -166,31 +165,20 @@ const MOCKUPS: MockupSpec[] = [
     explodeRotX: 0.7, explodeRotY: 0.0,
     w: 3.0, h: 1.0, hue: 0.2, scan: 0.7,
   },
-  {
-    homeX: 0.0, homeY: -1.4, homeZ: 0.4,
-    entryX: 0, entryY: -10,
-    explodeX: 0, explodeY: -3.4, explodeZ: 2,
-    rotZ: 0.0,
-    explodeRotX: -0.6, explodeRotY: 0.0,
-    w: 2.6, h: 0.9, hue: 0.4, scan: 0.5,
-  },
 ];
 
 export function UXDesign() {
-  const yPos = getSectionWorldY('ux');
   const progress = useSectionProgress('ux');
 
   return (
     <CategorySection
-      yPos={yPos}
+      id="ux"
       number="04"
-      eyebrow="CATEGORY"
-      title="UX Design"
-      body="Dynamic website prototypes designed for intuitive user experiences and visually stunning interfaces. From interactive elements to visual coding techniques, I enhance user engagement through subtle animations and bold transitions. Innovative approaches, like integrating 3D models, push the boundaries of traditional web design, creating memorable digital experiences."
+      eyebrow="UX Design"
+      title="Interfaces with a pulse."
+      body="Dynamic website prototypes designed for intuitive user experiences and visually stunning interfaces. From interactive elements to visual coding techniques, enhancing engagement through subtle animations. Innovative approaches, like integrating 3D models, push the boundaries of traditional web design."
       side="right"
-      meta={
-        <span className="spa-meta">figma · webflow · framer · react · three.js</span>
-      }
+      chips={['Figma', 'Webflow', 'Framer', 'React', 'three.js']}
     >
       <UXMockupRig progress={progress} />
     </CategorySection>

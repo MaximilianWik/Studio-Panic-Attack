@@ -1,23 +1,8 @@
 import { MeshGradient } from '@paper-design/shaders-react';
 
-/**
- * Pure-DOM hero overlay. Two layers:
- *   - a paper-design `MeshGradient` filling the viewport in ink+blood
- *     tones, drifting slowly;
- *   - the brand mark + scroll prompt, fading out as scroll leaves the
- *     hero (controlled by the `--spa-hero` CSS var written by
- *     ScrollBridge each frame).
- *
- * Sits BEHIND the canvas (z-index 0). Canvas runs alpha:true so this
- * shows through. Fully painted at first frame — no skeleton, no loader.
- */
-
 export function HeroOverlay() {
   return (
     <>
-      {/* Persistent ink-toned mesh gradient backdrop. Lives at z-index 0
-          for the entire scroll, slowly drifting. Visible everywhere a
-          gap in the WebGL fill shows through. */}
       <div
         aria-hidden
         style={{
@@ -26,6 +11,8 @@ export function HeroOverlay() {
           zIndex: 0,
           pointerEvents: 'none',
           background: '#050505',
+          opacity: 'var(--spa-hero, 1)',
+          transition: 'opacity 0.05s linear',
         }}
       >
         <MeshGradient
@@ -38,11 +25,10 @@ export function HeroOverlay() {
           offsetY={0}
           scale={1}
           maxPixelCount={1280 * 720}
-          minPixelRatio={0.7}
+          minPixelRatio={0.6}
         />
       </div>
 
-      {/* Brand mark — DOM. Fades out as scroll passes 8%. */}
       <div
         aria-hidden
         style={{
@@ -53,19 +39,22 @@ export function HeroOverlay() {
           alignItems: 'center',
           justifyContent: 'center',
           flexDirection: 'column',
-          gap: '36px',
+          gap: '32px',
           pointerEvents: 'none',
           opacity: 'var(--spa-hero, 1)',
           transition: 'opacity 0.05s linear',
         }}
       >
-        <div className="spa-brand">
-          <span className="spa-brand__tag">Studio · Panic · Attack</span>
-          <span className="spa-brand__name">EMA STOYANOVA</span>
-          <span className="spa-brand__sub">
-            Interactive · Visual · Experimental
-          </span>
-        </div>
+        <img
+          src="/logo/PanicAttackLogo.png"
+          alt="Studio Panic Attack"
+          decoding="sync"
+          style={{
+            width: 'clamp(380px, 56vw, 840px)',
+            height: 'auto',
+            filter: 'drop-shadow(0 6px 28px rgba(10,10,10,0.55)) drop-shadow(0 1px 0 rgba(211,0,0,0.4))',
+          }}
+        />
         <div className="spa-scroll-prompt">scroll to enter</div>
       </div>
     </>

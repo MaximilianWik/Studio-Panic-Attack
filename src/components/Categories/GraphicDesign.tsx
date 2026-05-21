@@ -3,7 +3,6 @@ import { useFrame, useThree } from '@react-three/fiber';
 import { useMemo, useRef } from 'react';
 import * as THREE from 'three';
 
-import { getSectionWorldY } from '../../config/sections';
 import { theme } from '../../config/theme';
 import { useDeviceProfile } from '../../helpers/useDeviceProfile';
 import { useSectionVisibility } from '../../helpers/useScrollSection';
@@ -20,24 +19,19 @@ import { CategorySection } from './CategorySection';
  *   - on tier ≤ 1 we swap to a cheap `MeshPhysicalMaterial` transmission.
  */
 export function GraphicDesign() {
-  const yPos = getSectionWorldY('graphic');
   const profile = useDeviceProfile();
   const visibility = useSectionVisibility('graphic');
   const groupRef = useRef<THREE.Group>(null);
 
   return (
     <CategorySection
-      yPos={yPos}
+      id="graphic"
       number="01"
-      eyebrow="CATEGORY"
-      title="Graphic Design"
-      body="A diverse collection showcasing a unique blend of renowned and niche styles. Each piece reflects experimentation and versatility, integrating fine art, sketching, AI, and even 3D modeling to create innovative and dynamic creations. Crafted with powerful tools like Adobe Creative Software, Procreate, Nomad, Midjourney, and more."
+      eyebrow="Graphic Design"
+      title="Design beyond the traditional format."
+      body="A diverse collection blending fine art, sketching, AI, and 3D modeling into innovative and dynamic creations. Crafted with powerful tools like Adobe Creative Software, Procreate, Nomad, Midjourney, and more."
       side="left"
-      meta={
-        <span className="spa-meta">
-          adobe · procreate · nomad · midjourney
-        </span>
-      }
+      chips={['Adobe', 'Procreate', 'Nomad', 'Midjourney']}
     >
       <group ref={groupRef}>
         {/* The headline text floats behind, slowly drifting */}
@@ -147,8 +141,8 @@ function Lens({ lowPower, visibility }: LensProps) {
           />
         ) : (
           <MeshTransmissionMaterial
-            samples={6}
-            resolution={256}
+            samples={4}
+            resolution={192}
             transmission={1}
             roughness={0.08}
             thickness={1.4}

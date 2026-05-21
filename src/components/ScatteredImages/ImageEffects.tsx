@@ -1,41 +1,23 @@
 import { useFrame } from '@react-three/fiber';
 import { useTexture } from '@react-three/drei';
-import { useEffect, useMemo, useRef } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import * as THREE from 'three';
 
 import { shaders, type ShaderId } from '../../shaders/imageShaders';
 
 interface Props {
   url: string;
-  /** target plane height in world units (width derived from texture aspect) */
   height: number;
-  /** which custom shader to apply, or 'plain' for a passthrough */
   effect: ShaderId | 'plain';
-  /** 0..1 intensity blend between original and shaded */
   intensity?: number;
-  position?: [number, number, number];
-  rotation?: [number, number, number];
+  onClick?: () => void;
 }
 
-/**
- * Image plane that compiles one of the five custom shaders against the
- * texture. Aspect-fits the texture to the requested height. Each
- * shader takes uTex + uIntensity uniforms; some also take uTime and
- * uResolution (set per-frame).
- *
- * On low-power devices, ScatteredImages forces effect to 'plain' so we
- * skip the shader entirely.
- */
-export function ImageEffect({
-  url,
-  height,
-  effect,
-  intensity = 1,
-  position = [0, 0, 0],
-  rotation = [0, 0, 0],
-}: Props) {
+export function ImageEffect({ url, height, effect, intensity = 1, onClick }: Props) {
   const tex = useTexture(url) as THREE.Texture;
   const meshRef = useRef<THREE.Mesh>(null);
+  const [hovered, setHovered] = useState(false);
+  const intensityRef = useRef(intensity);
 
   useEffect(() => {
     if (!tex) return;
@@ -45,23 +27,17 @@ export function ImageEffect({
   }, [tex]);
 
   const aspect = useMemo(() => {
-    if (!tex || !tex.image) return 1;
+    if (!tex?.image) return 1;
     const w = tex.image.naturalWidth ?? tex.image.width ?? 1;
     const h = tex.image.naturalHeight ?? tex.image.height ?? 1;
     return w / Math.max(1, h);
   }, [tex]);
 
-  const planeArgs = useMemo<[number, number]>(() => {
-    return [height * aspect, height];
-  }, [height, aspect]);
+  const planeArgs = useMemo<[number, number]>(() => [height * aspect, height], [height, aspect]);
 
   const material = useMemo(() => {
     if (effect === 'plain') {
-      return new THREE.MeshBasicMaterial({
-        map: tex,
-        transparent: true,
-        toneMapped: false,
-      });
+      return new THREE.MeshBasicMaterial({ map: tex, transparent: true, toneMapped: false });
     }
     const mod = shaders[effect];
     return new THREE.ShaderMaterial({
@@ -77,29 +53,35 @@ export function ImageEffect({
     });
   }, [tex, effect, intensity]);
 
-  useEffect(() => {
-    return () => {
-      material.dispose();
-    };
-  }, [material]);
+  useEffect(() => () => { material.dispose(); }, [material]);
 
   useFrame((_, dt) => {
+    if (meshRef.current) {
+      const s = hovered ? 1.05 : 1.0;
+      meshRef.current.scale.x += (s - meshRef.current.scale.x) * Math.min(1, 8 * dt);
+      meshRef.current.scale.y += (s - meshRef.current.scale.y) * Math.min(1, 8 * dt);
+    }
     if (effect === 'plain') return;
     const m = material as THREE.ShaderMaterial;
-    if (m.uniforms.uTime) (m.uniforms.uTime.value as number) += dt;
+    if (!m.uniforms?.uTime) return;
+    (m.uniforms.uTime.value as number) += dt;
     if (m.uniforms.uResolution && tex.image) {
       const w = tex.image.naturalWidth ?? tex.image.width ?? 512;
       const h = tex.image.naturalHeight ?? tex.image.height ?? 512;
       (m.uniforms.uResolution.value as THREE.Vector2).set(w, h);
     }
+    const target = hovered ? 0 : intensity;
+    intensityRef.current += (target - intensityRef.current) * Math.min(1, 8 * dt);
+    m.uniforms.uIntensity.value = intensityRef.current;
   });
 
   return (
     <mesh
       ref={meshRef}
-      position={position}
-      rotation={rotation}
       material={material}
+      onPointerOver={(e) => { e.stopPropagation(); setHovered(true); }}
+      onPointerOut={() => setHovered(false)}
+      onClick={(e) => { if (onClick) { e.stopPropagation(); onClick(); } }}
     >
       <planeGeometry args={[planeArgs[0], planeArgs[1], 1, 1]} />
     </mesh>

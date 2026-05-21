@@ -3,7 +3,6 @@ import { useFrame } from '@react-three/fiber';
 import { useMemo, useRef } from 'react';
 import * as THREE from 'three';
 
-import { getSectionWorldY } from '../../config/sections';
 import { theme } from '../../config/theme';
 import { useSectionVisibility } from '../../helpers/useScrollSection';
 import { CategorySection } from './CategorySection';
@@ -87,20 +86,17 @@ const FRAG = /* glsl */ `
 `;
 
 export function ThreeDeeArt() {
-  const yPos = getSectionWorldY('threeD');
   const visibility = useSectionVisibility('threeD');
 
   return (
     <CategorySection
-      yPos={yPos}
+      id="threeD"
       number="02"
-      eyebrow="CATEGORY"
-      title="3D Art"
-      body="From high-poly nature environments to charming low-poly scenes, each creation reflects my passion for crafting immersive worlds and characters. Whether organic or inorganic, 3D modeling allows me to bring my ideas to life, sharing unique experiences with others. Crafted in Autodesk Maya, Blender, Unreal Engine 5, and more."
+      eyebrow="3D Art"
+      title="Worlds, organic and otherwise."
+      body="High-poly nature environments to charming low-poly scenes. Each creation reflects a passion for crafting immersive worlds and characters. Organic or inorganic, 3D modeling brings ideas to life. Crafted in Maya, Blender, Unreal Engine 5, and more."
       side="right"
-      meta={
-        <span className="spa-meta">maya · blender · unreal engine 5 · zbrush</span>
-      }
+      chips={['Maya', 'Blender', 'Unreal 5', 'ZBrush']}
     >
       <Sculpture visibility={visibility} />
     </CategorySection>
@@ -142,7 +138,6 @@ function Sculpture({ visibility }: SculptureProps) {
     meshRef.current.rotation.y += dt * 0.12;
   });
 
-  // pad theme reference in case build cache holds a stale graph
   void theme;
 
   return (
@@ -157,7 +152,7 @@ function Sculpture({ visibility }: SculptureProps) {
     >
       <Float speed={1.2} floatIntensity={0.4} rotationIntensity={0.2}>
         <mesh ref={meshRef} material={material} scale={1.1}>
-          <icosahedronGeometry args={[1, 36]} />
+          <icosahedronGeometry args={[1, 28]} />
         </mesh>
       </Float>
     </PresentationControls>

@@ -2,7 +2,6 @@ import { useFrame } from '@react-three/fiber';
 import { useMemo, useRef } from 'react';
 import * as THREE from 'three';
 
-import { getSectionWorldY } from '../../config/sections';
 import { useDeviceProfile } from '../../helpers/useDeviceProfile';
 import {
   useSectionProgress,
@@ -13,7 +12,7 @@ import { CategorySection } from './CategorySection';
 /**
  * 03 — AI Art
  *
- * 18 000-particle (4 500 on tier ≤ 1) GPU morph between two attractor
+ * 4500-particle (1800 on tier ≤ 1) GPU morph between two attractor
  * distributions:
  *   - distribution A: sphere shell
  *   - distribution B: torus
@@ -24,8 +23,8 @@ import { CategorySection } from './CategorySection';
  * arrays at mount.
  */
 
-const HIGH_COUNT = 18000;
-const LOW_COUNT = 4500;
+const HIGH_COUNT = 4500;
+const LOW_COUNT = 1800;
 
 const VERT = /* glsl */ `
   attribute vec3 aTarget;
@@ -122,22 +121,19 @@ function buildTorus(n: number, R = 1.0, tubeR = 0.4): Float32Array {
 }
 
 export function AIArt() {
-  const yPos = getSectionWorldY('ai');
   const profile = useDeviceProfile();
   const progress = useSectionProgress('ai');
   const visibility = useSectionVisibility('ai');
 
   return (
     <CategorySection
-      yPos={yPos}
+      id="ai"
       number="03"
-      eyebrow="CATEGORY"
-      title="AI Art"
-      body="Experimental AI art pushing the boundaries of creative expression and innovation. A wide range of creations, from illustrations and photorealistic images, to 3D models and videos created with nothing more than AI prompts. Crafted using advanced AI tools like Krea, Adobe Firefly, DALL-E, Midjourney, and more."
+      eyebrow="AI Art"
+      title="Prompts that push back."
+      body="Experimental AI art pushing the boundaries of creative expression and innovation. Illustrations, photorealistic images, 3D models, and videos created with AI prompts. Crafted using advanced tools like Krea, Adobe Firefly, DALL-E, Midjourney, and more."
       side="left"
-      meta={
-        <span className="spa-meta">krea · firefly · dall·e · midjourney</span>
-      }
+      chips={['Krea', 'Firefly', 'DALL·E', 'Midjourney']}
     >
       <ParticleMorph
         count={profile.isLowPower ? LOW_COUNT : HIGH_COUNT}
@@ -170,7 +166,7 @@ function ParticleMorph({ count, progress, visibility }: ParticleProps) {
     const m = new THREE.ShaderMaterial({
       transparent: true,
       depthWrite: false,
-      blending: THREE.AdditiveBlending,
+      blending: THREE.NormalBlending,
       uniforms: {
         uTime: { value: 0 },
         uMorph: { value: 0 },
