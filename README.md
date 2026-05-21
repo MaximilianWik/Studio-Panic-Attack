@@ -1,8 +1,8 @@
 # Studio Panic Attack
 
-- **[Studio Panic Attack](https://studio-panic-attack-maximilian.vercel.app/)** - Portfolio site built for Ema Stoyanova; showcasing her work in art, 3D modelling, interactive media technology, product & brand design, UX/UI, photography, projection mapping, campaigns, events, and creative projects.
+- **[Studio Panic Attack](https://studio-panic-attack-maximilian.vercel.app/)** - Portfolio site built for **Ema Stoyanova;** showcasing her work in art, 3D modelling, interactive media technology, product & brand design, UX/UI, photography, projection mapping, campaigns, events, and creative projects.
 - Built with React, Vite, and `@react-three/fiber`. Scroll-driven 3D scenes, custom shader treatments on portfolio imagery, and editorial typography.
-
+## **Live at:** https://studio-panic-attack-maximilian.vercel.app/
 
 ## Tech stack
 
