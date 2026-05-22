@@ -2,6 +2,28 @@
 
 All notable changes to Studio Panic Attack are tracked here.
 
+## [0.6.2] — loader is its own opaque screen + outlined % counter
+
+- `.spa-loader` is now a real own-screen overlay:
+  - `pointer-events: auto` — the loader itself catches every wheel,
+    touch, and click, so drei `<ScrollControls>` (which listens on
+    the canvas parent below it) literally never sees the input.
+    Scroll is fully blocked during loading without a single
+    capture-phase listener.
+  - Opaque background: a layered radial-gradient (red center glow
+    → near-black) over a `#050505` base. The MeshGradient + canvas
+    behind are completely hidden until fade-out reveals them.
+  - `visibility` is transitioned alongside `opacity` (delay-on,
+    delay-off) so the loader stops eating events the instant its
+    fade-out completes.
+- `.spa-loader__pct`: outlined italic typography. `color: transparent`
+  + `-webkit-text-stroke: 2.5px rgba(246,243,238,0.9)` +
+  `paint-order: stroke fill`. Old `text-shadow` glow dropped — it
+  fights with the hollow stroke.
+- `.spa-loader__pct-sym`: explicitly resets `-webkit-text-stroke: 0`
+  so the small `%` symbol stays filled — editorial counterpoint to
+  the hollow number.
+
 ## [0.6.1] — loader holds for 2.5 s, scroll-lock removed
 
 - `App.tsx`: loader now runs for a deliberate minimum of 2.5 s

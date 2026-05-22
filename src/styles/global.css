@@ -825,15 +825,36 @@ video {
   position: fixed;
   inset: 0;
   z-index: 5;
-  pointer-events: none;
+  /* Catch all pointer / wheel / touch input so it never reaches drei
+     <ScrollControls> behind us — that's how scroll is fully blocked
+     during loading without any window-level capture listeners. */
+  pointer-events: auto;
+  /* Opaque own-screen backdrop. Subtle red center glow keeps the
+     brand feel without leaking the live MeshGradient through. */
+  background:
+    radial-gradient(ellipse 70% 80% at 50% 45%,
+      rgba(58, 10, 4, 0.55) 0%,
+      rgba(10, 5, 5, 1) 60%,
+      #050505 100%),
+    #050505;
   color: #f6f3ee;
   opacity: 1;
-  transition: opacity 0.7s cubic-bezier(0.65, 0, 0.35, 1);
+  visibility: visible;
+  /* Fade opacity over 700 ms; visibility flips at the end so the
+     element doesn't keep eating events after it's invisible. */
+  transition:
+    opacity 0.7s cubic-bezier(0.65, 0, 0.35, 1),
+    visibility 0s linear 0s;
   overflow: hidden;
 }
 
 .spa-loader--done {
   opacity: 0;
+  pointer-events: none;
+  visibility: hidden;
+  transition:
+    opacity 0.7s cubic-bezier(0.65, 0, 0.35, 1),
+    visibility 0s linear 0.7s;
 }
 
 /* Faint repeating horizontal scanlines for CRT/film vibe. */
@@ -897,7 +918,9 @@ video {
   padding: 0 32px;
 }
 
-/* Massive italic counter. */
+/* Massive italic counter — outlined typography, stroke only.
+   The number reads as a hollow shape; the small `%` symbol stays
+   filled as an editorial counterpoint. */
 .spa-loader__pct {
   font-family: "CormorantGaramondLoader", "PP Editorial Old", Georgia, serif;
   font-style: italic;
@@ -905,13 +928,13 @@ video {
   font-size: clamp(120px, 22vw, 320px);
   line-height: 0.95;
   letter-spacing: -0.02em;
-  color: #f6f3ee;
-  text-shadow:
-    0 4px 32px rgba(10, 10, 10, 0.55),
-    0 1px 0  rgba(211, 0, 0, 0.35);
   display: flex;
   align-items: baseline;
   gap: 0.05em;
+  /* Outlined: paint the stroke first, fill is transparent. */
+  color: transparent;
+  -webkit-text-stroke: 2.5px rgba(246, 243, 238, 0.9);
+  paint-order: stroke fill;
 }
 
 .spa-loader__pct-num {
@@ -923,6 +946,8 @@ video {
 .spa-loader__pct-sym {
   font-size: 0.45em;
   color: rgba(246, 243, 238, 0.55);
+  /* Override inherited stroke — the symbol stays filled. */
+  -webkit-text-stroke: 0;
   margin-left: 0.04em;
 }
 
