@@ -12,6 +12,10 @@ import { openLightbox } from '../../helpers/lightbox';
 const GOLDEN = 1.61803398875;
 const CAROUSEL_SPEED = 0.15;
 const CAROUSEL_WIDTH = 36;
+/** Radius of the carousel arc. Slots travel along an arc of this
+    radius rather than a straight line, so the row of frames bends
+    gently away from the camera at the edges (item I). */
+const ARC_R = 30;
 /** Number of visible slots — fewer than total images so the pool can rotate. */
 const SLOT_COUNT = 28;
 
@@ -75,6 +79,26 @@ export function Gallery() {
       floorAlphaMap?.dispose();
     };
   }, [floorAlphaMap]);
+
+  // Ground-mist textures (item H). Two cloned soft-noise canvases so
+  // each layer can scroll its UVs independently — gives the
+  // impression of slow drifting fog over the floor without needing
+  // a real volume shader. Skipped on low-power; nothing else to do
+  // when the perf override forces a low tier.
+  const mistTexA = useMemo(
+    () => (profile.isLowPower ? null : makeMistTexture(7)),
+    [profile.isLowPower],
+  );
+  const mistTexB = useMemo(
+    () => (profile.isLowPower ? null : makeMistTexture(131)),
+    [profile.isLowPower],
+  );
+  useEffect(() => {
+    return () => {
+      mistTexA?.dispose();
+      mistTexB?.dispose();
+    };
+  }, [mistTexA, mistTexB]);
 
   // De-duplicated pool of gallery images
   const pool = useMemo(() => {
@@ -153,6 +177,17 @@ export function Gallery() {
       }
     }
 
+    // Drift the two mist layers in opposite directions on X (and a
+    // tiny Y wobble) so the clouds look organic.
+    if (mistTexA) {
+      mistTexA.offset.x = (mistTexA.offset.x + dt * 0.012) % 1;
+      mistTexA.offset.y = (mistTexA.offset.y - dt * 0.005 + 1) % 1;
+    }
+    if (mistTexB) {
+      mistTexB.offset.x = (mistTexB.offset.x - dt * 0.008 + 1) % 1;
+      mistTexB.offset.y = (mistTexB.offset.y + dt * 0.004) % 1;
+    }
+
     // Camera pan via pointer
     camTarget.current.x = state.pointer.x * 1.2;
     camTarget.current.y = state.pointer.y * 0.6;
@@ -208,6 +243,40 @@ export function Gallery() {
           />
         </mesh>
 
+        {/* Ground mist (item H) — two soft-noise sheets just above
+            the floor, scrolling in opposite directions so the
+            carousel looks like it's emerging from low fog. Both
+            depthWrite=false so they don't break frame depth. Skipped
+            entirely on low-power tier. */}
+        {mistTexA ? (
+          <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, 0.06, 0]} renderOrder={1}>
+            <circleGeometry args={[30, 64]} />
+            <meshBasicMaterial
+              color="#1a0606"
+              transparent
+              opacity={0.32}
+              alphaMap={mistTexA}
+              depthWrite={false}
+              fog={false}
+              toneMapped={false}
+            />
+          </mesh>
+        ) : null}
+        {mistTexB ? (
+          <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, 0.32, 0]} renderOrder={2}>
+            <circleGeometry args={[28, 64]} />
+            <meshBasicMaterial
+              color="#0a0a0a"
+              transparent
+              opacity={0.22}
+              alphaMap={mistTexB}
+              depthWrite={false}
+              fog={false}
+              toneMapped={false}
+            />
+          </mesh>
+        ) : null}
+
         {/* Floor text */}
         <Text position={[0, 0.01, -2]} rotation={[-Math.PI / 2, 0, 0]}
           fontSize={0.6} color="#d30000" anchorX="center" anchorY="middle"
@@ -251,6 +320,7 @@ function CarouselSlot({ slotIndex, slots }: CarouselSlotProps) {
   const groupRef = useRef<THREE.Group>(null);
   const frameRef = useRef<THREE.Mesh>(null);
   const imageRef = useRef<THREE.Mesh>(null);
+  const rimRef = useRef<THREE.Mesh>(null);
   const colorTarget = useMemo(() => new THREE.Color('#f6f3ee'), []);
 
   // Track current url so we can rebuild the Image when it changes
@@ -279,17 +349,62 @@ function CarouselSlot({ slotIndex, slots }: CarouselSlotProps) {
       setCurrentUrl(s.asset.url);
     }
 
-    groupRef.current.position.x = s.offset;
-    groupRef.current.position.z = s.depth;
+    // I — curved arc. The carousel is no longer a straight belt:
+    // each slot's offset is treated as arc-length along a circle of
+    // radius ARC_R, so slots curve gently away in Z toward the
+    // edges. Slot rotation faces toward the centre of the arc.
+    const angle = s.offset / ARC_R;
+    const sinA = Math.sin(angle);
+    const cosA = Math.cos(angle);
+    groupRef.current.position.x = sinA * ARC_R;
+    groupRef.current.position.z = (cosA - 1) * ARC_R + s.depth;
     groupRef.current.position.y = Math.sin(state.clock.elapsedTime * 0.35 + s.seed * 6.28) * 0.025;
+
+    // K — pointer tilt. Each slot rotates a few degrees around Y
+    // following the cursor X, on top of the arc-facing rotation.
+    // Reads as the carousel "watching" the user without breaking
+    // the arc's geometry.
+    groupRef.current.rotation.y = -angle + state.pointer.x * 0.10;
+
+    // E — depth dimming. Slots farther from the camera (more
+    // negative position.z relative to the stage) get tinted darker.
+    // Combined with the arc, edge slots are noticeably dimmer than
+    // centre slots → atmospheric perspective for free.
+    const z = groupRef.current.position.z;
+    // z ranges roughly +4 (closest, low-arc + high s.depth) down
+    // to about -7 (far edge of arc + low s.depth). Map onto
+    // [0.45, 1.0] so the closest reads at full brightness and the
+    // farthest never goes fully black.
+    const depthFactor = THREE.MathUtils.clamp(0.55 + (z + 4) * 0.06, 0.45, 1.0);
+
+    // Image colour tint via the material's `color` uniform.
+    const imat = imageRef.current.material as THREE.Material & { color?: THREE.Color };
+    if (imat.color) imat.color.setRGB(depthFactor, depthFactor, depthFactor);
 
     // Subtle breathing zoom centered on 1.0 — keeps the full image visible
     const mat = imageRef.current.material as THREE.Material & { zoom?: number };
     if (mat) mat.zoom = 0.97 + Math.sin(s.seed * 10000 + state.clock.elapsedTime / 3) * 0.03;
 
-    colorTarget.set(hover ? '#d30000' : '#f6f3ee');
+    // Existing frame colour, modulated by depthFactor so the frames
+    // also dim with distance — keeps the frame visually attached
+    // to the image rather than glowing at full strength on a
+    // dimmed background.
+    colorTarget.set(hover ? '#d30000' : '#f6f3ee').multiplyScalar(depthFactor);
     const fmat = frameRef.current.material as THREE.MeshBasicMaterial;
     fmat.color.lerp(colorTarget, Math.min(1, 8 * dt));
+
+    // F — rim glow on hover. A red additive plane sitting just
+    // behind the image, slightly larger, opacity ramps in over
+    // ~250 ms when hovered. Reads as the slot lighting up from
+    // behind without disturbing the rest of the frame.
+    if (rimRef.current) {
+      const rmat = rimRef.current.material as THREE.MeshBasicMaterial;
+      const target = hover ? 0.6 : 0;
+      rmat.opacity += (target - rmat.opacity) * Math.min(1, 6 * dt);
+      // Hide the mesh entirely once it's effectively zero so it's
+      // not eating draw calls when no slot is hovered.
+      rimRef.current.visible = rmat.opacity > 0.01;
+    }
   });
 
   return (
@@ -307,6 +422,20 @@ function CarouselSlot({ slotIndex, slots }: CarouselSlotProps) {
           <boxGeometry />
           <meshBasicMaterial toneMapped={false} fog={false} />
         </mesh>
+        {/* Rim glow plane — sits just behind the image, slightly
+            larger, additively blended. Hidden until hover. */}
+        <mesh ref={rimRef} raycast={() => null} scale={[1.08, 1.08, 1]} position={[0, 0, 0.65]} visible={false}>
+          <planeGeometry />
+          <meshBasicMaterial
+            color="#d30000"
+            transparent
+            opacity={0}
+            blending={THREE.AdditiveBlending}
+            depthWrite={false}
+            toneMapped={false}
+            fog={false}
+          />
+        </mesh>
         <Image
           key={currentUrl}
           ref={imageRef}
@@ -320,3 +449,53 @@ function CarouselSlot({ slotIndex, slots }: CarouselSlotProps) {
 }
 
 export default Gallery;
+
+/**
+ * Build a soft 256×256 noise canvas suitable for use as an alphaMap
+ * on a horizontal mist plane. Per-pixel random luminance, then a CSS
+ * `filter: blur(8px)` pass smooths it into organic clouds. The
+ * texture is set to repeat-wrap so its UV `offset` can be advanced
+ * each frame for a slow drift.
+ *
+ * `seed` is mixed into the random sequence so two cloned textures
+ * produce visibly different noise patterns — used to layer two
+ * mist sheets at different heights without them looking identical.
+ */
+function makeMistTexture(seed: number): THREE.CanvasTexture | null {
+  if (typeof document === 'undefined') return null;
+  const c = document.createElement('canvas');
+  c.width = 256;
+  c.height = 256;
+  const ctx = c.getContext('2d');
+  if (!ctx) return null;
+
+  // Cheap deterministic PRNG so the seed actually produces
+  // reproducible output without pulling in a real RNG.
+  let s = seed >>> 0 || 1;
+  const rng = () => {
+    s = (s * 1664525 + 1013904223) >>> 0;
+    return s / 4294967296;
+  };
+
+  const data = ctx.createImageData(256, 256);
+  for (let i = 0; i < data.data.length; i += 4) {
+    const v = (rng() * 255) | 0;
+    data.data[i] = v;
+    data.data[i + 1] = v;
+    data.data[i + 2] = v;
+    data.data[i + 3] = 255;
+  }
+  ctx.putImageData(data, 0, 0);
+  // Two-pass blur for smoother clouds.
+  ctx.filter = 'blur(10px)';
+  ctx.drawImage(c, 0, 0);
+  ctx.drawImage(c, 0, 0);
+  ctx.filter = 'none';
+
+  const tex = new THREE.CanvasTexture(c);
+  tex.wrapS = tex.wrapT = THREE.RepeatWrapping;
+  tex.repeat.set(2, 2);
+  tex.minFilter = THREE.LinearFilter;
+  tex.magFilter = THREE.LinearFilter;
+  return tex;
+}

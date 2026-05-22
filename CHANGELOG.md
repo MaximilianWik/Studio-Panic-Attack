@@ -2,6 +2,65 @@
 
 All notable changes to Studio Panic Attack are tracked here.
 
+## [0.9.2] — gallery polish: arc, depth, rim glow, mist, slot tilt
+
+Five overlapping enhancements to the gallery, all in `Gallery.tsx`:
+
+### I — curved carousel arc
+Slots no longer travel along a straight line in stage X. Each
+slot's `offset` is treated as arc-length along a circle of radius
+`ARC_R = 30`, so:
+- `position.x = sin(angle) * R`
+- `position.z = (cos(angle) - 1) * R + s.depth`
+- `rotation.y = -angle` (slots face the centre of the arc)
+
+Net result: edge slots curve gently away in Z (~5 units back at
+the carousel ends) and turn to face inward. Reads as a real 3D
+stage rather than a parallax slideshow. No change to the wrap or
+pool-cursor logic — `s.offset` math is identical, only the
+position projection moved.
+
+### K — pointer tilt
+Each slot's Y rotation now adds `state.pointer.x * 0.10` (~5.7°
+range) on top of the arc-facing rotation. The carousel "watches"
+the cursor without breaking the curve. Direct write per frame,
+no lerp — pointer already moves smoothly enough.
+
+### E — depth dimming
+Per-slot brightness scales with the slot's final `position.z`.
+Mapped onto `[0.45, 1.0]` via `clamp(0.55 + (z + 4) * 0.06, …)`.
+Applied to:
+- the drei `<Image>` material's `color` uniform → image tints
+  darker the further it sits;
+- the existing frame-colour lerp target → frames dim alongside
+  their image.
+
+Combined with the arc, edge slots are noticeably dimmer than
+centre slots — atmospheric perspective without a real DOF /
+fog pass.
+
+### F — rim glow on hover
+Added a `<mesh ref={rimRef}>` plane just behind each image at
+`z=0.65, scale=[1.08, 1.08, 1]`, additively blended blood red.
+Opacity ramps `0 → 0.6` over ~250 ms when the slot is hovered,
+back to 0 on leave. The mesh sets `visible = false` once opacity
+drops below 0.01 so the 27 idle slots aren't all eating draw
+calls when nothing is hovered.
+
+### H — ground mist
+Two soft-noise circles just above the floor at `y = 0.06` and
+`y = 0.32`, generated from a new `makeMistTexture(seed)` helper
+(per-pixel random luminance → two-pass `filter: blur(10px)` →
+`CanvasTexture` with repeat-wrap). Each layer drifts its UV
+`offset` in opposite directions on X with a small Y wobble, so
+the carousel feels like it's emerging from low fog. Both layers
+are `depthWrite: false` so they don't break the slot frame
+depth, and the entire mist stack is gated behind
+`!profile.isLowPower` (skipped on tiers ≤ 1).
+
+Both mist textures are disposed via a `useEffect` cleanup; same
+for `floorAlphaMap`.
+
 ## [0.9.1] — gallery floor: circular pedestal with radial alpha fade
 
 Replaced the hard-edged 60×60 reflective square with the
