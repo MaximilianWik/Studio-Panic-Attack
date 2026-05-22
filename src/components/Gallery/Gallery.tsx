@@ -21,7 +21,7 @@ const SLOT_COUNT = 18;
 /** Minimum offset separation enforced when a slot re-enters on the
     right after wrapping. Larger gap = more breathing room between
     images, more visible spread across the carousel. */
-const MIN_SPAWN_GAP = 5.5;
+const MIN_SPAWN_GAP = 4.5;
 
 /** Screen-pixel to carousel-offset multiplier for click-and-drag.
     Kept low so the drag feels light and physical — the carousel

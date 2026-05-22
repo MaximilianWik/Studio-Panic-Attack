@@ -2,6 +2,10 @@
 
 All notable changes to Studio Panic Attack are tracked here.
 
+## [1.0.1] — gallery: spawn gap 5.5 → 4.5
+
+- `MIN_SPAWN_GAP` 5.5 → 4.5.
+
 ## [1.0.0] — gallery: spawn gap for doubled tilt + drag hint
 
 ### Spawn gap widened for doubled tilt
