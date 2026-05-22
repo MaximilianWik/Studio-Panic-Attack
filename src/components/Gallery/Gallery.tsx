@@ -9,23 +9,41 @@ import { assets, type AssetEntry } from '../../helpers/useImageAssets';
 import { useDeviceProfile } from '../../helpers/useDeviceProfile';
 import { openLightbox } from '../../helpers/lightbox';
 
-const GOLDEN = 1.61803398875;
 const CAROUSEL_SPEED = 0.15;
-const CAROUSEL_WIDTH = 36;
+const CAROUSEL_WIDTH = 44;
 /** Radius of the carousel arc. Slots travel along an arc of this
     radius rather than a straight line, so the row of frames bends
     gently away from the camera at the edges (item I). */
 const ARC_R = 30;
-/** Number of visible slots — fewer than total images so the pool can rotate. */
-const SLOT_COUNT = 28;
+/** Number of visible slots — fewer than total images so the pool can rotate.
+    Tuned to fill the deeper Z range without crowding. */
+const SLOT_COUNT = 36;
+
+/** Stage-local Z range for slots. Negative = further from camera.
+    Front cap is well behind the gallery floor's "Have a peek inside
+    my brain" text (which sits at z=3) so slots can never visually
+    poke through the text from the front. Back cap pushes the
+    carousel into a 18-unit Z corridor for real depth. */
+const SLOT_Z_FRONT = -2;
+const SLOT_Z_BACK = -20;
+
+/** Camera Z relative to the stage origin (camera world z=6, stage
+    world z=-2 → camera is +8 from stage origin). Used for the
+    depth-driven size compensation so back slots don't shrink to
+    nothing. */
+const STAGE_TO_CAMERA = 8;
 
 interface SlotState {
   /** current image asset for this slot */
   asset: AssetEntry;
   /** current X offset along the carousel belt */
   offset: number;
-  /** stable Z depth for this slot */
+  /** stable Z depth for this slot (stage local; SLOT_Z_BACK..SLOT_Z_FRONT) */
   depth: number;
+  /** stable per-slot scroll-speed multiplier — biased slow for far
+      slots (parallax), with a small random jitter so adjacent slots
+      don't move in lockstep. */
+  speedFactor: number;
   /** breathing seed (regenerated each time a new image is assigned) */
   seed: number;
 }
@@ -124,14 +142,30 @@ export function Gallery() {
   // Pool cursor — advances when a slot needs a fresh image
   const poolCursor = useRef(0);
 
-  // Initialize slots — pick the first SLOT_COUNT distinct images from the pool
+  // Initialize slots — pick the first SLOT_COUNT distinct images from the pool.
+  // Depth is spread across SLOT_Z_BACK..SLOT_Z_FRONT via a deterministic
+  // hash so the layout is stable across reloads. Speed factor is
+  // anchored at 1.0× for slots at the front cap and biased slower
+  // for far slots (parallax), with ±20 % random jitter on top so
+  // adjacent slots don't drift in lockstep.
   const slots = useRef<SlotState[]>(
     Array.from({ length: SLOT_COUNT }, (_, i) => {
       const spacing = CAROUSEL_WIDTH / SLOT_COUNT;
+      const r = ((i * 7919) % 1000) / 1000; // 0..1, deterministic
+      const depth = SLOT_Z_BACK + r * (SLOT_Z_FRONT - SLOT_Z_BACK);
+      // Distance from camera (approx, ignores arc curve); used to
+      // bias speed so back slots drift slower for stronger parallax.
+      // Anchor: a slot at SLOT_Z_FRONT has factor 1.0 and the curve
+      // falls off as the slot moves further back.
+      const dist = STAGE_TO_CAMERA - depth;
+      const minDist = STAGE_TO_CAMERA - SLOT_Z_FRONT; // front-row distance
+      const baseSpeed = Math.pow(minDist / dist, 0.55); // ~1.0 front, ~0.55 back
+      const jitter = 0.8 + ((i * 6151) % 100) / 100 * 0.4; // 0.8..1.2
       return {
         asset: pool[i % pool.length],
         offset: i * spacing - CAROUSEL_WIDTH / 2,
-        depth: -1 + ((i * 7919) % 100) / 20, // -1 to +4
+        depth,
+        speedFactor: baseSpeed * jitter,
         seed: Math.random(),
       };
     }),
@@ -164,11 +198,13 @@ export function Gallery() {
     groupRef.current.visible = v > 0.02;
     if (v < 0.02) return;
 
-    // Advance carousel
+    // Advance carousel — each slot uses its own speedFactor for
+    // parallax (far slots drift slower than near). Spacing drifts
+    // over time but the wrap logic keeps each slot looping.
     const spacing = CAROUSEL_WIDTH / SLOT_COUNT;
     for (let i = 0; i < slots.current.length; i++) {
       const s = slots.current[i];
-      s.offset -= CAROUSEL_SPEED * dt;
+      s.offset -= CAROUSEL_SPEED * s.speedFactor * dt;
       // Wrap: when fully off-screen left, recycle to the right with a NEW image
       if (s.offset < -CAROUSEL_WIDTH / 2 - 2) {
         s.offset += CAROUSEL_WIDTH + spacing;
@@ -329,16 +365,28 @@ function CarouselSlot({ slotIndex, slots }: CarouselSlotProps) {
 
   // Variable frame size based on aspect of the CURRENTLY assigned asset
   const aspect = slot.asset.aspect;
-  // Per-slot stable size multiplier (random per slot, varies between slots)
-  const sizeMultiplier = useMemo(() => 0.63 + Math.random() * 0.63, []); // 0.63 .. 1.26
+  // Per-slot stable size multiplier — wider range for true variation
+  // between intimate small slots and statement large slots.
+  const sizeMultiplier = useMemo(() => 0.55 + Math.random() * 1.1, []); // 0.55 .. 1.65
+
+  // Depth-driven size compensation. Slots further from the camera
+  // need to be physically larger or they shrink to specks. Curve
+  // is a soft power of distance/4 so back slots are roughly 4× the
+  // physical size of front slots — they read at a similar apparent
+  // size on screen but with subtle "further away" diminishing.
+  // sizeMultiplier still varies them per-slot on top.
+  const depth = slot.depth;
+  const distance = STAGE_TO_CAMERA - depth; // approx; ignores arc curve
+  const depthSizeFactor = Math.pow(distance / 4, 0.72);
 
   // Base sizes; aspect drives orientation
   const baseW = aspect >= 1 ? 1.54 : 1.05;
-  const w = baseW * sizeMultiplier;
+  const w = baseW * sizeMultiplier * depthSizeFactor;
   const h = w / aspect;
-  // Cap so portraits don't exceed reasonable height
-  const clampedH = Math.min(h, GOLDEN * 1.82);
-  const clampedW = Math.min(w, 2.52);
+  // Generous caps so the back-rank slots can actually be huge without
+  // the carousel turning into a wall of identical rectangles.
+  const clampedH = Math.min(h, 9);
+  const clampedW = Math.min(w, 8);
 
   useFrame((state, dt) => {
     const s = slots.current[slotIndex];
@@ -368,14 +416,15 @@ function CarouselSlot({ slotIndex, slots }: CarouselSlotProps) {
 
     // E — depth dimming. Slots farther from the camera (more
     // negative position.z relative to the stage) get tinted darker.
-    // Combined with the arc, edge slots are noticeably dimmer than
-    // centre slots → atmospheric perspective for free.
+    // With SLOT_Z_FRONT = -2 and arc-curve up to ~-8 at the edges,
+    // z ranges roughly +0/-2 (centre, front) down to ~-28 (far edge,
+    // back). Map [-28, -2] onto [0.45, 1.0].
     const z = groupRef.current.position.z;
-    // z ranges roughly +4 (closest, low-arc + high s.depth) down
-    // to about -7 (far edge of arc + low s.depth). Map onto
-    // [0.45, 1.0] so the closest reads at full brightness and the
-    // farthest never goes fully black.
-    const depthFactor = THREE.MathUtils.clamp(0.55 + (z + 4) * 0.06, 0.45, 1.0);
+    const depthFactor = THREE.MathUtils.lerp(
+      0.45,
+      1.0,
+      THREE.MathUtils.clamp((z + 28) / 26, 0, 1),
+    );
 
     // Image colour tint via the material's `color` uniform.
     const imat = imageRef.current.material as THREE.Material & { color?: THREE.Color };

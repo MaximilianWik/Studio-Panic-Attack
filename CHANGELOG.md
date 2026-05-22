@@ -2,6 +2,111 @@
 
 All notable changes to Studio Panic Attack are tracked here.
 
+## [0.9.4] — gallery: density down, parallax up, slots fully behind text
+
+- **Density** — `SLOT_COUNT` 44 → **36**. The 44-slot carousel was
+  visually crowded, especially with the wider size variation; 36
+  fills the deeper Z range without packing slots on top of each
+  other.
+- **Parallax bumped ~20 %** — speedFactor formula reworked:
+  - Anchor changed from `pow(4/dist, 0.4)` to
+    `pow(minDist/dist, 0.55)` where `minDist =
+    STAGE_TO_CAMERA - SLOT_Z_FRONT` (= 10 with the new front cap).
+    A slot at the front cap now gets a clean `1.0×` baseline
+    instead of being capped at ~0.6 because nothing was at the
+    reference distance.
+  - Random jitter widened from `0.85..1.15` (±15 %) to
+    `0.8..1.2` (±20 %).
+  - Resulting per-slot speed range with the new exponent:
+    front ≈ 1.0×, back ≈ 0.56× (was 1.0× / ~0.55× nominally but
+    with a much smaller usable spread once jitter compounded).
+    Real-feeling layered drift now.
+- **Front cap pushed back** — `SLOT_Z_FRONT` `+0.5` → `-2`. With
+  the gallery floor text at z=3, a 5-unit Z gap between the
+  closest possible slot and the text is enough headroom for the
+  arc curve, the size compensation, and any rotation jitter — no
+  slot can visually pass in front of "Have a peek inside my
+  brain" anymore.
+- Size caps lifted again (`6/7` → `8/9`) since the further-back
+  cap means depth-size compensation produces slightly larger
+  worst-case dimensions.
+- Depth-dim curve mapped onto `[-28, -2]` (was `[-28, +0.5]`) to
+  match the new front cap.
+
+## [0.9.3] — gallery: deeper depth, exponential size, parallax speeds
+
+Restructured the carousel's spatial layout for real depth and
+visual variety, and prevented slots from clipping the floor text.
+
+### Depth range pushed way back
+
+| | before | now |
+|---|---:|---:|
+| Slot Z range (stage local) | -1 … +4 | **-20 … +0.5** |
+| Front cap | +4 | **+0.5** |
+| Back cap | -1 | **-20** |
+
+`SLOT_Z_FRONT = +0.5` keeps every slot behind the gallery floor's
+"Have a peek inside my brain" text (which sits at floor z=3) — the
+text is now always in front of every slot, never occluded. The
+back cap pushes the carousel into a 20-unit Z corridor instead
+of a 5-unit slab.
+
+### Distance-driven size compensation
+
+A back-row slot at world distance ~30 from the camera would shrink
+to a speck without compensation. New `depthSizeFactor`:
+
+```
+depthSizeFactor = pow(distance / 4, 0.72)
+```
+
+(`distance = STAGE_TO_CAMERA - slot.depth`, with
+`STAGE_TO_CAMERA = 8`.) Resulting world sizes:
+
+| slot.depth | distance | depthSizeFactor |
+|---:|---:|---:|
+| +0.5 (front) | 4   | 0.92 |
+| -1           | 9   | 1.81 |
+| -10          | 18  | 2.95 |
+| -20 (back)   | 28  | 4.13 |
+
+Back slots are physically ~4× a front slot, but appear at a
+similar visual size on the camera with subtle "further away"
+diminishing. Per-slot `sizeMultiplier` widened from
+`0.63 .. 1.26` → **`0.55 .. 1.65`** so adjacent slots vary more
+in apparent size on top of distance compensation.
+
+`clampedW / clampedH` caps lifted from `2.52 / 2.94` → **`6 / 7`**
+so the depth-driven sizing isn't clipped.
+
+### Per-slot parallax speeds
+
+`SlotState` gains a `speedFactor` field. Set once at init from:
+
+```
+speedFactor = pow(4 / distance, 0.4) × jitter(0.85..1.15)
+```
+
+So a front slot drifts ~1.0× and a back slot ~0.55× the base
+`CAROUSEL_SPEED`, with each slot getting its own ±15 % twist on
+top so they don't drift in lockstep. Stronger sense of real
+depth as the carousel moves; spacing drifts over time but the
+per-slot wrap logic keeps everything looping.
+
+### Density: 28 → 44 slots, carousel 36 → 44 wide
+
+Bumped `SLOT_COUNT` from 28 → 44 and `CAROUSEL_WIDTH` from
+36 → 44 to fill the deeper Z corridor — without more slots the
+back rows would read as empty. Spacing stays at 1.0 stage units
+between slot anchors.
+
+### Depth-dim curve retuned
+
+The E (depth dimming) lerp range was tuned for the old shallow
+Z. Updated to map `[-28, +0.5]` onto `[0.45, 1.0]` so the
+darkest back-row slot still has 45 % of full brightness.
+
 ## [0.9.2] — gallery polish: arc, depth, rim glow, mist, slot tilt
 
 Five overlapping enhancements to the gallery, all in `Gallery.tsx`:
