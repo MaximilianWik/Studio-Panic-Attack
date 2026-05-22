@@ -114,47 +114,6 @@ video {
 }
 
 /* ----- Hero scroll prompt ----- */
-
-/* Below-logo slot — fixed height so the logo stays centered as
-   contents swap from progress bar (loading) → scroll prompt (ready). */
-.spa-hero__cta {
-  position: relative;
-  height: 28px;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  gap: 0;
-}
-
-/* Loading bar — thin red line, branded. Width is driven by inline
-   transform: scaleX(progress) on the inner fill. Fades out once ready. */
-.spa-load-bar {
-  position: absolute;
-  inset: 0;
-  width: 220px;
-  height: 1px;
-  margin: auto;
-  top: 50%;
-  transform: translateY(-0.5px);
-  background: rgba(246, 243, 238, 0.12);
-  overflow: hidden;
-  opacity: 1;
-  transition: opacity 0.4s ease 0.05s;
-}
-.spa-load-bar__fill {
-  width: 100%;
-  height: 100%;
-  background: #d30000;
-  transform-origin: left center;
-  transform: scaleX(0);
-  transition: transform 0.25s ease-out;
-  box-shadow: 0 0 8px rgba(211, 0, 0, 0.6);
-}
-.spa-load-bar--done {
-  opacity: 0;
-}
-
 .spa-scroll-prompt {
   font-family: var(--font-mono);
   font-size: 10px;
@@ -852,4 +811,273 @@ video {
 .spa-cat-elegant--portrait .spa-cat-elegant__body-wrap {
   text-align: left;
   margin: 0 auto;
+}
+
+/* ============================================================
+   Loading screen
+   ============================================================
+   Fullscreen overlay shown over HeroOverlay's mesh-gradient
+   backdrop while the first batch of gallery textures preload.
+   Fades out via .spa-loader--done; underlying logo + scroll
+   prompt take over once gone. */
+
+.spa-loader {
+  position: fixed;
+  inset: 0;
+  z-index: 5;
+  pointer-events: none;
+  color: #f6f3ee;
+  opacity: 1;
+  transition: opacity 0.7s cubic-bezier(0.65, 0, 0.35, 1);
+  overflow: hidden;
+}
+
+.spa-loader--done {
+  opacity: 0;
+}
+
+/* Faint repeating horizontal scanlines for CRT/film vibe. */
+.spa-loader__scanlines {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: repeating-linear-gradient(
+    to bottom,
+    rgba(246, 243, 238, 0.025) 0px,
+    rgba(246, 243, 238, 0.025) 1px,
+    transparent 1px,
+    transparent 3px
+  );
+  mix-blend-mode: overlay;
+  animation: spa-loader-scan 6s linear infinite;
+}
+
+@keyframes spa-loader-scan {
+  from { background-position: 0 0; }
+  to   { background-position: 0 60px; }
+}
+
+/* Corner labels — small, mono, letter-spaced. */
+.spa-loader__corner {
+  position: absolute;
+  font-family: var(--font-mono);
+  font-size: 10px;
+  letter-spacing: 0.5em;
+  text-transform: uppercase;
+  color: rgba(246, 243, 238, 0.55);
+  white-space: nowrap;
+}
+
+.spa-loader__corner--tl { top: 28px; left: 32px; }
+.spa-loader__corner--tr { top: 28px; right: 32px; display: flex; align-items: center; gap: 10px; }
+.spa-loader__corner--bl { bottom: 28px; left: 32px; }
+.spa-loader__corner--br { bottom: 28px; right: 32px; }
+
+.spa-loader__blink {
+  color: #d30000;
+  font-size: 14px;
+  letter-spacing: 0;
+  animation: spa-loader-blink 1.1s steps(2) infinite;
+}
+
+@keyframes spa-loader-blink {
+  0%, 49%   { opacity: 1; }
+  50%, 100% { opacity: 0.15; }
+}
+
+/* Center stack — the percentage hero. */
+.spa-loader__center {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 26px;
+  padding: 0 32px;
+}
+
+/* Massive italic counter. */
+.spa-loader__pct {
+  font-family: "CormorantGaramondLoader", "PP Editorial Old", Georgia, serif;
+  font-style: italic;
+  font-weight: 500;
+  font-size: clamp(120px, 22vw, 320px);
+  line-height: 0.95;
+  letter-spacing: -0.02em;
+  color: #f6f3ee;
+  text-shadow:
+    0 4px 32px rgba(10, 10, 10, 0.55),
+    0 1px 0  rgba(211, 0, 0, 0.35);
+  display: flex;
+  align-items: baseline;
+  gap: 0.05em;
+}
+
+.spa-loader__pct-num {
+  /* tabular-style so digits don't shift width as they tick up */
+  font-variant-numeric: tabular-nums;
+  font-feature-settings: "tnum";
+}
+
+.spa-loader__pct-sym {
+  font-size: 0.45em;
+  color: rgba(246, 243, 238, 0.55);
+  margin-left: 0.04em;
+}
+
+/* Hairline progress bar. */
+.spa-loader__bar {
+  position: relative;
+  width: min(720px, 60vw);
+  height: 1px;
+  background: rgba(246, 243, 238, 0.14);
+  overflow: visible;
+}
+
+.spa-loader__bar-fill {
+  width: 100%;
+  height: 100%;
+  background: #d30000;
+  transform-origin: left center;
+  transform: scaleX(0);
+  transition: transform 0.18s linear;
+  box-shadow: 0 0 12px rgba(211, 0, 0, 0.6);
+}
+
+/* Tiny vertical glyph at the leading edge of the bar. */
+.spa-loader__bar-tip {
+  position: absolute;
+  top: -7px;
+  width: 2px;
+  height: 15px;
+  background: #d30000;
+  box-shadow: 0 0 12px rgba(211, 0, 0, 0.85);
+  transition: left 0.18s linear;
+}
+
+/* Cycling phrase — all phrases stacked in same slot, only the
+   active one is opaque. Cross-fade gives that satisfying ticker feel. */
+.spa-loader__phrase {
+  position: relative;
+  height: 14px;
+  width: min(720px, 60vw);
+}
+
+.spa-loader__phrase-item {
+  position: absolute;
+  inset: 0;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: 0.45em;
+  text-transform: uppercase;
+  color: rgba(246, 243, 238, 0.62);
+  text-align: center;
+  opacity: 0;
+  transform: translateY(4px);
+  transition: opacity 0.45s ease, transform 0.45s ease;
+}
+
+.spa-loader__phrase-item.is-active {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+/* Tighter padding on phones. */
+@media (max-width: 700px) {
+  .spa-loader__corner { font-size: 8.5px; letter-spacing: 0.4em; }
+  .spa-loader__corner--tl,
+  .spa-loader__corner--tr { top: 16px; }
+  .spa-loader__corner--bl,
+  .spa-loader__corner--br { bottom: 16px; }
+  .spa-loader__corner--tl,
+  .spa-loader__corner--bl { left: 18px; }
+  .spa-loader__corner--tr,
+  .spa-loader__corner--br { right: 18px; }
+  .spa-loader__phrase-item { font-size: 10px; letter-spacing: 0.35em; }
+}
+
+/* ============================================================
+   Under construction page
+   ============================================================ */
+
+.spa-uc {
+  position: fixed;
+  inset: 0;
+  z-index: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 28px;
+  padding: 32px;
+  text-align: center;
+}
+
+.spa-uc__bg {
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  background: #050505;
+}
+
+.spa-uc__gif {
+  width: clamp(220px, 38vw, 460px);
+  height: auto;
+  border: 1px solid rgba(246, 243, 238, 0.18);
+  border-radius: 4px;
+  box-shadow:
+    0 24px 80px rgba(0, 0, 0, 0.55),
+    0 0 0 6px rgba(211, 0, 0, 0.08);
+  image-rendering: pixelated;
+}
+
+.spa-uc__title {
+  font-family: var(--font-display);
+  font-style: italic;
+  font-weight: 500;
+  font-size: clamp(38px, 6vw, 88px);
+  line-height: 1.05;
+  letter-spacing: -0.01em;
+  color: #f6f3ee;
+  margin: 8px 0 0;
+}
+
+.spa-uc__sub {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: 0.5em;
+  text-transform: uppercase;
+  color: rgba(246, 243, 238, 0.55);
+}
+
+.spa-uc__back {
+  margin-top: 12px;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: 0.4em;
+  text-transform: uppercase;
+  color: #f6f3ee;
+  text-decoration: none;
+  border: 1px solid rgba(246, 243, 238, 0.4);
+  padding: 12px 22px;
+  transition: background 0.2s ease, border-color 0.2s ease, color 0.2s ease;
+}
+
+.spa-uc__back:hover {
+  background: #d30000;
+  border-color: #d30000;
+  color: #f6f3ee;
+}
+
+.spa-uc__route {
+  position: absolute;
+  top: 28px;
+  left: 32px;
+  font-family: var(--font-mono);
+  font-size: 10px;
+  letter-spacing: 0.5em;
+  text-transform: uppercase;
+  color: rgba(246, 243, 238, 0.45);
 }

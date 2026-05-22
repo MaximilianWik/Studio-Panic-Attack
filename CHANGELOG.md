@@ -2,6 +2,90 @@
 
 All notable changes to Studio Panic Attack are tracked here.
 
+## [0.6.0] — proper loading screen + under-construction routes
+
+### feat(loading): full-screen LoadingScreen replaces the hairline bar
+
+- The old gate was just a 220 px red line under the logo — read as
+  "is this thing broken?" rather than a deliberate moment. Replaced
+  with a proper fullscreen entry experience.
+- New `components/Loading/LoadingScreen.tsx`:
+  - Big italic Cormorant Garamond percentage counter at center
+    (`clamp(120px, 22vw, 320px)`). Displayed value is `requestAnimationFrame`-
+    lerped toward `progress * 100` so the discrete onload jumps
+    don't tick visibly. Snaps to 100 when `ready` flips so the
+    fade-out never happens mid-lerp at 97%.
+  - Hairline progress bar with a small vertical glyph at the
+    leading edge, both glowing red.
+  - Cycling phrase ticker beneath ("rendering brain", "tuning
+    dread", "parsing portraits", "calibrating chaos", "warming
+    neurons", "assembling mood", "buffering memories",
+    "sharpening edges", "composing panic"), cross-fading every
+    1.1 s.
+  - Corner labels: "STUDIO · PANIC · ATTACK" top-left, blinking
+    red dot + "LOADING" top-right, signature bottom-left,
+    "2026 / v0.5" bottom-right.
+  - Faint repeating CRT scan-line overlay across the whole screen
+    (CSS gradient + slow keyframe drift).
+  - Inlines an `@font-face` for the loader's Cormorant italic so
+    it doesn't FOIT during the brief moment it's on screen.
+  - Fades out over 700 ms (`cubic-bezier(0.65, 0, 0.35, 1)`) once
+    `ready === true`; HeroOverlay's logo + scroll prompt fade in
+    underneath.
+- `HeroOverlay.tsx` cleaned up: removed `.spa-hero__cta` slot,
+  the old `.spa-load-bar` markup, and the `progress` prop. Logo
+  + scroll prompt are simply hidden (`opacity: 0`) until `ready`,
+  then fade in.
+- `App.tsx`: render `<LoadingScreen progress ready />` inside
+  `<ErrorBoundary>`. HeroOverlay no longer needs `progress`.
+- CSS: removed `.spa-hero__cta`, `.spa-load-bar*`. Added a
+  `Loading screen` block with `.spa-loader` plus children. Mobile
+  breakpoint shrinks the corner labels and phrase font.
+
+### feat(routing): under-construction placeholder pages for nav links
+
+- Nav menu links (Projects, Highlights, Vocabulary, About,
+  Contact) all pointed at routes that didn't exist as content.
+  Rather than pull in `react-router` for five placeholder pages,
+  added a path-based root picker in `main.tsx`:
+  - `/` → `<App />` (the real site)
+  - `/projects | /highlights | /vocabulary | /about | /contact`
+    → `<UnderConstruction />`
+  - any other path → also `<UnderConstruction />` so typos /
+    stale links don't 404.
+- New `components/UnderConstruction/UnderConstruction.tsx`:
+  fullscreen page with `codingCat.gif` (from
+  `public/Under construction/codingCat.gif`), "Under construction
+  :3" in display italic, a small mono sub-line, the route label
+  in the top-left corner, and a "← back to studio" button styled
+  to match the nav vocabulary.
+- CSS: new `Under construction page` block — `.spa-uc`,
+  `.spa-uc__bg`, `.spa-uc__gif`, `.spa-uc__title`, `.spa-uc__sub`,
+  `.spa-uc__back`, `.spa-uc__route`. Pixelated `image-rendering`
+  on the gif keeps the cat crisp at scaled sizes.
+- Vercel rewrites in `vercel.json` already serve `index.html` for
+  all paths, so deep-links and hard reloads work in production.
+
+## [0.5.2] — Featured Pieces: float quote into 3D scene
+
+- `Highlights.tsx`: the quote ("There may be no better way to
+  communicate what we do…") was wedged into a 2-col DOM grid next
+  to the "Featured pieces" h2, fighting it for space. Removed it
+  from the DOM layout entirely; the title block is now a single
+  left-aligned column.
+- New `FloatingQuote` 3D element, rendered as drei `<Text>` inside
+  the Highlights `<group>`. Sits at `[0, 4.6, -3.2]` (above and
+  behind the cards, in actual world space — scrolls in with the
+  rest of the section). Cormorant Garamond italic 500 to match the
+  gallery floor. Soft cream fill at 55%, faint outline for legibility
+  against the cards. `maxWidth=11`, centered, line-height 1.35 →
+  wraps to 3 readable lines.
+- Subtle motion: `useFrame` lerps a pointer-parallax offset onto
+  position and adds a slow `sin` drift on top. Gives the quote
+  presence without competing with the cards. No CSS animation —
+  it's purely 3D.
+- Removed `.spa-highlights-quote` CSS; no longer used.
+
 ## [0.5.1] — gallery floor text refresh
 
 - `Gallery.tsx`: removed the duplicate floor texts. The italic

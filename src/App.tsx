@@ -8,6 +8,7 @@ import PostFx from './components/PostFx';
 import Cursor from './components/Cursor';
 import ErrorBoundary from './components/ErrorBoundary';
 import HeroOverlay from './components/Hero/HeroOverlay';
+import LoadingScreen from './components/Loading/LoadingScreen';
 import NavHeader from './components/NavHeader';
 import ScrollBridge from './components/ScrollBridge';
 import Lightbox from './components/Lightbox';
@@ -90,7 +91,7 @@ export function App() {
 
   return (
     <ErrorBoundary>
-      <HeroOverlay ready={ready} progress={progress} />
+      <HeroOverlay ready={ready} />
       <div style={{ position: 'fixed', inset: 0, zIndex: 1, pointerEvents: 'auto' }}>
         <Canvas
           dpr={dpr}
@@ -111,6 +112,7 @@ export function App() {
       <NavHeader />
       <Cursor />
       <Lightbox />
+      <LoadingScreen progress={progress} ready={ready} />
     </ErrorBoundary>
   );
 }
