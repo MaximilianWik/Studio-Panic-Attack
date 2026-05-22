@@ -1,6 +1,14 @@
 /**
- * Section registry — v5. Gallery extended to 1.5 pages to give
- * breathing room before category 01. Total = 7.1 pages.
+ * Section registry — v6.
+ * - Gallery extended to 2.0 pages so the carousel has space to breathe
+ *   before the user falls into category 01 (was 1.5 → felt cramped,
+ *   01 read on top of the gallery).
+ * - 3D (02) shrunk to 0.4 pages — it has no sculpture (relocated to
+ *   01), only text, so it doesn't need a full page. This pulls
+ *   Hedgehog (03) much closer to Knot (01): graphic→ai distance
+ *   collapses from 18 → 13 world units.
+ * - Net total stays at 7.1 pages, so Layout.tsx's hardcoded travel
+ *   range (64.5) does NOT need to change.
  */
 
 export type SectionId =
@@ -20,12 +28,12 @@ export interface SectionDef {
 }
 
 export const sections: SectionDef[] = [
-  { id: 'hero', length: 0.6, label: 'Home' },
-  { id: 'gallery', length: 1.5, label: 'Projects' },
-  { id: 'graphic', length: 0.9, label: 'Graphic' },
-  { id: 'threeD', length: 0.9, label: '3D' },
-  { id: 'ai', length: 0.9, label: 'AI' },
-  { id: 'ux', length: 0.9, label: 'UX' },
+  { id: 'hero',       length: 0.6, label: 'Home' },
+  { id: 'gallery',    length: 2.0, label: 'Projects' },
+  { id: 'graphic',    length: 0.9, label: 'Graphic' },
+  { id: 'threeD',     length: 0.4, label: '3D' },
+  { id: 'ai',         length: 0.9, label: 'AI' },
+  { id: 'ux',         length: 0.9, label: 'UX' },
   { id: 'vocabulary', length: 0.7, label: 'Vocabulary' },
   { id: 'highlights', length: 0.7, label: 'Highlights' },
 ];

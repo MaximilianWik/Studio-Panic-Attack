@@ -18,9 +18,15 @@ export function Layout() {
   const scroll = useScroll();
 
   // Hardcoded travel range (TOTAL_PAGES = 7.1):
-  // hero center worldY = -3.0 → need group.y = 3.0 at offset=0
-  // highlights center worldY = -67.5 → need group.y = 67.5 at offset=1
-  // travel = 64.5
+  //   hero center      worldY = -3.0  → group.y = 3.0  at offset=0
+  //   gallery center   worldY = -16.0 (gallery is now 2.0 pages)
+  //   graphic (01)     worldY = -30.5
+  //   threeD  (02)     worldY = -37.0 (length 0.4 — no sculpture)
+  //   ai      (03)     worldY = -43.5 (Hedgehog — close to Knot)
+  //   ux      (04)     worldY = -52.5
+  //   vocabulary       worldY = -60.5
+  //   highlights       worldY = -67.5 → group.y = 67.5 at offset=1
+  // travel = 64.5 (unchanged after the v6 section retune).
   useFrame(() => {
     if (!groupRef.current) return;
     groupRef.current.position.y = 3.0 + scroll.offset * 64.5;

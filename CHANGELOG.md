@@ -2,6 +2,47 @@
 
 All notable changes to Studio Panic Attack are tracked here.
 
+## [0.7.0] — section retune: gallery breathing room, Hedgehog ↔ Knot
+
+After the loader work, two layout problems became obvious on the
+real page:
+
+- **01 (Graphic / Knot) was reading on top of the gallery.** Gallery
+  was only 1.5 pages so the user hadn't finished panning across the
+  carousel before the giant outlined "01" started encroaching from
+  below.
+- **03 (AI / Hedgehog) felt orphaned far below 01.** The two
+  sculptures (Knot in 01, Hedgehog in 03) read as a pair but were
+  18 world units apart with the (sculpture-less) 02 occupying a
+  full 0.9 pages between them.
+
+Retuned `src/config/sections.ts` to v6:
+
+| section          | length     | center → worldY     | notes |
+|------------------|-----------:|--------------------:|-------|
+| hero             | 0.6        |  0.30 → -3.0        | unchanged |
+| gallery          | **2.0** (was 1.5) |  1.60 → -16.0 | extra half-page so 01 doesn't crowd the carousel |
+| graphic (01)     | 0.9        |  3.05 → -30.5       | shifts 5 units later |
+| threeD (02)      | **0.4** (was 0.9) |  3.70 → -37.0 | no sculpture (relocated to 01); doesn't need a full page |
+| ai (03)          | 0.9        |  4.35 → -43.5       | unchanged |
+| ux (04)          | 0.9        |  5.25 → -52.5       | unchanged |
+| vocabulary       | 0.7        |  6.05 → -60.5       | unchanged |
+| highlights       | 0.7        |  6.75 → -67.5       | unchanged |
+
+Net `TOTAL_PAGES` stays at **7.1** because gallery's +0.5 cancels
+threeD's −0.5. So Layout.tsx's hardcoded travel range (`3.0 +
+offset * 64.5`) is **still correct** — only its comment was
+refreshed to enumerate the new section centers.
+
+Result:
+- Gallery has ~33 % more scroll length to play out before 01 hits.
+- Knot ↔ Hedgehog distance drops from **18 → 13 world units**
+  (5 units closer); 02 still has time for the user to read its
+  body without a sculpture competing for attention.
+- Every section after 03 is byte-for-byte at the same world Y as
+  before, so the highlights handoff and the global travel math
+  are unaffected.
+
 ## [0.6.4] — loader %: outline the symbol to match the number
 
 - `.spa-loader__pct-sym`: dropped the filled-cream override.
