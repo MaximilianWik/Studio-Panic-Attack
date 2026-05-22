@@ -2,6 +2,15 @@
 
 All notable changes to Studio Panic Attack are tracked here.
 
+## [0.3.2] — pull sculptures up: torus-knot to 01, Hedgehog to 03
+
+- Torus-knot composition (Lens + headline) moved from `ThreeDeeArt.tsx`
+  back to `GraphicDesign.tsx` — now appears right below the gallery.
+- Hedgehog moved from `UXDesign.tsx` to `AIArt.tsx` — appears next.
+- 02 (3D Art) and 04 (UX Design) are now text-only.
+- Sides preserved as registered (graphic left / threeD right / ai
+  left / ux right) so visual side alternation stays intact.
+
 ## [0.3.1] — pull CMYK + Latent Bloom
 
 - 01 (Graphic Design): sculpture removed, hero is empty (text only).
