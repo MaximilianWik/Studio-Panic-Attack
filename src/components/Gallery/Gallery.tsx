@@ -15,9 +15,17 @@ const CAROUSEL_WIDTH = 44;
     radius rather than a straight line, so the row of frames bends
     gently away from the camera at the edges (item I). */
 const ARC_R = 30;
-/** Number of visible slots — fewer than total images so the pool can rotate.
-    Tuned to fill the deeper Z range without crowding. */
-const SLOT_COUNT = 36;
+/** Number of visible slots. */
+const SLOT_COUNT = 18;
+
+/** Minimum offset separation enforced when a slot re-enters on the
+    right after wrapping. As slots drift at different speeds the
+    initial uniform spacing breaks down; without this check they can
+    bunch up and the pointer-tilt causes their geometry to clip.
+    One cascade pass at spawn time is enough — the gap won't
+    perfectly survive the next lap, but it prevents the worst
+    accumulation at the moment of re-entry. */
+const MIN_SPAWN_GAP = 2.2;
 
 /** Stage-local Z range for slots. Negative = further from camera.
     Front cap is well behind the gallery floor's "Have a peek inside
@@ -210,6 +218,22 @@ export function Gallery() {
         s.offset += CAROUSEL_WIDTH + spacing;
         s.asset = pickNextAsset(s.asset.url);
         s.seed = Math.random();
+
+        // Spawn-gap safeguard: cascade the offset right until it is
+        // at least MIN_SPAWN_GAP away from every other slot. Without
+        // this, parallax-speed drift bunches slots together over time
+        // and the pointer-tilt makes their geometry clip.
+        for (let pass = 0; pass < SLOT_COUNT; pass++) {
+          let clean = true;
+          for (let j = 0; j < slots.current.length; j++) {
+            if (j === i) continue;
+            if (Math.abs(s.offset - slots.current[j].offset) < MIN_SPAWN_GAP) {
+              s.offset = slots.current[j].offset + MIN_SPAWN_GAP;
+              clean = false;
+            }
+          }
+          if (clean) break;
+        }
       }
     }
 

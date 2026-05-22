@@ -2,6 +2,22 @@
 
 All notable changes to Studio Panic Attack are tracked here.
 
+## [0.9.6] — gallery: density 18 + spawn-gap safeguard
+
+- `SLOT_COUNT` 26 → **18**.
+- New `MIN_SPAWN_GAP = 2.2`. When a slot wraps and re-enters on the
+  right side, a cascade loop checks every other slot: if the new
+  offset is within `MIN_SPAWN_GAP` of any neighbour, the slot is
+  pushed rightward and the check repeats (up to `SLOT_COUNT`
+  iterations) until it finds a clear berth. Prevents the
+  parallax-speed drift from bunching slots together over successive
+  laps, which was causing the pointer-tilt to clip adjacent
+  geometry.
+
+## [0.9.5] — gallery: density 36 → 26
+
+- `SLOT_COUNT` 36 → 26.
+
 ## [0.9.4] — gallery: density down, parallax up, slots fully behind text
 
 - **Density** — `SLOT_COUNT` 44 → **36**. The 44-slot carousel was
