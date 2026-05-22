@@ -9,7 +9,7 @@ import { assets, type AssetEntry } from '../../helpers/useImageAssets';
 import { useDeviceProfile } from '../../helpers/useDeviceProfile';
 import { openLightbox } from '../../helpers/lightbox';
 
-const CAROUSEL_SPEED = 0.15;
+const CAROUSEL_SPEED = 0.28;
 const CAROUSEL_WIDTH = 44;
 /** Radius of the carousel arc. Slots travel along an arc of this
     radius rather than a straight line, so the row of frames bends
@@ -127,14 +127,30 @@ export function Gallery() {
   }, [mistTexA, mistTexB]);
 
   // ── Click-and-drag carousel spin ──────────────────────────────
-  // Window-level pointer listeners so the user can drag anywhere on
-  // screen while the gallery is in view. A 5 px movement threshold
-  // distinguishes drags from slot-open clicks. Releasing after a
-  // drag gives the carousel a brief momentum burst that decays.
-  const drag = useRef({ active: false, startX: 0, lastX: 0, isDrag: false, momentum: 0 });
+  // Pointer deltas are accumulated in events (pendingDelta) and
+  // applied once per frame in useFrame so the motion is always
+  // frame-rate synced, never jittery. A smoothVelocity EMA tracks
+  // the rolling drag speed; on pointer-up that average becomes the
+  // momentum so the carousel keeps gliding smoothly after release
+  // rather than snapping from whatever the last tiny delta was.
+  const drag = useRef({
+    active: false,
+    startX: 0,
+    lastX: 0,
+    isDrag: false,
+    pendingDelta: 0,    // raw pixel deltas accumulated between frames
+    smoothVelocity: 0, // rolling average of per-frame applied offset
+    momentum: 0,       // post-release carry-over (offset units / sec)
+  });
   useEffect(() => {
     const onDown = (e: PointerEvent) => {
-      drag.current = { active: true, startX: e.clientX, lastX: e.clientX, isDrag: false, momentum: 0 };
+      drag.current.active = true;
+      drag.current.startX = e.clientX;
+      drag.current.lastX = e.clientX;
+      drag.current.isDrag = false;
+      drag.current.pendingDelta = 0;
+      drag.current.smoothVelocity = 0;
+      drag.current.momentum = 0;
     };
     const onMove = (e: PointerEvent) => {
       if (!drag.current.active) return;
@@ -142,15 +158,16 @@ export function Gallery() {
         drag.current.isDrag = true;
       }
       if (!drag.current.isDrag) return;
-      const delta = (e.clientX - drag.current.lastX) * DRAG_SENSITIVITY;
+      // Accumulate rather than apply directly — useFrame applies
+      // the batch once per render tick, keeping motion frame-synced.
+      drag.current.pendingDelta += (e.clientX - drag.current.lastX) * DRAG_SENSITIVITY;
       drag.current.lastX = e.clientX;
-      drag.current.momentum = delta;
-      for (const s of slots.current) s.offset += delta;
     };
     const onUp = () => {
       if (drag.current.isDrag) {
-        // Carry last-frame delta as momentum (scaled to units/sec).
-        drag.current.momentum = drag.current.momentum * 55;
+        // Momentum is scaled so a typical flick (smoothVelocity ≈
+        // 0.05 per frame) gives ~3 offset units/sec of initial glide.
+        drag.current.momentum = drag.current.smoothVelocity * 60;
       }
       drag.current.active = false;
     };
@@ -244,11 +261,27 @@ export function Gallery() {
     groupRef.current.visible = v > 0.02;
     if (v < 0.02) return;
 
-    // Drain drag momentum — after the user lets go, keep the
-    // carousel drifting in the same direction, decaying over ~0.8 s.
+    // Apply pending drag delta (accumulated in pointermove) — done
+    // here so motion is always frame-rate synced. Track a rolling
+    // EMA of per-frame applied offsets for smooth momentum on release.
+    if (drag.current.active && drag.current.isDrag) {
+      const apply = drag.current.pendingDelta;
+      drag.current.pendingDelta = 0;
+      if (apply !== 0) {
+        for (const s of slots.current) s.offset += apply;
+        // EMA: weight current frame 30 %, history 70 %
+        drag.current.smoothVelocity = drag.current.smoothVelocity * 0.7 + apply * 0.3;
+      } else {
+        // No movement this frame — let the EMA decay so a stationary
+        // hand-hold doesn't launch a huge momentum burst on release.
+        drag.current.smoothVelocity *= 0.75;
+      }
+    }
+
+    // Post-release momentum — smooth exponential glide (~1 s half-life).
     if (!drag.current.active && Math.abs(drag.current.momentum) > 0.005) {
       for (const s of slots.current) s.offset += drag.current.momentum * dt;
-      drag.current.momentum *= Math.pow(0.88, 60 * dt);
+      drag.current.momentum *= Math.pow(0.82, 60 * dt);
     }
 
     // Advance carousel — each slot uses its own speedFactor for

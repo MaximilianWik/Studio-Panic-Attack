@@ -2,6 +2,24 @@
 
 All notable changes to Studio Panic Attack are tracked here.
 
+## [0.9.8] — gallery: faster auto-speed + smooth drag momentum
+
+- `CAROUSEL_SPEED` 0.15 → **0.28** (~87 % faster).
+- Drag rework:
+  - `onMove` now **accumulates** pixel deltas into `pendingDelta`
+    instead of applying them directly to slot offsets. `useFrame`
+    applies the batch each render tick so motion is always frame-rate
+    synced and never jitters from irregular pointer-event intervals.
+  - A `smoothVelocity` EMA (70 % history + 30 % current frame)
+    tracks the rolling drag speed. If the hand pauses mid-drag the
+    EMA decays (×0.75 per frame) so a stationary hold doesn't build
+    phantom momentum.
+  - `onUp` sets `momentum = smoothVelocity × 60` — drawn from the
+    rolling average rather than the last single delta, so release
+    always feels proportional to how fast the user was dragging.
+  - Post-release decay changed from `0.88^(60dt)` → `0.82^(60dt)`
+    (~1 s half-life vs 0.8 s): glide lasts a touch longer.
+
 ## [0.9.7] — gallery: wider gaps, stronger parallax, click-and-drag
 
 ### Spawn gap widened
