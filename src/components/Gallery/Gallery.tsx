@@ -135,7 +135,7 @@ export function Gallery() {
   return (
     <group ref={groupRef} position={[0, yPos, 0]}>
       <group ref={stageRef} position={[0, -0.5, -2]}>
-        {/* Reflective floor */}
+        {/* Reflective floor (FrontSide only — visible from above). */}
         <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, 0, 0]}>
           <planeGeometry args={[60, 60]} />
           <MeshReflectorMaterial
@@ -149,6 +149,27 @@ export function Gallery() {
             maxDepthThreshold={1.4}
             color="#050505"
             metalness={0.5}
+          />
+        </mesh>
+
+        {/* Underside fade. Renders only the back face (BackSide), so
+            it's invisible while the camera is above the floor and
+            takes over the moment scroll lifts the camera below it
+            (post-gallery scroll). Without this the floor visibly
+            "despawns" because the reflective material is FrontSide
+            and the back face is culled. Semi-transparent dark fill
+            so the brand backdrop still bleeds through — reads as a
+            ghost of the floor instead of a solid wall. */}
+        <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, 0, 0]}>
+          <planeGeometry args={[60, 60]} />
+          <meshBasicMaterial
+            color="#050505"
+            side={THREE.BackSide}
+            transparent
+            opacity={0.55}
+            depthWrite={false}
+            fog={false}
+            toneMapped={false}
           />
         </mesh>
 

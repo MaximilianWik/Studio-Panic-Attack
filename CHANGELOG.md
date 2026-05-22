@@ -2,6 +2,23 @@
 
 All notable changes to Studio Panic Attack are tracked here.
 
+## [0.8.5] — gallery floor: stop despawning when viewed from below
+
+- The reflective gallery floor is a `MeshReflectorMaterial` plane,
+  which is `FrontSide` only. As scroll lifts the scene group
+  upward, the camera ends up *below* the floor's world Y; with
+  the back face culled, the floor visually disappears in one frame
+  — read as a glitch.
+- Added a second `<mesh>` at the same position with a
+  `meshBasicMaterial` set to `side: THREE.BackSide`,
+  `color: '#050505'`, `opacity: 0.55`, `transparent`,
+  `depthWrite: false`. Only the back face renders, so the new
+  plane is invisible while the camera is above the floor (no
+  z-fighting with the reflective top) and only kicks in once the
+  camera passes underneath. Semi-transparent so the brand
+  backdrop bleeds through — reads as a ghost of the floor instead
+  of a hard black wall.
+
 ## [0.8.4] — perf-tier override in nav
 
 The performance-tier system already worked end-to-end —
