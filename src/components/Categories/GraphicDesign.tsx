@@ -7,6 +7,8 @@ import { theme } from '../../config/theme';
 import { useDeviceProfile } from '../../helpers/useDeviceProfile';
 import { useSectionVisibility } from '../../helpers/useScrollSection';
 import { useSculptureEvents } from '../../helpers/sculptureEvents';
+import { getSectionWorldY } from '../../config/sections';
+import { DebugLabel } from '../Debug/DebugOverlay';
 import { CategorySection } from './CategorySection';
 
 /**
@@ -40,6 +42,11 @@ export function GraphicDesign() {
         <BackgroundHeadline />
         <Lens lowPower={profile.isLowPower} visibility={visibility} />
       </group>
+      <DebugLabel
+        name="Sculpture: Knot (01 graphic)"
+        worldY={getSectionWorldY('graphic')}
+        offset={[0, 1.6, 0.5]}
+      />
     </CategorySection>
   );
 }

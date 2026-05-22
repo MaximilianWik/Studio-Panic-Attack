@@ -14,9 +14,16 @@ interface Props {
 }
 
 /**
- * CategorySection — text Html + 3D hero side-by-side on landscape,
- * stacked vertically on portrait so neither half gets cropped on
- * narrow phones / tablets.
+ * CategorySection — text Html + 3D hero side-by-side on every viewport.
+ *
+ * v6 layout (Option B): both halves are anchored at section centre
+ * Y=0 regardless of orientation. X positions scale with viewport
+ * width so the two halves still fit on phones — they crowd
+ * horizontally rather than stack vertically. Trade-off: on narrow
+ * portrait phones the text Html and the 3D sculpture overlay each
+ * other on screen (text on top, layered/editorial). The win is
+ * that *every element's world Y is identical on every device*, so
+ * scroll position reveals each section the same way everywhere.
  *
  * Always renders. Html projection handles off-screen positioning
  * naturally based on world Y.
@@ -28,21 +35,31 @@ export function CategorySection({
   const { viewport } = useThree();
   const portrait = viewport.width / viewport.height < 1;
 
-  // Landscape: text on one side, hero on the other (alternating).
-  // Portrait: hero floats above, text drops below — both centered.
-  const heroPos: [number, number, number] = portrait
-    ? [0, 1.1, 0]
-    : [side === 'left' ? 2.4 : -2.4, 0, 0];
-  const htmlPos: [number, number, number] = portrait
-    ? [0, -1.6, 0]
-    : [side === 'left' ? -1.6 : 1.6, 0, 0];
+  // X-scale: 1.0 on a wide desktop, ~0.5 on an extreme portrait
+  // phone. Keeps both halves on screen without changing Y.
+  const xFit = Math.min(1, Math.max(0.4, viewport.width / 6.4));
+
+  const heroPos: [number, number, number] = [
+    (side === 'left' ? 2.4 : -2.4) * xFit,
+    0,
+    0,
+  ];
+  const htmlPos: [number, number, number] = [
+    (side === 'left' ? -1.6 : 1.6) * xFit,
+    0,
+    0,
+  ];
+
+  // Html screen-space width: narrower on portrait so the text
+  // doesn't fully blanket the sculpture.
+  const htmlWidth = portrait ? 'min(440px, 62vw)' : 'min(760px, 86vw)';
 
   return (
     <group position={[0, yPos, 0]}>
       <Html
         position={htmlPos}
         style={{
-          width: 'min(760px, 86vw)',
+          width: htmlWidth,
           pointerEvents: 'none',
         }}
         transform={false}

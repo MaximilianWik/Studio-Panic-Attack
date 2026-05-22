@@ -1,5 +1,7 @@
 import { useEffect, useState } from 'react';
 
+import { useDebug } from '../helpers/debugStore';
+
 /**
  * NavHeader — fixed top, glass-blur, dark.
  *
@@ -7,6 +9,10 @@ import { useEffect, useState } from 'react';
  * Mobile (<=900px): brand on the left, hamburger button on the right
  * which opens a fullscreen overlay menu. Esc / link-click / close-button
  * dismisses the overlay.
+ *
+ * Also hosts the debug-overlay toggle (small grid icon, always visible
+ * on every viewport) — flips the worldY ruler + entity labels in the
+ * 3D scene on/off, persisted in localStorage.
  */
 
 interface NavLink {
@@ -26,6 +32,8 @@ const LINKS: NavLink[] = [
 
 export function NavHeader() {
   const [open, setOpen] = useState(false);
+  const debug = useDebug((s) => s.enabled);
+  const toggleDebug = useDebug((s) => s.toggle);
 
   useEffect(() => {
     if (!open) return;
@@ -50,6 +58,21 @@ export function NavHeader() {
             </li>
           ))}
         </ul>
+        <button
+          type="button"
+          className={'spa-nav__debug' + (debug ? ' spa-nav__debug--on' : '')}
+          aria-label={debug ? 'Hide debug overlay' : 'Show debug overlay'}
+          aria-pressed={debug}
+          title={debug ? 'Debug overlay: ON' : 'Debug overlay: OFF'}
+          onClick={toggleDebug}
+        >
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" aria-hidden>
+            <rect x="3" y="3" width="7" height="7" />
+            <rect x="14" y="3" width="7" height="7" />
+            <rect x="3" y="14" width="7" height="7" />
+            <rect x="14" y="14" width="7" height="7" />
+          </svg>
+        </button>
         <button
           type="button"
           className="spa-nav__hamburger"

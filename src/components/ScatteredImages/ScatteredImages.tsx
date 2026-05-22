@@ -8,6 +8,7 @@ import { useDeviceProfile } from '../../helpers/useDeviceProfile';
 import { shaderIds, type ShaderId } from '../../shaders/imageShaders';
 import { openLightbox } from '../../helpers/lightbox';
 import { assetUrl } from '../../helpers/assetUrl';
+import { DebugLabel } from '../Debug/DebugOverlay';
 import { ImageEffect } from './ImageEffects';
 
 // All scattered images live alongside the gallery pool in /landing/.
@@ -43,6 +44,7 @@ const SCATTER_IMAGES = [
 interface ScatteredItem {
   url: string;
   worldY: number;
+  affinity: SectionId;
   offsetX: number;
   offsetZ: number;
   rotZ: number;
@@ -64,7 +66,10 @@ function hash(i: number): number {
 
 function buildLayout(lowPower: boolean): ScatteredItem[] {
   const items: ScatteredItem[] = [];
-  const count = lowPower ? 8 : 14;
+  // Bumped slightly after the v6 section retune — gallery is longer
+  // and 02 is shorter, so the categories felt sparse with the old
+  // counts. More density flanking the text keeps the bg alive.
+  const count = lowPower ? 10 : 18;
   // Randomly shuffle which images go where
   const shuffled = [...SCATTER_IMAGES].sort(() => hash(Date.now() % 1000 + Math.random() * 100) - 0.5);
 
@@ -80,7 +85,13 @@ function buildLayout(lowPower: boolean): ScatteredItem[] {
     const yCenter = getSectionWorldY(sectionAffinities[sectionIdx]);
     const url = shuffled[i % shuffled.length];
 
-    const ySpread = ((i % 3) / 2 - 0.5) * VIEWPORT_HEIGHT_UNITS * 0.5;
+    // ySpread (section-local; positive = above section centre, i.e.
+    // earlier in scroll). Tightened from ±2.5 to a narrower band and
+    // biased UP so items read as "alongside / just above" the
+    // category text instead of trailing far below it. Centre Y of
+    // each item lands roughly between -0.6 and +2.4 of the section
+    // centre, then random jitter adds ±0.5.
+    const ySpread = ((i % 3) / 2 - 0.2) * VIEWPORT_HEIGHT_UNITS * 0.3;
     const worldY = yCenter + ySpread + (r1 - 0.5) * 1.0;
 
     const side = i % 2 === 0 ? -1 : 1;
@@ -97,6 +108,7 @@ function buildLayout(lowPower: boolean): ScatteredItem[] {
     items.push({
       url,
       worldY,
+      affinity: sectionAffinities[sectionIdx],
       offsetX,
       offsetZ,
       rotZ,
@@ -152,6 +164,13 @@ export function ScatteredImages() {
             <Suspense fallback={null}>
               <ImageEffect url={it.url} height={it.height} effect={it.effect} intensity={lowPower ? 0 : 1} onClick={() => openLightbox(it.url)} />
             </Suspense>
+            <DebugLabel
+              name={'Scatter[' + i + '] (' + it.affinity + ')'}
+              worldY={it.worldY}
+              offset={[0, it.height / 2 + 0.5, 0.3]}
+              color="#ff8800"
+              fontSize={0.18}
+            />
           </group>
         </group>
       ))}

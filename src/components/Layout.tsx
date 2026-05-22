@@ -12,6 +12,7 @@ import { UXDesign } from './Categories/UXDesign';
 import { Vocabulary } from './Vocabulary/Vocabulary';
 import { Highlights } from './Highlights/Highlights';
 import { ScatteredImages } from './ScatteredImages/ScatteredImages';
+import { DebugOverlay } from './Debug/DebugOverlay';
 
 export function Layout() {
   const groupRef = useRef<THREE.Group>(null);
@@ -57,6 +58,7 @@ export function Layout() {
           }
         })}
         <ScatteredImages />
+        <DebugOverlay />
       </group>
     </>
   );

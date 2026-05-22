@@ -666,6 +666,36 @@ video {
 .spa-nav__hamburger:hover { border-color: var(--blood); color: var(--blood); }
 .spa-nav__hamburger svg { width: 18px; height: 18px; }
 
+/* Debug overlay toggle — small grid icon, always visible. Off
+   state is muted cream; on state highlights in blood red so it's
+   obvious the overlay is live. */
+.spa-nav__debug {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: transparent;
+  border: 1px solid rgba(246, 243, 238, 0.22);
+  width: 34px;
+  height: 34px;
+  padding: 0;
+  border-radius: 4px;
+  cursor: none;
+  pointer-events: auto;
+  color: rgba(246, 243, 238, 0.6);
+  transition: border-color 0.18s, color 0.18s, background 0.18s;
+}
+.spa-nav__debug svg { width: 14px; height: 14px; }
+.spa-nav__debug:hover {
+  border-color: var(--blood);
+  color: var(--blood);
+}
+.spa-nav__debug--on {
+  border-color: var(--blood);
+  background: rgba(211, 0, 0, 0.18);
+  color: #f6f3ee;
+  box-shadow: 0 0 12px rgba(211, 0, 0, 0.45);
+}
+
 @media (max-width: 900px) {
   .spa-nav { padding: 12px 16px; gap: 12px; }
   .spa-nav__hamburger { display: inline-flex; }

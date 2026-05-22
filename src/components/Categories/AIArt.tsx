@@ -5,6 +5,8 @@ import * as THREE from 'three';
 import { useDeviceProfile } from '../../helpers/useDeviceProfile';
 import { useSectionProgress, useSectionVisibility } from '../../helpers/useScrollSection';
 import { useSculptureEvents } from '../../helpers/sculptureEvents';
+import { getSectionWorldY } from '../../config/sections';
+import { DebugLabel } from '../Debug/DebugOverlay';
 import { CategorySection } from './CategorySection';
 
 /**
@@ -101,6 +103,11 @@ export function AIArt() {
           visibility={visibility}
         />
       </group>
+      <DebugLabel
+        name="Sculpture: Hedgehog (03 ai)"
+        worldY={getSectionWorldY('ai')}
+        offset={[0, 1.4, 0.5]}
+      />
     </CategorySection>
   );
 }

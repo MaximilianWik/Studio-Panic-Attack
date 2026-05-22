@@ -2,6 +2,99 @@
 
 All notable changes to Studio Panic Attack are tracked here.
 
+## [0.8.0] — Option B layout + worldY debug overlay
+
+### feat(layout): single side-by-side layout on every viewport
+
+- `CategorySection.tsx`: dropped the portrait/landscape branch.
+  Both halves are now anchored at section centre `Y=0` regardless
+  of orientation — only X scales with viewport. **Every element's
+  worldY is identical on every device.**
+  - `xFit = clamp(viewport.width / 6.4, 0.4, 1.0)` shrinks the
+    side offsets on phones so both halves stay on screen.
+  - `heroPos = [(side==='left' ? 2.4 : -2.4) * xFit, 0, 0]`
+  - `htmlPos = [(side==='left' ? -1.6 : 1.6) * xFit, 0, 0]`
+  - On portrait, the Html width drops from 86vw → 62vw so the
+    text doesn't fully blanket the 3D sculpture.
+  - Trade-off: text Html and 3D sculpture overlap visually on
+    narrow phones (text on top, layered/editorial). Acceptable
+    cost for fixed-Y on every device.
+
+### feat(debug): toggleable worldY overlay for inspection
+
+- New `helpers/debugStore.ts`: zustand store with `enabled` /
+  `toggle` / `set`, persisted to `localStorage['spa-debug']` so
+  refresh keeps your inspection state.
+- New `components/Debug/DebugOverlay.tsx`:
+  - Vertical magenta spine at `x=0, z=-2` spanning Y from +2 to
+    -75 (covers every section).
+  - Ruler ticks every 5 world units along the spine, each with
+    a billboarded `y=<n>` label.
+  - One cyan section line + label per section: `[<id>] y=<n>`
+    drawn at the section's centre worldY (read from `sections.ts`,
+    so adjusting the registry auto-updates the overlay).
+  - Mounted inside `Layout`'s scrolling group so the ruler
+    scrolls with the scene — coordinates always correspond to
+    real world space.
+- Exported `DebugLabel` helper from `DebugOverlay.tsx`: a
+  `<Billboard><Text/></Billboard>` that auto-hides via the same
+  store. Drop into any 3D component to mark a specific entity.
+- Per-entity labels now wired into:
+  - `GraphicDesign` → `Sculpture: Knot (01 graphic)` at the section
+    centre.
+  - `AIArt` → `Sculpture: Hedgehog (03 ai)` at the section centre.
+  - `ScatteredImages` → one orange label per item:
+    `Scatter[<i>] (<affinity>) y=<n>`. Added an `affinity` field
+    to the `ScatteredItem` interface so each label can show which
+    section the image is attached to.
+
+### feat(nav): debug toggle button
+
+- `NavHeader.tsx`: small 4-square grid icon button next to the
+  hamburger, always visible on every viewport. Off state is muted
+  cream; ON state lights up blood-red with a soft glow so the
+  current overlay state is unmissable.
+- `aria-pressed` + `aria-label` flip with state for screen-reader
+  parity with the visual.
+- New CSS: `.spa-nav__debug` / `.spa-nav__debug--on` styles in
+  `global.css` matching the existing nav vocabulary.
+
+### Notes
+
+- `zustand` is used here as a phantom transitive dep via
+  `@react-three/drei` (same pattern as the existing
+  `helpers/sculptureEvents.ts`). If you decide to commit to
+  zustand for app state, it should move into `package.json` as a
+  direct dependency.
+
+## [0.7.1] — bg density: lift scattered images into the text band
+
+After the v6 section retune the categories felt visually sparse —
+scattered images were trailing well below the text since they
+spread ±2.5 world units around each section centre, and the
+category bodies are only ~6 units tall. Tightened + biased the
+distribution so the bg images read as flanking the text instead
+of orphaned beneath it.
+
+In `ScatteredImages.tsx`:
+
+- Item count bumped: low-power 8 → 10, normal 14 → 18. Gallery is
+  longer now and 02 is shorter, so the category sections needed a
+  bit more density to not feel empty.
+- `ySpread` formula changed from `((i % 3) / 2 - 0.5) * 0.5 * 10`
+  (range −2.5 / 0 / +2.5) to `((i % 3) / 2 - 0.2) * 0.3 * 10`
+  (range −0.6 / +0.9 / +2.4). Tighter band, biased upward so each
+  scattered image's section-local Y lands between roughly −1.1 and
+  +2.9 (after the existing ±0.5 random jitter). "Up" here = earlier
+  in scroll = on screen at the same time as the category number /
+  title rather than after.
+
+Sculptures already follow their section's world Y automatically
+(they're children of `<CategorySection>`'s yPos group), so no
+change needed there — Knot moved 5 units later with 01 in v6,
+Hedgehog stayed put, and both are still anchored to their section
+centres.
+
 ## [0.7.0] — section retune: gallery breathing room, Hedgehog ↔ Knot
 
 After the loader work, two layout problems became obvious on the
