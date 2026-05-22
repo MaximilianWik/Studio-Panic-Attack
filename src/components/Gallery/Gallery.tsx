@@ -1,5 +1,5 @@
 import { useFrame } from '@react-three/fiber';
-import { Image, MeshReflectorMaterial, Text, useCursor, useTexture } from '@react-three/drei';
+import { Image, MeshReflectorMaterial, Text, Html, useCursor, useTexture } from '@react-three/drei';
 import { Suspense, useEffect, useMemo, useRef, useState } from 'react';
 import * as THREE from 'three';
 
@@ -21,7 +21,7 @@ const SLOT_COUNT = 18;
 /** Minimum offset separation enforced when a slot re-enters on the
     right after wrapping. Larger gap = more breathing room between
     images, more visible spread across the carousel. */
-const MIN_SPAWN_GAP = 3.8;
+const MIN_SPAWN_GAP = 5.5;
 
 /** Screen-pixel to carousel-offset multiplier for click-and-drag.
     Kept low so the drag feels light and physical — the carousel
@@ -74,6 +74,13 @@ export function Gallery() {
   const stageRef = useRef<THREE.Group>(null);
   const camTarget = useRef({ x: 0, y: 0 });
   const camCurrent = useRef({ x: 0, y: 0 });
+
+  // Drag hint — shows until the user first drags or 6 s elapse.
+  const [dragHinted, setDragHinted] = useState(false);
+  useEffect(() => {
+    const t = window.setTimeout(() => setDragHinted(true), 6000);
+    return () => window.clearTimeout(t);
+  }, []);
 
   // Radial alpha-mask for the floor — opaque at the centre, fades
   // to transparent at the rim. Replaces the old hard-edged 60×60
@@ -158,6 +165,7 @@ export function Gallery() {
       if (!drag.current.active) return;
       if (!drag.current.isDrag && Math.abs(e.clientX - drag.current.startX) > 5) {
         drag.current.isDrag = true;
+        setDragHinted(true);
       }
       if (!drag.current.isDrag) return;
       // Accumulate rather than apply directly — useFrame applies
@@ -450,6 +458,25 @@ export function Gallery() {
           </Suspense>
         ))}
       </group>
+
+      {/* Drag hint — fades out after first drag or 6 s.
+          Sits inside groupRef (not stageRef) so stage camera-pan
+          doesn't move it off-centre. Position [0, -1.8, 0] projects
+          to roughly screen-centre-bottom when the gallery is in view. */}
+      <Html
+        transform={false}
+        center
+        position={[0, -1.8, 0]}
+        style={{ pointerEvents: 'none' }}
+      >
+        <div className={'spa-drag-hint' + (dragHinted ? ' spa-drag-hint--done' : '')}>
+          <svg width="18" height="12" viewBox="0 0 18 12" fill="none" aria-hidden>
+            <path d="M5 6H1M1 6L4 3M1 6L4 9" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round"/>
+            <path d="M13 6H17M17 6L14 3M17 6L14 9" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round"/>
+          </svg>
+          drag
+        </div>
+      </Html>
     </group>
   );
 }

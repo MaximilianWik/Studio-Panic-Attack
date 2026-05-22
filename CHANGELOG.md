@@ -2,6 +2,36 @@
 
 All notable changes to Studio Panic Attack are tracked here.
 
+## [1.0.0] — gallery: spawn gap for doubled tilt + drag hint
+
+### Spawn gap widened for doubled tilt
+
+With pointer tilt at `0.20` rad, a slot of average width ~5 units
+has a corner X-projection of `cos(0.20) × 2.5 ≈ 2.45`. Two
+adjacent slots require centre-to-centre offset spacing of
+`2 × 2.45 ≈ 4.9` to avoid geometry clipping. `MIN_SPAWN_GAP` is
+raised from 3.8 → **5.5** to cover this with a comfortable margin.
+
+Side effect: with 18 slots × 5.5 > `CAROUSEL_WIDTH`, slots spread
+more loosely through the belt. The visible window holds ~6-8 slots
+at once — more gallery-like, less packed.
+
+### Drag visual cue
+
+Added a `<Html>` drag-hint below the carousel that tells users they
+can interact:
+
+- `dragHinted` state (default false). Flips to true on the first
+  pointer drag (`isDrag` crossing the 5 px threshold) *or* after
+  6 s via a `setTimeout` — whichever comes first.
+- `<Html transform={false}>` inside `groupRef` but outside
+  `stageRef` so stage camera-pan doesn't shift the hint off-centre.
+- Content: small left/right arrow SVG + mono "drag" label.
+- CSS class `.spa-drag-hint`: mono 9 px, letter-spaced, cream 70 %
+  opacity, `spa-drag-hint-sway` keyframe (±5 px left/right over
+  2.4 s) to draw attention. `.spa-drag-hint--done` fades it to
+  transparent in 0.6 s.
+
 ## [0.9.9] — gallery: 5s glide, slower drag, faster auto, double tilt
 
 - `CAROUSEL_SPEED` 0.28 → **0.38**.
