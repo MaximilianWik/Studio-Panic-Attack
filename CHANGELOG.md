@@ -2,6 +2,51 @@
 
 All notable changes to Studio Panic Attack are tracked here.
 
+## [0.8.4] — perf-tier override in nav
+
+The performance-tier system already worked end-to-end —
+`detect-gpu` returns 0–3, `useDeviceProfile` derives
+`isLowPower = tier <= 1 || mobile`, and that flag drives the DPR,
+antialias, postprocessing, MeshReflector blur, Hedgehog spike
+count, Lens material choice, and ScatteredImages count. There
+was just no way to *force* a tier from a beefy desktop to verify
+the low-power code paths.
+
+Added a manual override:
+
+- New `helpers/perfOverride.ts`: zustand store with `value`
+  (`'auto' | 0 | 1 | 2 | 3`), `set`, and `cycle`. Persists to
+  `localStorage['spa-perf-override']`.
+- `useDeviceProfile` now consults the override. When set to a
+  specific tier, returns `{ tier, mobile, isLowPower: tier <= 1,
+  ready: true, overridden: true }` instead of the detected
+  result. Mobile flag is preserved from real detection so coarse-
+  pointer / touch fallbacks stay correct.
+- Added `overridden: boolean` to `DeviceProfile` so consumers
+  can opt into showing the override state if they want.
+- `NavHeader` gains a `.spa-nav__perf` mono-text button next to
+  the debug grid icon. Cycles `AUTO → T0 → T1 → T2 → T3 → AUTO`
+  on click. Label shows current effective tier:
+  `AUTO·T<n>` when on auto-detect, `T<n>` when forced. Lights up
+  blood-red with a glow when a manual tier is in effect — same
+  treatment as the debug toggle.
+- Title attribute spells out the full state for hover inspection
+  (e.g. "Perf: forced T0 (isLowPower=true). Click to cycle.").
+
+What flips when you force a low tier:
+
+- Canvas `dpr` drops from `[1, 1.6]` → `[0.85, 1.1]`, antialias off.
+- `PostFx` returns `null` (bloom / chromatic aberration / vignette
+  / noise all disabled).
+- `Gallery` reflector blur `[300, 100] → [0, 0]`, resolution
+  `256 → 128`, mixStrength `80 → 40`.
+- `GraphicDesign` Lens swaps `MeshTransmissionMaterial` for
+  cheap transmission glass.
+- `AIArt` Hedgehog drops from `420 → 150` spikes; idle breathing
+  disabled.
+- `ScatteredImages` count `18 → 10`; shader effects all swap to
+  `'plain'`.
+
 ## [0.8.3] — readable titles + bigger body text in categories
 
 - `.spa-cat-elegant__title` (01 Graphic Design / 02 3D Art /

@@ -676,6 +676,38 @@ video {
 .spa-nav__hamburger:hover { border-color: var(--blood); color: var(--blood); }
 .spa-nav__hamburger svg { width: 18px; height: 18px; }
 
+/* Perf-tier override — cycles AUTO → T0 → T1 → T2 → T3. Mono
+   font, fixed width so the label width doesn't jitter as the
+   text changes. Lights up red when a manual tier is forced. */
+.spa-nav__perf {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: transparent;
+  border: 1px solid rgba(246, 243, 238, 0.22);
+  height: 34px;
+  min-width: 78px;
+  padding: 0 10px;
+  border-radius: 4px;
+  cursor: none;
+  pointer-events: auto;
+  font-family: var(--font-mono);
+  font-size: 10px;
+  letter-spacing: 0.16em;
+  color: rgba(246, 243, 238, 0.7);
+  transition: border-color 0.18s, color 0.18s, background 0.18s;
+}
+.spa-nav__perf:hover {
+  border-color: var(--blood);
+  color: var(--blood);
+}
+.spa-nav__perf--forced {
+  border-color: var(--blood);
+  background: rgba(211, 0, 0, 0.18);
+  color: #f6f3ee;
+  box-shadow: 0 0 12px rgba(211, 0, 0, 0.45);
+}
+
 /* Debug overlay toggle — small grid icon, always visible. Off
    state is muted cream; on state highlights in blood red so it's
    obvious the overlay is live. */

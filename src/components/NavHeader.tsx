@@ -1,6 +1,8 @@
 import { useEffect, useState } from 'react';
 
 import { useDebug } from '../helpers/debugStore';
+import { usePerfOverride } from '../helpers/perfOverride';
+import { useDeviceProfile } from '../helpers/useDeviceProfile';
 
 /**
  * NavHeader — fixed top, glass-blur, dark.
@@ -34,6 +36,14 @@ export function NavHeader() {
   const [open, setOpen] = useState(false);
   const debug = useDebug((s) => s.enabled);
   const toggleDebug = useDebug((s) => s.toggle);
+  const perfOverride = usePerfOverride((s) => s.value);
+  const cyclePerf = usePerfOverride((s) => s.cycle);
+  const profile = useDeviceProfile();
+
+  // Label shows the *active* tier so you can see at a glance
+  // whether you're on the auto-detected one or a forced override.
+  const perfLabel =
+    perfOverride === 'auto' ? 'AUTO·T' + profile.tier : 'T' + perfOverride;
 
   useEffect(() => {
     if (!open) return;
@@ -58,6 +68,19 @@ export function NavHeader() {
             </li>
           ))}
         </ul>
+        <button
+          type="button"
+          className={'spa-nav__perf' + (perfOverride !== 'auto' ? ' spa-nav__perf--forced' : '')}
+          aria-label={'Performance tier: ' + perfLabel + '. Click to cycle.'}
+          title={
+            perfOverride === 'auto'
+              ? 'Perf: AUTO (detected tier ' + profile.tier + (profile.mobile ? ', mobile' : '') + '). Click to override.'
+              : 'Perf: forced T' + perfOverride + ' (isLowPower=' + (perfOverride <= 1) + '). Click to cycle.'
+          }
+          onClick={cyclePerf}
+        >
+          {perfLabel}
+        </button>
         <button
           type="button"
           className={'spa-nav__debug' + (debug ? ' spa-nav__debug--on' : '')}
