@@ -9,30 +9,33 @@ import { shaderIds, type ShaderId } from '../../shaders/imageShaders';
 import { openLightbox } from '../../helpers/lightbox';
 import { ImageEffect } from './ImageEffects';
 
-// All images from public/Scatter/
+// All scattered images live alongside the gallery pool in /landing/.
+// Reusing the same URLs lets the browser share a single cached texture
+// across Gallery and ScatteredImages — no duplicate network fetches,
+// no duplicate GPU textures.
 const SCATTER_IMAGES = [
-  '/Scatter/000008390034_33a-copy-2.jpg',
-  '/Scatter/add-more-chaos.png',
-  '/Scatter/blob-ogzeet.png',
-  '/Scatter/cemetery-scene1.png',
-  '/Scatter/glasserrorscrnshot.png',
-  '/Scatter/holistic-letter-from-the-editor-and-3d-article.png',
-  '/Scatter/img_1027-2.png',
-  '/Scatter/img_1034.png',
-  '/Scatter/img_2832.png',
-  '/Scatter/img_3370.png',
-  '/Scatter/img_3375.png',
-  '/Scatter/img_4253-1.jpg',
-  '/Scatter/img_4256.jpg',
-  '/Scatter/img_4258.jpg',
-  '/Scatter/img_4297.jpg',
-  '/Scatter/img_9089.png',
-  '/Scatter/img_9247.png',
-  '/Scatter/img_9258.jpeg',
-  '/Scatter/img_9790-min.png',
-  '/Scatter/img_9791-min.png',
-  '/Scatter/img_9793-min.png',
-  '/Scatter/levelsequence-1.0011.png',
+  '/landing/000008390034_33a-copy-2.jpg',
+  '/landing/add-more-chaos.png',
+  '/landing/blob-ogzeet.png',
+  '/landing/cemetery-scene1.png',
+  '/landing/glasserrorscrnshot.png',
+  '/landing/holistic-letter-from-the-editor-and-3d-article.png',
+  '/landing/img_1027-2.png',
+  '/landing/img_1034.png',
+  '/landing/img_2832.png',
+  '/landing/img_3370.png',
+  '/landing/img_3375.png',
+  '/landing/img_4253-1.jpg',
+  '/landing/img_4256.jpg',
+  '/landing/img_4258.jpg',
+  '/landing/img_4297.jpg',
+  '/landing/img_9089.png',
+  '/landing/img_9247.png',
+  '/landing/img_9258.jpeg',
+  '/landing/img_9790-min.png',
+  '/landing/img_9791-min.png',
+  '/landing/img_9793-min.png',
+  '/landing/levelsequence-1.0011.png',
 ];
 
 interface ScatteredItem {

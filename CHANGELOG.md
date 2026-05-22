@@ -2,6 +2,115 @@
 
 All notable changes to Studio Panic Attack are tracked here.
 
+## [0.4.1] — perf pass + scroll-blank bugfix
+
+### Bugfix: scene blanked for one frame when scrolling
+
+- `Gallery.tsx`: every time a carousel slot wrapped to a new image,
+  drei's `<Image>` re-mounted with a fresh `useTexture(url)` call
+  that **suspended** while the network fetch resolved. Because the
+  only Suspense boundary in the tree was the top-level one in
+  `App.tsx` wrapping `<Layout/>`, that local suspension blanked the
+  entire 3D scene for one frame on every wrap — the symptom users
+  reported as "everything except the background disappears for a
+  split second when scrolling". Aggravated by 5–17 MB source PNGs
+  in `/landing/` that took multiple frames to decode.
+  - **Per-slot Suspense**: each carousel slot is now wrapped in its
+    own `<Suspense fallback={null}>` so a still-loading texture only
+    nulls *that one slot* for a frame, never the whole layout.
+  - **Eager preload**: `useTexture.preload(url)` is fired for every
+    gallery image on mount, so by the time any slot wraps to a fresh
+    URL the texture is already resident in `THREE.Cache` and the
+    render resolves synchronously — no fallback at all in practice.
+
+### Perf
+
+- **Removed `/public/Scatter/`** (92 MB, 22 images that were verbatim
+  duplicates of files in `/public/landing/`). `ScatteredImages.tsx`
+  now points at the same `/landing/*` URLs the gallery uses, so the
+  browser caches a single texture per asset across both surfaces.
+  Build artifact is ~92 MB lighter; cold-load network bytes drop
+  proportionally for any user who scrolls past hero into categories.
+- `Gallery.tsx`: `MeshReflectorMaterial` resolution dropped from
+  `512` to `256` (high tier) and `128` (low tier); blur disabled
+  entirely on low tier. Reflector render-target cost is the single
+  most expensive thing in the gallery — this reclaims real GPU.
+- `GraphicDesign.tsx` (Lens): replaced four per-frame `new
+  THREE.Vector3()` calls + a `.clone()` with module-scope scratch
+  vectors (`_orbit`, `_pointer`, `_diff`, `_target`). Eliminates GC
+  pressure during the most pointer-active section.
+- `AIArt.tsx` (Hedgehog): replaced per-frame `matrixWorld.clone()`
+  with a reused scratch `Matrix4` on the existing `scratch` object;
+  removed the per-frame object spread `{ ...scratch, ...data }` that
+  allocated a fresh object every render.
+
+### Loading time
+
+- `index.html`: added `<link rel="preload" as="image">` hints for the
+  hero logo and the four lightest gallery hero portraits, plus
+  `fetchpriority="high"` on the logo so it composes on first paint.
+- `<img>` decoding hints across the site: `decoding="async"` +
+  `fetchPriority="low"` on Highlights cards (below-the-fold lazy),
+  `fetchPriority="high"` on the hero logo and lightbox image.
+- `theme-color` meta colour corrected from cream `#f5efe4` to ink
+  `#050505` so the mobile chrome bar matches the actual page bg.
+
+### Repo cleanup
+
+- Removed `index.html.bak`, `preview.log`, `preview.err.log`.
+
+## [0.4.0] — responsive design pass
+
+### Mobile / touch UX
+
+- New mobile hamburger menu in `NavHeader.tsx`. On `<=900px` the
+  desktop link list collapses, a hamburger button replaces it; tap
+  opens a fullscreen overlay with the same six links + a close
+  button. Esc / link-tap / close-button all dismiss the overlay.
+  Brand mark stays anchored on the left.
+- `Cursor.tsx`: matches `(hover: none) | (pointer: coarse)` and
+  returns null on coarse-pointer devices so the red dot + outer ring
+  do not render. Combined with CSS overrides the native cursor is
+  fully restored on phones / tablets.
+- CSS `@media (hover: none), (pointer: coarse)` block restores
+  `cursor: auto` on `<html>` and resets `cursor: none` on every
+  element that overrides it (cards, nav items, lightbox close, etc.)
+  to `cursor: pointer`.
+
+### Adaptive 3D framing
+
+- `App.tsx`: camera FOV now derives from viewport aspect — 70° on
+  tall phones, 60° on portrait tablets, 52° square-ish, 42° default
+  landscape. Resize listener updates live. Wider FOV on narrow
+  aspects keeps section content from cropping horizontally.
+- `GraphicDesign.tsx` and `AIArt.tsx`: the torus-knot and Hedgehog
+  groups are wrapped in viewport-aware scale groups — `min(1,
+  viewport.width / 6.4)` clamped to `>=0.55`. Sculptures shrink with
+  the canvas so orbit reach + headline width fit narrow framings.
+
+### Layout / typography
+
+- `HeroOverlay.tsx`: logo width `clamp(220px, 70vw, 840px)` plus
+  `maxWidth: 92vw` (was `clamp(380px, 56vw, 840px)` — overflowed
+  phones <420px).
+- `CategorySection.tsx`: now reads `useThree().viewport`. On
+  portrait (`viewport.width / viewport.height < 1`), text and hero
+  stack vertically — hero at local y=+1.1, text at y=−1.6, both
+  x-centered. On landscape it keeps the historic side-by-side
+  alternation. HTML body width also raised from `min(760px, 56vw)`
+  to `min(760px, 86vw)` so mobile body copy uses the full available
+  width (desktop unchanged via 760px cap).
+- New CSS responsive blocks in `global.css`:
+  - `<=760px`: `.spa-cat-elegant__number` font-size shrinks to
+    `clamp(120px, 32vw, 240px)`; title/body/body-wrap tightened.
+  - `<=800px`: `.spa-vocab` collapses to single column with the
+    SVG centered and capped at 320px max-width; vocabulary list
+    stays 2-col but justifies items center.
+  - `<=900px` and `<=600px`: highlights cards lose
+    fixed `min-height: 280px` (down to 220 then 180); footer row
+    becomes vertical stack on phones; lightbox close button
+    smaller.
+
 ## [0.3.2] — pull sculptures up: torus-knot to 01, Hedgehog to 03
 
 - Torus-knot composition (Lens + headline) moved from `ThreeDeeArt.tsx`

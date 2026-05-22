@@ -143,6 +143,7 @@ function HighlightCard({ h, index }: CardProps) {
         alt={h.title}
         loading="lazy"
         decoding="async"
+        fetchPriority="low"
       />
 
       {/* paper-design liquid metal treatment, only mounted when hovered

@@ -19,7 +19,7 @@ export function Lightbox() {
 
   return (
     <div className="spa-lightbox" onClick={(e) => { if (e.target === e.currentTarget) closeLightbox(); }}>
-      <img className="spa-lightbox__img" src={url} alt="" />
+      <img className="spa-lightbox__img" src={url} alt="" decoding="async" fetchPriority="high" />
       <button className="spa-lightbox__close" onClick={closeLightbox}>×</button>
       <div className="spa-lightbox__caption">{caption}</div>
     </div>

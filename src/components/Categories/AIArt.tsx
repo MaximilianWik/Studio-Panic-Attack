@@ -1,4 +1,4 @@
-import { useFrame } from '@react-three/fiber';
+import { useFrame, useThree } from '@react-three/fiber';
 import { useEffect, useMemo, useRef } from 'react';
 import * as THREE from 'three';
 
@@ -82,6 +82,8 @@ export function AIArt() {
   const profile = useDeviceProfile();
   const progress = useSectionProgress('ai');
   const visibility = useSectionVisibility('ai');
+  const { viewport } = useThree();
+  const fitScale = Math.max(0.55, Math.min(1, viewport.width / 6.4));
 
   return (
     <CategorySection
@@ -91,12 +93,14 @@ export function AIArt() {
       body="Experimental AI art pushing the boundaries of creative expression and innovation. A wide range of creations, from illustrations and photorealistic images, to 3D models and videos created with nothing more than AI prompts. Crafted using advanced AI tools like Krea, Adobe Firefly, DALL-E, Midjourney, and more."
       side="left"
     >
-      <Hedgehog
-        count={profile.isLowPower ? LOW_COUNT : HIGH_COUNT}
-        breathingEnabled={!profile.isLowPower}
-        progress={progress}
-        visibility={visibility}
-      />
+      <group scale={fitScale}>
+        <Hedgehog
+          count={profile.isLowPower ? LOW_COUNT : HIGH_COUNT}
+          breathingEnabled={!profile.isLowPower}
+          progress={progress}
+          visibility={visibility}
+        />
+      </group>
     </CategorySection>
   );
 }
@@ -119,7 +123,8 @@ function Hedgehog({ count, breathingEnabled, progress, visibility }: HedgehogPro
     const q = new THREE.Quaternion();
     const tmpV = new THREE.Vector3();
     const tmpV2 = new THREE.Vector3();
-    return { dummy, up, q, tmpV, tmpV2 };
+    const tmpM = new THREE.Matrix4();
+    return { dummy, up, q, tmpV, tmpV2, tmpM };
   }, []);
 
   const data = useMemo(() => {
@@ -192,9 +197,13 @@ function Hedgehog({ count, breathingEnabled, progress, visibility }: HedgehogPro
       0.6,
     );
     grp.updateWorldMatrix(true, false);
-    const inv = scratch.tmpV2.copy(pointerWorld).applyMatrix4(grp.matrixWorld.clone().invert()).normalize();
+    const inv = scratch.tmpV2
+      .copy(pointerWorld)
+      .applyMatrix4(scratch.tmpM.copy(grp.matrixWorld).invert())
+      .normalize();
 
-    const { dummy, up, q, dirs, seeds, lay } = { ...scratch, ...data };
+    const { dummy, up, q } = scratch;
+    const { dirs, seeds, lay } = data;
 
     for (let i = 0; i < count; i++) {
       const dir = dirs[i];

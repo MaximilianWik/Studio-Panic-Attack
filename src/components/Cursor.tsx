@@ -1,16 +1,36 @@
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
 
 /**
  * Custom DOM cursor: a tight blood-red dot + a lagging outer ring.
  * Pure DOM — does not touch the canvas / r3f tree.
+ *
+ * Disabled on coarse-pointer / hover-incapable devices (phones, tablets
+ * without a precision pointer); CSS in global.css also restores the
+ * native cursor on those devices via `@media (hover: none)`.
  */
 export function Cursor() {
   const dotRef = useRef<HTMLDivElement>(null);
   const ringRef = useRef<HTMLDivElement>(null);
   const target = useRef({ x: -100, y: -100 });
   const ring = useRef({ x: -100, y: -100 });
+  const [enabled, setEnabled] = useState(true);
 
   useEffect(() => {
+    if (typeof window === 'undefined' || !window.matchMedia) return;
+    const mq = window.matchMedia('(hover: none), (pointer: coarse)');
+    const apply = () => setEnabled(!mq.matches);
+    apply();
+    if (mq.addEventListener) {
+      mq.addEventListener('change', apply);
+      return () => mq.removeEventListener('change', apply);
+    }
+    // Safari fallback
+    mq.addListener(apply);
+    return () => mq.removeListener(apply);
+  }, []);
+
+  useEffect(() => {
+    if (!enabled) return;
     const onMove = (e: PointerEvent) => {
       target.current.x = e.clientX;
       target.current.y = e.clientY;
@@ -35,7 +55,9 @@ export function Cursor() {
       window.removeEventListener('pointermove', onMove);
       cancelAnimationFrame(raf);
     };
-  }, []);
+  }, [enabled]);
+
+  if (!enabled) return null;
 
   return (
     <>

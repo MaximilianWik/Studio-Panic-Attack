@@ -4,9 +4,21 @@
     <meta charset="UTF-8" />
     <link rel="icon" type="image/png" href="/logo/PanicAttackLogo.png" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-    <meta name="theme-color" content="#f5efe4" />
+    <meta name="theme-color" content="#050505" />
     <meta name="description" content="Studio Panic Attack — interactive portfolio." />
     <title>Studio Panic Attack</title>
+
+    <!-- Above-the-fold logo: prioritise so the hero composes on first paint. -->
+    <link rel="preload" as="image" href="/logo/PanicAttackLogo.png" fetchpriority="high" />
+
+    <!-- Pre-warm the gallery's first batch so the carousel doesn't pop-in
+         when the user scrolls past the hero. Only includes the lightest
+         hero portraits — heavier landscape JPGs stream in lazily via
+         useTexture.preload() inside the canvas. -->
+    <link rel="preload" as="image" href="/landing/artist-frame-1.png" />
+    <link rel="preload" as="image" href="/landing/artist-frame-2.png" />
+    <link rel="preload" as="image" href="/landing/img_4145-1.jpg" />
+    <link rel="preload" as="image" href="/landing/img_4253-1.jpg" />
   </head>
   <body>
     <div id="root"></div>

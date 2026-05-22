@@ -49,8 +49,10 @@ export function HeroOverlay() {
           src="/logo/PanicAttackLogo.png"
           alt="Studio Panic Attack"
           decoding="sync"
+          fetchPriority="high"
           style={{
-            width: 'clamp(380px, 56vw, 840px)',
+            width: 'clamp(220px, 70vw, 840px)',
+            maxWidth: '92vw',
             height: 'auto',
             filter: 'drop-shadow(0 6px 28px rgba(10,10,10,0.55)) drop-shadow(0 1px 0 rgba(211,0,0,0.4))',
           }}

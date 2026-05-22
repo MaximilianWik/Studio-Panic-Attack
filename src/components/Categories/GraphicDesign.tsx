@@ -17,11 +17,16 @@ import { CategorySection } from './CategorySection';
  * the text in real time. On tier ≤ 1 we swap to a cheap
  * `MeshPhysicalMaterial` transmission. Click → fires a one-shot
  * "slash" event consumed by PostFx for a chromatic-aberration pulse.
+ *
+ * Wrapped in a viewport-aware scale group so the orbit reach + headline
+ * width fit inside narrow (portrait phone) framings without cropping.
  */
 export function GraphicDesign() {
   const profile = useDeviceProfile();
   const visibility = useSectionVisibility('graphic');
   const groupRef = useRef<THREE.Group>(null);
+  const { viewport } = useThree();
+  const fitScale = Math.max(0.55, Math.min(1, viewport.width / 6.4));
 
   return (
     <CategorySection
@@ -31,7 +36,7 @@ export function GraphicDesign() {
       body="A diverse collection showcasing a unique blend of renowned and niche styles. Each piece reflects experimentation and versatility, integrating fine art, sketching, AI, and even 3D modeling to create innovative and dynamic creations. Crafted with powerful tools like Adobe Creative Software, Procreate, Nomad, Midjourney, and more."
       side="left"
     >
-      <group ref={groupRef}>
+      <group ref={groupRef} scale={fitScale}>
         <BackgroundHeadline />
         <Lens lowPower={profile.isLowPower} visibility={visibility} />
       </group>
@@ -99,28 +104,22 @@ function Lens({ lowPower, visibility }: LensProps) {
     meshRef.current.visible = true;
     const t = state.clock.elapsedTime;
 
-    const orbitX = Math.sin(t * 0.4) * 0.8;
-    const orbitY = Math.cos(t * 0.3) * 0.5 + 0.3;
-    const orbitTarget = new THREE.Vector3(orbitX, orbitY, 0);
-
-    const pointerWorld = new THREE.Vector3(
+    // Reuse module-scope scratch vectors — no per-frame allocations.
+    _orbit.set(Math.sin(t * 0.4) * 0.8, Math.cos(t * 0.3) * 0.5 + 0.3, 0);
+    _pointer.set(
       state.pointer.x * viewport.width * 0.35,
       state.pointer.y * viewport.height * 0.35,
       0,
     );
-    const diff = pos.current.clone().sub(pointerWorld);
-    const dist = diff.length();
+    _diff.copy(pos.current).sub(_pointer);
+    const dist = _diff.length();
     const pushStrength = Math.exp(-dist * 1.2) * 2.5;
-    if (dist > 0.01) {
-      diff.normalize().multiplyScalar(pushStrength);
-    }
+    if (dist > 0.01) _diff.normalize().multiplyScalar(pushStrength);
 
-    vel.current.lerp(
-      orbitTarget.sub(pos.current).multiplyScalar(0.8).add(diff),
-      0.06,
-    );
-    pos.current.add(vel.current.clone().multiplyScalar(dt));
+    _target.copy(_orbit).sub(pos.current).multiplyScalar(0.8).add(_diff);
+    vel.current.lerp(_target, 0.06);
 
+    pos.current.addScaledVector(vel.current, dt);
     meshRef.current.position.copy(pos.current);
     meshRef.current.rotation.x += dt * 0.35;
     meshRef.current.rotation.y += dt * 0.5;
@@ -168,3 +167,9 @@ function Lens({ lowPower, visibility }: LensProps) {
 }
 
 export default GraphicDesign;
+
+// Module-scope scratch vectors for Lens — avoids GC pressure each frame.
+const _orbit = /* @__PURE__ */ new THREE.Vector3();
+const _pointer = /* @__PURE__ */ new THREE.Vector3();
+const _diff = /* @__PURE__ */ new THREE.Vector3();
+const _target = /* @__PURE__ */ new THREE.Vector3();

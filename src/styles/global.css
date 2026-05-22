@@ -627,3 +627,182 @@ video {
   border-right: 2px solid var(--blood);
   padding-right: 14px;
 }
+
+
+/* ============================================================
+   Responsive — touch + small viewports
+   ============================================================ */
+
+/* Touch / coarse-pointer devices: restore native cursor, hide custom cursor. */
+@media (hover: none), (pointer: coarse) {
+  html { cursor: auto; }
+  .spa-cursor, .spa-cursor--ring { display: none !important; }
+  .spa-card, .spa-nav__item, .spa-nav__cta, .spa-lightbox__close,
+  .spa-nav__hamburger, .spa-nav__overlay-close, .spa-nav__overlay-item {
+    cursor: pointer;
+  }
+}
+
+/* ----- Hamburger button + mobile nav overlay ----- */
+.spa-nav__hamburger {
+  display: none;
+  background: transparent;
+  border: 1px solid rgba(246,243,238,0.3);
+  width: 38px; height: 38px;
+  align-items: center; justify-content: center;
+  cursor: none;
+  padding: 0;
+  border-radius: 4px;
+  pointer-events: auto;
+  color: var(--paper);
+  transition: border-color 0.2s, color 0.2s;
+}
+.spa-nav__hamburger:hover { border-color: var(--blood); color: var(--blood); }
+.spa-nav__hamburger svg { width: 18px; height: 18px; }
+
+@media (max-width: 900px) {
+  .spa-nav { padding: 12px 16px; gap: 12px; }
+  .spa-nav__hamburger { display: inline-flex; }
+  .spa-nav__cta { display: none; }
+  .spa-nav__name { font-size: 14px; }
+  .spa-nav__logo { width: 18px; height: 18px; }
+}
+
+.spa-nav__overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 100;
+  background: rgba(10,10,10,0.96);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 24px;
+  padding: 24px;
+  pointer-events: auto;
+  font-family: var(--font-display);
+  transition: opacity 0.22s ease, transform 0.22s ease;
+}
+.spa-nav__overlay--closed { pointer-events: none; opacity: 0; transform: translateY(-16px); }
+.spa-nav__overlay--open   { opacity: 1; transform: translateY(0); }
+
+.spa-nav__overlay-close {
+  position: absolute;
+  top: 20px; right: 20px;
+  background: transparent;
+  border: 1px solid rgba(246,243,238,0.3);
+  color: var(--paper);
+  width: 38px; height: 38px;
+  border-radius: 4px;
+  display: grid; place-items: center;
+  cursor: none;
+  font-size: 18px;
+  line-height: 1;
+  transition: border-color 0.2s, color 0.2s;
+}
+.spa-nav__overlay-close:hover { border-color: var(--blood); color: var(--blood); }
+
+.spa-nav__overlay-list {
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 22px;
+  text-align: center;
+  margin: 0;
+  padding: 0;
+}
+
+.spa-nav__overlay-item {
+  display: inline-block;
+  font-family: var(--font-display);
+  font-style: italic;
+  font-size: clamp(28px, 8vw, 48px);
+  letter-spacing: -0.01em;
+  color: var(--paper);
+  position: relative;
+  padding: 6px 12px;
+  text-decoration: none;
+  transition: color 0.2s;
+}
+.spa-nav__overlay-item::before {
+  content: attr(data-num);
+  font-family: var(--font-mono);
+  font-style: normal;
+  font-size: 10px;
+  letter-spacing: 0.3em;
+  color: var(--blood);
+  position: absolute;
+  top: -12px;
+  left: 50%;
+  transform: translateX(-50%);
+}
+.spa-nav__overlay-item:hover { color: var(--blood); }
+
+/* ----- Categories elegant on portrait/mobile ----- */
+@media (max-width: 760px) {
+  .spa-cat-elegant__number { font-size: clamp(120px, 32vw, 240px); -webkit-text-stroke-width: 1.4px; }
+  .spa-cat-elegant__title  { font-size: clamp(34px, 8vw, 56px); margin-bottom: 14px; }
+  .spa-cat-elegant__body-wrap { padding: 14px 16px; max-width: none; border-radius: 4px 14px 4px 14px; }
+  .spa-cat-elegant__body  { font-size: 13.5px; line-height: 1.55; }
+}
+
+/* ----- Vocabulary collapses to single column on tablet/below ----- */
+@media (max-width: 800px) {
+  .spa-vocab {
+    grid-template-columns: 1fr;
+    gap: 18px;
+    text-align: center;
+  }
+  .spa-vocab__list {
+    grid-template-columns: 1fr 1fr;
+    justify-items: center;
+  }
+  .spa-vocab__svg {
+    max-width: 320px;
+  }
+}
+
+/* ----- Highlights cards on small ----- */
+@media (max-width: 900px) {
+  .spa-card { min-height: 220px; }
+  .spa-card__title { font-size: 18px; }
+}
+@media (max-width: 600px) {
+  .spa-highlights { width: 92vw; gap: 10px; }
+  .spa-card { min-height: 180px; }
+  .spa-card__title { font-size: 16px; }
+}
+
+/* ----- Footer row wraps on small ----- */
+@media (max-width: 600px) {
+  .spa-footer__row {
+    flex-direction: column;
+    align-items: center;
+    gap: 10px;
+    text-align: center;
+    font-size: 10px;
+    letter-spacing: 0.24em;
+  }
+}
+
+/* ----- Lightbox close on touch ----- */
+@media (max-width: 600px) {
+  .spa-lightbox__close { top: 14px; right: 14px; width: 32px; height: 32px; font-size: 16px; }
+  .spa-lightbox__caption { font-size: 9px; bottom: 14px; }
+}
+
+
+/* Categories on portrait: stack vertically with centered text. */
+.spa-cat-elegant--portrait {
+  align-items: center;
+  text-align: center;
+}
+.spa-cat-elegant--portrait .spa-cat-elegant__title {
+  text-align: center;
+}
+.spa-cat-elegant--portrait .spa-cat-elegant__body-wrap {
+  text-align: left;
+  margin: 0 auto;
+}

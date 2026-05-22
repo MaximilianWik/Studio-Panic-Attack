@@ -1,11 +1,12 @@
 import { useFrame } from '@react-three/fiber';
-import { Image, MeshReflectorMaterial, Text, useCursor } from '@react-three/drei';
-import { useMemo, useRef, useState } from 'react';
+import { Image, MeshReflectorMaterial, Text, useCursor, useTexture } from '@react-three/drei';
+import { Suspense, useEffect, useMemo, useRef, useState } from 'react';
 import * as THREE from 'three';
 
 import { getSectionWorldY } from '../../config/sections';
 import { useSectionVisibility } from '../../helpers/useScrollSection';
 import { assets, type AssetEntry } from '../../helpers/useImageAssets';
+import { useDeviceProfile } from '../../helpers/useDeviceProfile';
 import { openLightbox } from '../../helpers/lightbox';
 
 const GOLDEN = 1.61803398875;
@@ -36,6 +37,7 @@ interface SlotState {
 export function Gallery() {
   const yPos = getSectionWorldY('gallery');
   const visibility = useSectionVisibility('gallery');
+  const profile = useDeviceProfile();
   const groupRef = useRef<THREE.Group>(null);
   const stageRef = useRef<THREE.Group>(null);
   const camTarget = useRef({ x: 0, y: 0 });
@@ -53,6 +55,14 @@ export function Gallery() {
     }
     return out;
   }, []);
+
+  // Preload every gallery texture once on mount. drei's <Image>/useTexture
+  // pulls from the same THREE.Cache, so by the time a slot wraps to a new
+  // url the texture is already resident and useTexture resolves synchronously
+  // — no Suspense fallback, no scene blank.
+  useEffect(() => {
+    for (const a of pool) useTexture.preload(a.url);
+  }, [pool]);
 
   // Pool cursor — advances when a slot needs a fresh image
   const poolCursor = useRef(0);
@@ -129,10 +139,10 @@ export function Gallery() {
         <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, 0, 0]}>
           <planeGeometry args={[60, 60]} />
           <MeshReflectorMaterial
-            blur={[300, 100]}
-            resolution={512}
+            blur={profile.isLowPower ? [0, 0] : [300, 100]}
+            resolution={profile.isLowPower ? 128 : 256}
             mixBlur={1}
-            mixStrength={80}
+            mixStrength={profile.isLowPower ? 40 : 80}
             roughness={1}
             depthScale={1.2}
             minDepthThreshold={0.4}
@@ -164,9 +174,14 @@ export function Gallery() {
           EMA STOYANOVA
         </Text>
 
-        {/* Slots — each renders the asset currently assigned to it */}
+        {/* Slots — each renders the asset currently assigned to it.
+            Per-slot Suspense keeps texture loads local: if a slot's texture
+            isn't cached yet, only that slot is null while it resolves —
+            never the whole scene. */}
         {slots.current.map((_s, i) => (
-          <CarouselSlot key={i} slotIndex={i} slots={slots} />
+          <Suspense key={i} fallback={null}>
+            <CarouselSlot slotIndex={i} slots={slots} />
+          </Suspense>
         ))}
       </group>
     </group>
