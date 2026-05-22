@@ -2,6 +2,17 @@
 
 All notable changes to Studio Panic Attack are tracked here.
 
+## [0.8.7] — nav: "Debug Tools" label next to the action cluster
+
+- `NavHeader.tsx`: small `<span class="spa-nav__actions-label">
+  Debug Tools</span>` inserted as the first child of
+  `.spa-nav__actions`, sitting just before the perf button.
+- CSS: mono 9 px, 0.32 em letter-spacing, dimmed cream
+  (`rgba(246,243,238,0.45)`), uppercase — same vocabulary as
+  the rest of the small mono labels in the nav. Hidden below
+  1100 px viewport width so the nav doesn't crowd on smaller
+  screens.
+
 ## [0.8.6] — nav: keep perf + debug + hamburger on one row
 
 The nav uses `grid-template-columns: auto 1fr auto` (3 columns:

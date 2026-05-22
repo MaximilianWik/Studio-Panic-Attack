@@ -69,6 +69,7 @@ export function NavHeader() {
           ))}
         </ul>
         <div className="spa-nav__actions">
+          <span className="spa-nav__actions-label" aria-hidden>Debug Tools</span>
           <button
             type="button"
             className={'spa-nav__perf' + (perfOverride !== 'auto' ? ' spa-nav__perf--forced' : '')}
