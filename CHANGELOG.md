@@ -2,6 +2,17 @@
 
 All notable changes to Studio Panic Attack are tracked here.
 
+## [0.6.3] — loader %: red stroke matching category numbers
+
+- `.spa-loader__pct`: stroke colour swapped from cream to
+  `var(--blood)` and a subtle red text-shadow glow added —
+  same treatment as `.spa-cat-elegant__number` (the giant
+  italic 02 / 03 numbers in the category sections). Loader now
+  reads as part of the same typographic family instead of a
+  separate cream-on-red afterthought.
+- `.spa-loader__pct-sym`: gains `text-shadow: none` so the
+  inherited red glow doesn't bleed onto the small filled `%`.
+
 ## [0.6.2] — loader is its own opaque screen + outlined % counter
 
 - `.spa-loader` is now a real own-screen overlay:

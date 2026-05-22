@@ -918,9 +918,10 @@ video {
   padding: 0 32px;
 }
 
-/* Massive italic counter — outlined typography, stroke only.
-   The number reads as a hollow shape; the small `%` symbol stays
-   filled as an editorial counterpoint. */
+/* Massive italic counter — outlined in blood red, matching the
+   .spa-cat-elegant__number treatment used for the category 03/02
+   numbers. The small `%` symbol stays filled cream as an editorial
+   counterpoint. */
 .spa-loader__pct {
   font-family: "CormorantGaramondLoader", "PP Editorial Old", Georgia, serif;
   font-style: italic;
@@ -931,10 +932,10 @@ video {
   display: flex;
   align-items: baseline;
   gap: 0.05em;
-  /* Outlined: paint the stroke first, fill is transparent. */
   color: transparent;
-  -webkit-text-stroke: 2.5px rgba(246, 243, 238, 0.9);
+  -webkit-text-stroke: 2.5px var(--blood);
   paint-order: stroke fill;
+  text-shadow: 0 0 80px rgba(211, 0, 0, 0.25);
 }
 
 .spa-loader__pct-num {
@@ -945,9 +946,10 @@ video {
 
 .spa-loader__pct-sym {
   font-size: 0.45em;
-  color: rgba(246, 243, 238, 0.55);
-  /* Override inherited stroke — the symbol stays filled. */
-  -webkit-text-stroke: 0;
+  /* Match the number: same red outlined treatment, just a thinner
+     stroke so it stays in proportion at the smaller font size. */
+  color: transparent;
+  -webkit-text-stroke: 1.4px var(--blood);
   margin-left: 0.04em;
 }
 
