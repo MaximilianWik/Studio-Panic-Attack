@@ -9,7 +9,7 @@ import { assets, type AssetEntry } from '../../helpers/useImageAssets';
 import { useDeviceProfile } from '../../helpers/useDeviceProfile';
 import { openLightbox } from '../../helpers/lightbox';
 
-const CAROUSEL_SPEED = 0.28;
+const CAROUSEL_SPEED = 0.38;
 const CAROUSEL_WIDTH = 44;
 /** Radius of the carousel arc. Slots travel along an arc of this
     radius rather than a straight line, so the row of frames bends
@@ -24,8 +24,10 @@ const SLOT_COUNT = 18;
 const MIN_SPAWN_GAP = 3.8;
 
 /** Screen-pixel to carousel-offset multiplier for click-and-drag.
-    300 px drag ≈ 6 offset units at this value. */
-const DRAG_SENSITIVITY = 0.02;
+    Kept low so the drag feels light and physical — the carousel
+    doesn't follow the mouse 1:1, it responds like a weighted
+    object. Momentum carries it for ~5 s after release. */
+const DRAG_SENSITIVITY = 0.006;
 
 /** Stage-local Z range for slots. Negative = further from camera.
     Front cap is well behind the gallery floor's "Have a peek inside
@@ -165,9 +167,10 @@ export function Gallery() {
     };
     const onUp = () => {
       if (drag.current.isDrag) {
-        // Momentum is scaled so a typical flick (smoothVelocity ≈
-        // 0.05 per frame) gives ~3 offset units/sec of initial glide.
-        drag.current.momentum = drag.current.smoothVelocity * 60;
+        // Scale smoothVelocity (per-frame units) → units/sec initial
+        // glide. ×30 gives a natural hand-off from the drag motion
+        // without launching the carousel at warp speed.
+        drag.current.momentum = drag.current.smoothVelocity * 30;
       }
       drag.current.active = false;
     };
@@ -261,27 +264,31 @@ export function Gallery() {
     groupRef.current.visible = v > 0.02;
     if (v < 0.02) return;
 
-    // Apply pending drag delta (accumulated in pointermove) — done
-    // here so motion is always frame-rate synced. Track a rolling
-    // EMA of per-frame applied offsets for smooth momentum on release.
+    // Apply pending drag delta. Only 35 % of the accumulated value
+    // is applied each frame — the rest carries over — so the
+    // carousel responds to input with a slight ease-in rather than
+    // an instant snap. Feels like pushing a physical object.
     if (drag.current.active && drag.current.isDrag) {
-      const apply = drag.current.pendingDelta;
-      drag.current.pendingDelta = 0;
-      if (apply !== 0) {
+      const apply = drag.current.pendingDelta * 0.35;
+      drag.current.pendingDelta -= apply;
+      if (Math.abs(apply) > 0.0001) {
         for (const s of slots.current) s.offset += apply;
-        // EMA: weight current frame 30 %, history 70 %
-        drag.current.smoothVelocity = drag.current.smoothVelocity * 0.7 + apply * 0.3;
+        // EMA velocity — history 80 %, current 20 %; heavily
+        // smoothed so a brief pause before release doesn't zero
+        // out the momentum.
+        drag.current.smoothVelocity = drag.current.smoothVelocity * 0.8 + apply * 0.2;
       } else {
-        // No movement this frame — let the EMA decay so a stationary
-        // hand-hold doesn't launch a huge momentum burst on release.
-        drag.current.smoothVelocity *= 0.75;
+        drag.current.smoothVelocity *= 0.9;
       }
+    } else {
+      drag.current.pendingDelta = 0;
     }
 
-    // Post-release momentum — smooth exponential glide (~1 s half-life).
-    if (!drag.current.active && Math.abs(drag.current.momentum) > 0.005) {
+    // Post-release glide — ~5 s exponential decay.
+    // decay = 0.990 per frame → after 300 frames (5 s) ≈ 5 % remains.
+    if (!drag.current.active && Math.abs(drag.current.momentum) > 0.002) {
       for (const s of slots.current) s.offset += drag.current.momentum * dt;
-      drag.current.momentum *= Math.pow(0.82, 60 * dt);
+      drag.current.momentum *= Math.pow(0.990, 60 * dt);
     }
 
     // Advance carousel — each slot uses its own speedFactor for
@@ -514,7 +521,7 @@ function CarouselSlot({ slotIndex, slots }: CarouselSlotProps) {
     // following the cursor X, on top of the arc-facing rotation.
     // Reads as the carousel "watching" the user without breaking
     // the arc's geometry.
-    groupRef.current.rotation.y = -angle + state.pointer.x * 0.10;
+    groupRef.current.rotation.y = -angle + state.pointer.x * 0.20;
 
     // E — depth dimming. Slots farther from the camera (more
     // negative position.z relative to the stage) get tinted darker.

@@ -2,6 +2,27 @@
 
 All notable changes to Studio Panic Attack are tracked here.
 
+## [0.9.9] — gallery: 5s glide, slower drag, faster auto, double tilt
+
+- `CAROUSEL_SPEED` 0.28 → **0.38**.
+- `DRAG_SENSITIVITY` 0.02 → **0.006** — carousel no longer follows
+  the mouse 1:1; it responds like a weighted object. A 300 px drag
+  moves ~1.8 offset units.
+- useFrame drag block:
+  - Applies only **35 %** of `pendingDelta` per frame; the rest
+    carries over. The carousel eases into input rather than snapping
+    to it.
+  - `smoothVelocity` EMA changed from 70/30 → **80/20** history/
+    current weighting. A brief pause before release doesn't zero
+    out momentum — the rolling average is more stable.
+  - `smoothVelocity *= 0.9` (was 0.75) when no input arrives this
+    frame, giving gentler idle decay.
+  - Post-release momentum: `smoothVelocity × 30` (was ×60) for a
+    proportional initial glide velocity.
+  - Decay `0.82^(60dt)` → **`0.990^(60dt)`**: ~5 s exponential
+    glide (after 5 s ≈ 5 % of initial momentum remains).
+- Pointer tilt `state.pointer.x × 0.10` → **×0.20** (doubled).
+
 ## [0.9.8] — gallery: faster auto-speed + smooth drag momentum
 
 - `CAROUSEL_SPEED` 0.15 → **0.28** (~87 % faster).
