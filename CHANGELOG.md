@@ -2,6 +2,31 @@
 
 All notable changes to Studio Panic Attack are tracked here.
 
+## [0.9.1] — gallery floor: circular pedestal with radial alpha fade
+
+Replaced the hard-edged 60×60 reflective square with the
+"infinity stage" treatment.
+
+- `Gallery.tsx`: geometry swapped from `planeGeometry [60, 60]`
+  to `circleGeometry [32, 96]` — a 64-unit-diameter disc with
+  smooth 96-segment perimeter. Covers the carousel content
+  (slots span ±18) plus a soft margin. Same change applied to
+  the underside back-face mesh so the silhouette is consistent
+  from above and below.
+- New `floorAlphaMap` — a 512×512 `CanvasTexture` painted with a
+  radial gradient (`#ffffff` 0 % → `#dddddd` 55 % → `#444444`
+  85 % → `#000000` 100 %). Mounted on both materials with
+  `transparent: true`. The reflective top fades to nothing at
+  the rim, so the reflection itself dissolves rather than
+  cutting off at a hard edge. Disposed on unmount via the same
+  effect that owns the canvas.
+- `MeshReflectorMaterial` keeps every other prop the same — the
+  alpha mask is a pure visual upgrade, no perf delta.
+
+The disc reads as a deliberate stage / pedestal instead of an
+arbitrary slice, and the soft rim blends into the brand
+backdrop so the floor never announces "this is where 3D ends".
+
 ## [0.9.0] — portrait fix: text clipping + UX↔Highlights overlap
 
 Two real-world bugs surfaced on iPhone:

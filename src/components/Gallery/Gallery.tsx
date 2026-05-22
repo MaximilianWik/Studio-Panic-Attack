@@ -43,6 +43,39 @@ export function Gallery() {
   const camTarget = useRef({ x: 0, y: 0 });
   const camCurrent = useRef({ x: 0, y: 0 });
 
+  // Radial alpha-mask for the floor — opaque at the centre, fades
+  // to transparent at the rim. Replaces the old hard-edged 60×60
+  // black square with a circular pedestal that dissolves into the
+  // surrounding dark instead of terminating abruptly. The same
+  // texture mounts on the underside plane so the back face of the
+  // floor (visible after scrolling past the gallery) shares the
+  // soft edge.
+  const floorAlphaMap = useMemo(() => {
+    if (typeof document === 'undefined') return null;
+    const c = document.createElement('canvas');
+    c.width = 512;
+    c.height = 512;
+    const ctx = c.getContext('2d');
+    if (!ctx) return null;
+    const g = ctx.createRadialGradient(256, 256, 64, 256, 256, 256);
+    g.addColorStop(0.00, '#ffffff');
+    g.addColorStop(0.55, '#dddddd');
+    g.addColorStop(0.85, '#444444');
+    g.addColorStop(1.00, '#000000');
+    ctx.fillStyle = g;
+    ctx.fillRect(0, 0, 512, 512);
+    const tex = new THREE.CanvasTexture(c);
+    tex.minFilter = THREE.LinearFilter;
+    tex.magFilter = THREE.LinearFilter;
+    return tex;
+  }, []);
+
+  useEffect(() => {
+    return () => {
+      floorAlphaMap?.dispose();
+    };
+  }, [floorAlphaMap]);
+
   // De-duplicated pool of gallery images
   const pool = useMemo(() => {
     const seen = new Set<string>();
@@ -135,9 +168,13 @@ export function Gallery() {
   return (
     <group ref={groupRef} position={[0, yPos, 0]}>
       <group ref={stageRef} position={[0, -0.5, -2]}>
-        {/* Reflective floor (FrontSide only — visible from above). */}
+        {/* Reflective floor — circular pedestal, radial alpha fade.
+            The disc reads as a deliberate stage instead of an
+            arbitrary square slice, and the alphaMap dissolves the
+            edge so there's no hard "this is where the floor ends"
+            line. Reflection naturally fades with the alpha. */}
         <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, 0, 0]}>
-          <planeGeometry args={[60, 60]} />
+          <circleGeometry args={[32, 96]} />
           <MeshReflectorMaterial
             blur={profile.isLowPower ? [0, 0] : [300, 100]}
             resolution={profile.isLowPower ? 128 : 256}
@@ -149,24 +186,22 @@ export function Gallery() {
             maxDepthThreshold={1.4}
             color="#050505"
             metalness={0.5}
+            transparent
+            alphaMap={floorAlphaMap ?? undefined}
           />
         </mesh>
 
-        {/* Underside fade. Renders only the back face (BackSide), so
-            it's invisible while the camera is above the floor and
-            takes over the moment scroll lifts the camera below it
-            (post-gallery scroll). Without this the floor visibly
-            "despawns" because the reflective material is FrontSide
-            and the back face is culled. Semi-transparent dark fill
-            so the brand backdrop still bleeds through — reads as a
-            ghost of the floor instead of a solid wall. */}
+        {/* Underside fade. Same circle + same alpha so the back-face
+            visible from below shares the soft rim. BackSide-only so
+            it doesn't z-fight with the reflective top. */}
         <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, 0, 0]}>
-          <planeGeometry args={[60, 60]} />
+          <circleGeometry args={[32, 96]} />
           <meshBasicMaterial
             color="#050505"
             side={THREE.BackSide}
             transparent
             opacity={0.55}
+            alphaMap={floorAlphaMap ?? undefined}
             depthWrite={false}
             fog={false}
             toneMapped={false}
