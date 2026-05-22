@@ -2,6 +2,22 @@
 
 All notable changes to Studio Panic Attack are tracked here.
 
+## [0.6.1] — loader holds for 2.5 s, scroll-lock removed
+
+- `App.tsx`: loader now runs for a deliberate minimum of 2.5 s
+  regardless of network speed. Tracked via a `timeProgress` rAF
+  loop alongside `usePreloadGate`'s `gateProgress`. The displayed
+  `progress` passed to LoadingScreen is the average of the two,
+  so on a hot cache the bar still fills smoothly across the full
+  2.5 s instead of snapping to 100 % in 50 ms. `ready` only flips
+  once both gate and timer are done.
+- Removed the leftover scroll/touch/keyboard capture-phase
+  listeners — that's the only piece of the old hairline-bar
+  attempt still in the file. The new LoadingScreen sits over the
+  canvas with `pointer-events: none`, and on a 2.5 s budget there
+  is no realistic window for the user to scroll the canvas before
+  the loader fades out.
+
 ## [0.6.0] — proper loading screen + under-construction routes
 
 ### feat(loading): full-screen LoadingScreen replaces the hairline bar

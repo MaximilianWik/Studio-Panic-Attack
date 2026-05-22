@@ -57,37 +57,34 @@ export function App() {
         .map((a) => a.url),
     [],
   );
-  const { ready, progress } = usePreloadGate(preloadUrls);
+  const { ready: gateReady, progress: gateProgress } = usePreloadGate(preloadUrls);
 
-  // Block scroll/touch/keyboard navigation until the first batch is ready.
-  // Capture-phase listeners run before drei <ScrollControls>'s handlers,
-  // so calling preventDefault here also stops the canvas from advancing.
+  // Loader runs for a deliberate minimum of 2.5 s regardless of how
+  // fast the network finishes — the entry experience is part of the
+  // brand, not just a stall while we wait for bytes. `timeProgress`
+  // is the share of that 2.5 s elapsed; combined with `gateProgress`
+  // it drives the percentage counter so the bar fills smoothly even
+  // when the cache hits instantly.
+  const MIN_LOADER_MS = 2500;
+  const [timeProgress, setTimeProgress] = useState(0);
   useEffect(() => {
-    if (ready) return;
-    const stop = (e: Event) => e.preventDefault();
-    const stopKey = (e: KeyboardEvent) => {
-      const k = e.key;
-      if (
-        k === 'ArrowDown' ||
-        k === 'ArrowUp' ||
-        k === 'PageDown' ||
-        k === 'PageUp' ||
-        k === 'Home' ||
-        k === 'End' ||
-        k === ' '
-      ) {
-        e.preventDefault();
-      }
+    const start = performance.now();
+    let raf = 0;
+    const tick = () => {
+      const elapsed = performance.now() - start;
+      const t = Math.min(1, elapsed / MIN_LOADER_MS);
+      setTimeProgress(t);
+      if (t < 1) raf = requestAnimationFrame(tick);
     };
-    window.addEventListener('wheel', stop, { capture: true, passive: false });
-    window.addEventListener('touchmove', stop, { capture: true, passive: false });
-    window.addEventListener('keydown', stopKey, { capture: true });
-    return () => {
-      window.removeEventListener('wheel', stop, { capture: true } as EventListenerOptions);
-      window.removeEventListener('touchmove', stop, { capture: true } as EventListenerOptions);
-      window.removeEventListener('keydown', stopKey, { capture: true } as EventListenerOptions);
-    };
-  }, [ready]);
+    raf = requestAnimationFrame(tick);
+    return () => cancelAnimationFrame(raf);
+  }, []);
+
+  const ready = gateReady && timeProgress >= 1;
+  // Average the two signals so the bar tracks the slower of the
+  // network or the minimum-display clock — neither alone can race
+  // the counter to 100 %.
+  const progress = (gateProgress + timeProgress) / 2;
 
   return (
     <ErrorBoundary>
