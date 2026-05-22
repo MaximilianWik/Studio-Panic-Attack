@@ -89,6 +89,11 @@ video {
   letter-spacing: -0.02em;
   color: var(--paper);
   margin: 0 0 28px 0;
+  /* Stays readable when scattered images / backdrops sit behind. */
+  text-shadow:
+    0 2px 12px rgba(0, 0, 0, 0.85),
+    0 0 28px rgba(0, 0, 0, 0.55),
+    0 1px 0 rgba(0, 0, 0, 0.9);
 }
 
 .spa-body {
@@ -567,6 +572,11 @@ video {
   letter-spacing: -0.02em;
   color: var(--paper);
   margin: 0 0 20px 0;
+  /* Stays readable when scattered images / backdrops sit behind. */
+  text-shadow:
+    0 2px 12px rgba(0, 0, 0, 0.85),
+    0 0 28px rgba(0, 0, 0, 0.55),
+    0 1px 0 rgba(0, 0, 0, 0.9);
 }
 
 .spa-cat-elegant__body-wrap {
@@ -592,10 +602,10 @@ video {
 
 .spa-cat-elegant__body {
   font-family: var(--font-body);
-  font-size: 15px;
-  line-height: 1.65;
+  font-size: 18px;
+  line-height: 1.6;
   letter-spacing: 0.005em;
-  color: rgba(246, 243, 238, 0.82);
+  color: rgba(246, 243, 238, 0.86);
   margin: 0;
 }
 
@@ -781,7 +791,7 @@ video {
   .spa-cat-elegant__number { font-size: clamp(120px, 32vw, 240px); -webkit-text-stroke-width: 1.4px; }
   .spa-cat-elegant__title  { font-size: clamp(34px, 8vw, 56px); margin-bottom: 14px; }
   .spa-cat-elegant__body-wrap { padding: 14px 16px; max-width: none; border-radius: 4px 14px 4px 14px; }
-  .spa-cat-elegant__body  { font-size: 13.5px; line-height: 1.55; }
+  .spa-cat-elegant__body  { font-size: 16px; line-height: 1.55; }
 }
 
 /* ----- Vocabulary collapses to single column on tablet/below ----- */

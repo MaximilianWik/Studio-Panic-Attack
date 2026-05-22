@@ -2,6 +2,19 @@
 
 All notable changes to Studio Panic Attack are tracked here.
 
+## [0.8.3] — readable titles + bigger body text in categories
+
+- `.spa-cat-elegant__title` (01 Graphic Design / 02 3D Art /
+  03 AI Art / 04 UX Design) and `.spa-title` (Highlights →
+  "Featured pieces"): added a layered black text-shadow stack —
+  a tight `0 2px 12px / 0.85`, a soft `0 0 28px / 0.55` halo,
+  and a 1 px hard drop. Stays readable now that scattered images
+  can sit directly behind these titles.
+- `.spa-cat-elegant__body` body copy: `15 px → 18 px`, line-height
+  `1.65 → 1.60`, colour from `rgba(...,0.82)` to `0.86` for a
+  hair more contrast. Mobile breakpoint override (`max-width: 700px`)
+  bumped from `13.5 px → 16 px`.
+
 ## [0.8.2] — sculptures down 3 + fix the early-despawn bug
 
 ### fix(visibility): sculptures vanished when scrolling slightly past
