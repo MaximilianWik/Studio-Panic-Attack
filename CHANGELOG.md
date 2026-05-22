@@ -2,6 +2,15 @@
 
 All notable changes to Studio Panic Attack are tracked here.
 
+## [0.4.2] — Vercel deploy: logo case fix
+
+- `public/Logo/` → `public/logo/`. The folder was tracked in git with
+  a capital `L` but every code reference (`/logo/PanicAttackLogo.png`
+  in `index.html`, `HeroOverlay.tsx`, `NavHeader.tsx`) used lowercase.
+  Windows is case-insensitive so it worked locally; Vercel runs on
+  Linux which is case-sensitive, so the logo 404'd in production and
+  the browser showed a broken-image icon with the alt text.
+
 ## [0.4.1] — perf pass + scroll-blank bugfix
 
 ### Bugfix: scene blanked for one frame when scrolling
