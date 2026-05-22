@@ -105,7 +105,7 @@ export function AIArt() {
       </group>
       <DebugLabel
         name="Sculpture: Hedgehog (03 ai)"
-        worldY={getSectionWorldY('ai')}
+        worldY={getSectionWorldY('ai') + 10}
         offset={[0, 1.4, 0.5]}
       />
     </CategorySection>

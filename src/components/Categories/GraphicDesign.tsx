@@ -44,7 +44,7 @@ export function GraphicDesign() {
       </group>
       <DebugLabel
         name="Sculpture: Knot (01 graphic)"
-        worldY={getSectionWorldY('graphic')}
+        worldY={getSectionWorldY('graphic') + 10}
         offset={[0, 1.6, 0.5]}
       />
     </CategorySection>

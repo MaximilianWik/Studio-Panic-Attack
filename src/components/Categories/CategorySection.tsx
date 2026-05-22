@@ -41,12 +41,12 @@ export function CategorySection({
 
   const heroPos: [number, number, number] = [
     (side === 'left' ? 2.4 : -2.4) * xFit,
-    0,
+    10,
     0,
   ];
   const htmlPos: [number, number, number] = [
     (side === 'left' ? -1.6 : 1.6) * xFit,
-    0,
+    -10,
     0,
   ];
 

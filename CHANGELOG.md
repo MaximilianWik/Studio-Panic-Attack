@@ -2,6 +2,51 @@
 
 All notable changes to Studio Panic Attack are tracked here.
 
+## [0.8.1] — manual placement: text −10, bg +10 within categories
+
+Per direct positional spec from the design pass: split the text
+half and the 3D / scattered halves of every category by 20 world
+units. Section anchors in `sections.ts` are unchanged — only the
+local offsets inside CategorySection (and the world-Y bias inside
+ScatteredImages) shift.
+
+`CategorySection.tsx`:
+
+- `htmlPos.y`: `0` → `-10` (text body drops 10 units in scroll).
+- `heroPos.y`: `0` → `+10` (sculpture rises 10 units; appears
+  earlier in scroll than the text).
+
+`ScatteredImages.tsx`:
+
+- `worldY` formula gains a `+10` bias on top of the existing
+  `yCenter + ySpread + jitter`. Every scattered image is now 10
+  world units above where it used to sit.
+
+Resulting per-entity world Y (section anchors unchanged at
+`-30.5 / -37 / -43.5 / -52.5`):
+
+| entity | old world Y | new world Y |
+|---|---:|---:|
+| Knot (01 graphic, sculpture) | -30.5 | **-20.5** |
+| Hedgehog (03 ai, sculpture)  | -43.5 | **-33.5** |
+| 01 graphic text body         | -30.5 | **-40.5** |
+| 02 threeD text body          | -37.0 | **-47.0** |
+| 03 ai text body              | -43.5 | **-53.5** |
+| 04 ux text body              | -52.5 | **-62.5** |
+| Scattered (graphic affinity) | ~-30 | **~-20** |
+| Scattered (threeD affinity)  | ~-36 | **~-26** |
+| Scattered (ai affinity)      | ~-43 | **~-33** |
+| Scattered (ux affinity)      | ~-52 | **~-42** |
+
+DebugLabel `worldY` arguments in `GraphicDesign.tsx` and
+`AIArt.tsx` updated to reflect the new sculpture positions
+(`getSectionWorldY(id) + 10`) so the on-screen overlay shows the
+real world Y instead of the section anchor.
+
+Heads-up: Knot (-20.5) is now only 4.5 units below the gallery
+centre (-16). They may visually overlap. Toggle the debug
+overlay to confirm and send the next adjustment if you want.
+
 ## [0.8.0] — Option B layout + worldY debug overlay
 
 ### feat(layout): single side-by-side layout on every viewport
