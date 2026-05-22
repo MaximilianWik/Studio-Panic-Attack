@@ -115,6 +115,46 @@ video {
 
 /* ----- Hero scroll prompt ----- */
 
+/* Below-logo slot — fixed height so the logo stays centered as
+   contents swap from progress bar (loading) → scroll prompt (ready). */
+.spa-hero__cta {
+  position: relative;
+  height: 28px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0;
+}
+
+/* Loading bar — thin red line, branded. Width is driven by inline
+   transform: scaleX(progress) on the inner fill. Fades out once ready. */
+.spa-load-bar {
+  position: absolute;
+  inset: 0;
+  width: 220px;
+  height: 1px;
+  margin: auto;
+  top: 50%;
+  transform: translateY(-0.5px);
+  background: rgba(246, 243, 238, 0.12);
+  overflow: hidden;
+  opacity: 1;
+  transition: opacity 0.4s ease 0.05s;
+}
+.spa-load-bar__fill {
+  width: 100%;
+  height: 100%;
+  background: #d30000;
+  transform-origin: left center;
+  transform: scaleX(0);
+  transition: transform 0.25s ease-out;
+  box-shadow: 0 0 8px rgba(211, 0, 0, 0.6);
+}
+.spa-load-bar--done {
+  opacity: 0;
+}
+
 .spa-scroll-prompt {
   font-family: var(--font-mono);
   font-size: 10px;
@@ -125,6 +165,13 @@ video {
   align-items: center;
   gap: 12px;
   white-space: nowrap;
+  /* Hidden by default; the spa-drift keyframe is only attached on
+     the .--ready class so it can't override `opacity: 0` here. */
+  opacity: 0;
+  transition: opacity 0.5s ease 0.15s;
+}
+.spa-scroll-prompt--ready {
+  opacity: 1;
   animation: spa-drift 4.2s ease-in-out infinite;
 }
 

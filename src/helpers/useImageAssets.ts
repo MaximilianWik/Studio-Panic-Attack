@@ -9,6 +9,7 @@
  */
 
 import type { SectionId } from '../config/sections';
+import { assetUrl } from './assetUrl';
 
 export interface AssetEntry {
   /** root-relative URL, e.g. /landing/img_4145-1.jpg */
@@ -21,7 +22,7 @@ export interface AssetEntry {
   kind: 'image' | 'video';
 }
 
-const L = (f: string) => '/landing/' + f;
+const L = (f: string) => assetUrl('/landing/' + f);
 
 export const assets: AssetEntry[] = [
   // photography / film stills → photography flavor for graphic + 3D

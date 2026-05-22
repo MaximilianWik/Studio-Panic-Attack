@@ -7,12 +7,14 @@ import { getSectionWorldY, type SectionId, VIEWPORT_HEIGHT_UNITS } from '../../c
 import { useDeviceProfile } from '../../helpers/useDeviceProfile';
 import { shaderIds, type ShaderId } from '../../shaders/imageShaders';
 import { openLightbox } from '../../helpers/lightbox';
+import { assetUrl } from '../../helpers/assetUrl';
 import { ImageEffect } from './ImageEffects';
 
 // All scattered images live alongside the gallery pool in /landing/.
 // Reusing the same URLs lets the browser share a single cached texture
 // across Gallery and ScatteredImages — no duplicate network fetches,
-// no duplicate GPU textures.
+// no duplicate GPU textures. URLs are routed through assetUrl() so
+// production fetches the resized WebP via weserv.
 const SCATTER_IMAGES = [
   '/landing/000008390034_33a-copy-2.jpg',
   '/landing/add-more-chaos.png',
@@ -36,7 +38,7 @@ const SCATTER_IMAGES = [
   '/landing/img_9791-min.png',
   '/landing/img_9793-min.png',
   '/landing/levelsequence-1.0011.png',
-];
+].map((p) => assetUrl(p));
 
 interface ScatteredItem {
   url: string;

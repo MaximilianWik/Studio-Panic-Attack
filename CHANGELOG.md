@@ -2,6 +2,84 @@
 
 All notable changes to Studio Panic Attack are tracked here.
 
+## [0.5.0] — image-CDN proxy + first-paint loading gate
+
+### perf(assets): route /landing/ images through images.weserv.nl
+
+- 64 source files in `public/landing/` total **221 MB** — many PNGs are
+  5–17 MB raw exports (e.g. `img_1034.png` 17.9 MB, `cemetery-scene1.png`
+  15.4 MB). On a cold load this took *minutes* on a typical broadband
+  connection and never finished on 4G.
+- Local image-processing tooling (sharp, ImageMagick, cwebp) is blocked
+  on the corp laptop, so we resize+transcode at request time via the
+  free `images.weserv.nl` image CDN. First request is slow; every
+  subsequent request is hot from their edge cache.
+- New helper `src/helpers/assetUrl.ts` rewrites any `/landing/*` path
+  into `https://images.weserv.nl/?url=max-wik.com/landing/...&w=2000&output=webp&q=82&we=1`
+  in production, returns the path unchanged in dev. URLs are built
+  by hand (not via `URLSearchParams`) so the runtime-generated URL is
+  byte-identical to the hand-written `<link rel="preload">` tags in
+  `index.html` — same string = same browser-cache entry.
+- All callsites updated:
+  - `helpers/useImageAssets.ts` — every entry routed via `assetUrl()`
+    inside the existing `L()` builder.
+  - `components/ScatteredImages/ScatteredImages.tsx` — `.map(assetUrl)`
+    over the SCATTER_IMAGES list.
+  - `components/Highlights/Highlights.tsx` — 4 hard-coded `media:`
+    paths wrapped in `assetUrl()`.
+  - `index.html` — 4 preload links rewritten as full weserv URLs with
+    `crossorigin="anonymous"` (matching three.js TextureLoader's
+    default crossOrigin so the preload bytes are reusable).
+- Expected post-CDN payload per image: ~150–250 KB instead of
+  5–17 MB. ≈ 30–40× smaller; cold load drops from minutes to seconds.
+
+### feat(loading): gate scroll on first-batch preload + progress line
+
+- The hero used to mount everything at once and let the carousel
+  pop-in over several seconds while CDN-cached textures arrived.
+  Now scroll is blocked until the first 8 gallery portraits are in
+  the browser's HTTP cache, so the gallery is fully populated the
+  moment the user scrolls past the hero.
+- New hook `helpers/usePreloadGate.ts` — DOM-side preloader that
+  fires `new Image()` per URL with `crossOrigin = 'anonymous'`
+  (so the cache entry is shared with three.js' subsequent GPU
+  upload). Returns `{ ready, progress }`. Counts both `onload` and
+  `onerror` as "done" so a single broken URL can't deadlock the
+  gate. 8 s failsafe timeout — never blocks the user indefinitely
+  on a stalled network.
+- `App.tsx` — `useMemo`s the first 8 gallery URLs, passes them to
+  `usePreloadGate`, then attaches capture-phase `wheel` /
+  `touchmove` / `keydown` listeners that `preventDefault()` until
+  ready. Capture phase runs before drei `<ScrollControls>`'s own
+  handlers so this also stops the canvas from advancing.
+- `HeroOverlay.tsx` — accepts `{ ready, progress }`, renders a thin
+  220 px red progress line below the logo while loading, fades it
+  out and reveals the "scroll to enter" prompt once ready. Single
+  fixed-height slot (`.spa-hero__cta`) so the logo stays vertically
+  centered through the transition.
+- New CSS in `global.css`: `.spa-hero__cta`, `.spa-load-bar`,
+  `.spa-load-bar__fill`, `.spa-load-bar--done`,
+  `.spa-scroll-prompt--ready`. Drift animation is now only applied
+  in the `--ready` state so it can't override the hidden opacity.
+- On a fast connection the whole gate is over in <500 ms — feels
+  deliberate, not annoying. On slow connections the user gets a
+  truthful progress signal instead of a broken-feeling site.
+
+### Notes / non-goals
+
+- Logo PNG (62 KB, transparent) stays as a local PNG — already
+  tiny, transparency matters, and weserv would lose nothing.
+- 3 MP4 files in `/landing/` (totalling ~10 MB) are NOT referenced
+  anywhere in code; left in place for now. Can be removed in a
+  follow-up if you want the git size back.
+- Lightbox uses the same 2000 px webp as the gallery thumbnail
+  (instead of a higher-res variant). Acceptable for now; can be
+  bumped to a separate `assetUrl(url, { width: 2400 })` call later.
+- weserv is a free third-party service; if it ever goes down, all
+  /landing/ images break. Worth keeping an eye on; if it becomes a
+  reliability concern we can move to a hosted service or run sharp
+  on Vercel's build infra (laptop never installs it).
+
 ## [0.4.2] — Vercel deploy: logo case fix
 
 - `public/Logo/` → `public/logo/`. The folder was tracked in git with

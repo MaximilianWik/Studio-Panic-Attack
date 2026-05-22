@@ -3,6 +3,7 @@ import { LiquidMetal } from '@paper-design/shaders-react';
 import { useState } from 'react';
 
 import { getSectionWorldY } from '../../config/sections';
+import { assetUrl } from '../../helpers/assetUrl';
 
 interface HighlightSpec {
   num: string;
@@ -33,28 +34,28 @@ const HIGHLIGHTS: HighlightSpec[] = [
     title: 'Cemetery — long sequence',
     blurb: 'Unreal Engine 5',
     href: '/highlights/cemetery-sequence',
-    media: '/landing/cemetery-scene16.png',
+    media: assetUrl('/landing/cemetery-scene16.png'),
   },
   {
     num: 'II',
     title: 'Holistic — editorial',
     blurb: 'Editorial / 3D',
     href: '/highlights/holistic-editorial',
-    media: '/landing/holistic-letter-from-the-editor-and-3d-article.png',
+    media: assetUrl('/landing/holistic-letter-from-the-editor-and-3d-article.png'),
   },
   {
     num: 'III',
     title: 'Chrome type',
     blurb: 'Type / liquid metal',
     href: '/highlights/chrome-type',
-    media: '/landing/chrome-type-bw-4.png',
+    media: assetUrl('/landing/chrome-type-bw-4.png'),
   },
   {
     num: 'IV',
     title: 'Glass error',
     blurb: 'UX / interaction',
     href: '/highlights/glass-error',
-    media: '/landing/glasserrorscrnshot.png',
+    media: assetUrl('/landing/glasserrorscrnshot.png'),
   },
 ];
 

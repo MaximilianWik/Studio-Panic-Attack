@@ -1,6 +1,13 @@
 import { MeshGradient } from '@paper-design/shaders-react';
 
-export function HeroOverlay() {
+interface HeroOverlayProps {
+  /** True once the first-batch gallery textures are preloaded. */
+  ready: boolean;
+  /** Preload progress 0..1 — drives the loading bar width. */
+  progress: number;
+}
+
+export function HeroOverlay({ ready, progress }: HeroOverlayProps) {
   return (
     <>
       {/* Red mesh-gradient backdrop — ALWAYS visible (entire site bg) */}
@@ -57,7 +64,26 @@ export function HeroOverlay() {
             filter: 'drop-shadow(0 6px 28px rgba(10,10,10,0.55)) drop-shadow(0 1px 0 rgba(211,0,0,0.4))',
           }}
         />
-        <div className="spa-scroll-prompt">scroll to enter</div>
+
+        {/* Below the logo: either a thin progress line (preloading) or
+            the scroll prompt (ready). Single fixed-height slot so the
+            logo stays vertically centered through the transition. */}
+        <div className="spa-hero__cta">
+          <div
+            className={'spa-load-bar' + (ready ? ' spa-load-bar--done' : '')}
+            aria-hidden
+          >
+            <div
+              className="spa-load-bar__fill"
+              style={{ transform: 'scaleX(' + progress.toFixed(3) + ')' }}
+            />
+          </div>
+          <div
+            className={'spa-scroll-prompt' + (ready ? ' spa-scroll-prompt--ready' : '')}
+          >
+            scroll to enter
+          </div>
+        </div>
       </div>
     </>
   );

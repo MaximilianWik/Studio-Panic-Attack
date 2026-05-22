@@ -1,6 +1,6 @@
 import { Canvas } from '@react-three/fiber';
 import { ScrollControls, AdaptiveDpr, AdaptiveEvents } from '@react-three/drei';
-import { Suspense, useEffect, useState } from 'react';
+import { Suspense, useEffect, useMemo, useState } from 'react';
 
 import { TOTAL_PAGES } from './config/sections';
 import Layout from './components/Layout';
@@ -12,6 +12,8 @@ import NavHeader from './components/NavHeader';
 import ScrollBridge from './components/ScrollBridge';
 import Lightbox from './components/Lightbox';
 import { useDeviceProfile } from './helpers/useDeviceProfile';
+import { assets } from './helpers/useImageAssets';
+import { usePreloadGate } from './helpers/usePreloadGate';
 
 /**
  * Track viewport aspect with a resize listener so the camera can pick a
@@ -43,9 +45,52 @@ export function App() {
   const fov = chooseFov(aspect);
   const dpr: [number, number] = profile.isLowPower ? [0.85, 1.1] : [1, 1.6];
 
+  // Pre-warm the first batch of gallery textures so the carousel is
+  // populated by the time the user scrolls past the hero. Limited to the
+  // first 8 gallery URLs — enough to cover what's visible on entry.
+  const preloadUrls = useMemo(
+    () =>
+      assets
+        .filter((a) => a.affinity === 'gallery' && a.kind === 'image')
+        .slice(0, 8)
+        .map((a) => a.url),
+    [],
+  );
+  const { ready, progress } = usePreloadGate(preloadUrls);
+
+  // Block scroll/touch/keyboard navigation until the first batch is ready.
+  // Capture-phase listeners run before drei <ScrollControls>'s handlers,
+  // so calling preventDefault here also stops the canvas from advancing.
+  useEffect(() => {
+    if (ready) return;
+    const stop = (e: Event) => e.preventDefault();
+    const stopKey = (e: KeyboardEvent) => {
+      const k = e.key;
+      if (
+        k === 'ArrowDown' ||
+        k === 'ArrowUp' ||
+        k === 'PageDown' ||
+        k === 'PageUp' ||
+        k === 'Home' ||
+        k === 'End' ||
+        k === ' '
+      ) {
+        e.preventDefault();
+      }
+    };
+    window.addEventListener('wheel', stop, { capture: true, passive: false });
+    window.addEventListener('touchmove', stop, { capture: true, passive: false });
+    window.addEventListener('keydown', stopKey, { capture: true });
+    return () => {
+      window.removeEventListener('wheel', stop, { capture: true } as EventListenerOptions);
+      window.removeEventListener('touchmove', stop, { capture: true } as EventListenerOptions);
+      window.removeEventListener('keydown', stopKey, { capture: true } as EventListenerOptions);
+    };
+  }, [ready]);
+
   return (
     <ErrorBoundary>
-      <HeroOverlay />
+      <HeroOverlay ready={ready} progress={progress} />
       <div style={{ position: 'fixed', inset: 0, zIndex: 1, pointerEvents: 'auto' }}>
         <Canvas
           dpr={dpr}
