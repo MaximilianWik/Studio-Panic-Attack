@@ -68,47 +68,49 @@ export function NavHeader() {
             </li>
           ))}
         </ul>
-        <button
-          type="button"
-          className={'spa-nav__perf' + (perfOverride !== 'auto' ? ' spa-nav__perf--forced' : '')}
-          aria-label={'Performance tier: ' + perfLabel + '. Click to cycle.'}
-          title={
-            perfOverride === 'auto'
-              ? 'Perf: AUTO (detected tier ' + profile.tier + (profile.mobile ? ', mobile' : '') + '). Click to override.'
-              : 'Perf: forced T' + perfOverride + ' (isLowPower=' + (perfOverride <= 1) + '). Click to cycle.'
-          }
-          onClick={cyclePerf}
-        >
-          {perfLabel}
-        </button>
-        <button
-          type="button"
-          className={'spa-nav__debug' + (debug ? ' spa-nav__debug--on' : '')}
-          aria-label={debug ? 'Hide debug overlay' : 'Show debug overlay'}
-          aria-pressed={debug}
-          title={debug ? 'Debug overlay: ON' : 'Debug overlay: OFF'}
-          onClick={toggleDebug}
-        >
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" aria-hidden>
-            <rect x="3" y="3" width="7" height="7" />
-            <rect x="14" y="3" width="7" height="7" />
-            <rect x="3" y="14" width="7" height="7" />
-            <rect x="14" y="14" width="7" height="7" />
-          </svg>
-        </button>
-        <button
-          type="button"
-          className="spa-nav__hamburger"
-          aria-label="Open menu"
-          aria-expanded={open}
-          onClick={() => setOpen(true)}
-        >
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" aria-hidden>
-            <line x1="3" y1="6" x2="21" y2="6" />
-            <line x1="3" y1="12" x2="21" y2="12" />
-            <line x1="3" y1="18" x2="21" y2="18" />
-          </svg>
-        </button>
+        <div className="spa-nav__actions">
+          <button
+            type="button"
+            className={'spa-nav__perf' + (perfOverride !== 'auto' ? ' spa-nav__perf--forced' : '')}
+            aria-label={'Performance tier: ' + perfLabel + '. Click to cycle.'}
+            title={
+              perfOverride === 'auto'
+                ? 'Perf: AUTO (detected tier ' + profile.tier + (profile.mobile ? ', mobile' : '') + '). Click to override.'
+                : 'Perf: forced T' + perfOverride + ' (isLowPower=' + (perfOverride <= 1) + '). Click to cycle.'
+            }
+            onClick={cyclePerf}
+          >
+            {perfLabel}
+          </button>
+          <button
+            type="button"
+            className={'spa-nav__debug' + (debug ? ' spa-nav__debug--on' : '')}
+            aria-label={debug ? 'Hide debug overlay' : 'Show debug overlay'}
+            aria-pressed={debug}
+            title={debug ? 'Debug overlay: ON' : 'Debug overlay: OFF'}
+            onClick={toggleDebug}
+          >
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" aria-hidden>
+              <rect x="3" y="3" width="7" height="7" />
+              <rect x="14" y="3" width="7" height="7" />
+              <rect x="3" y="14" width="7" height="7" />
+              <rect x="14" y="14" width="7" height="7" />
+            </svg>
+          </button>
+          <button
+            type="button"
+            className="spa-nav__hamburger"
+            aria-label="Open menu"
+            aria-expanded={open}
+            onClick={() => setOpen(true)}
+          >
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" aria-hidden>
+              <line x1="3" y1="6" x2="21" y2="6" />
+              <line x1="3" y1="12" x2="21" y2="12" />
+              <line x1="3" y1="18" x2="21" y2="18" />
+            </svg>
+          </button>
+        </div>
       </nav>
 
       <div

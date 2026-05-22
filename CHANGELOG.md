@@ -2,6 +2,17 @@
 
 All notable changes to Studio Panic Attack are tracked here.
 
+## [0.8.6] — nav: keep perf + debug + hamburger on one row
+
+The nav uses `grid-template-columns: auto 1fr auto` (3 columns:
+brand / links / actions). Adding the perf button alongside the
+existing debug-grid and hamburger meant 5 children for 3 columns,
+so the 4th and 5th wrapped onto a new row.
+
+Wrapped the three action buttons in a single `.spa-nav__actions`
+flex container so they share the third grid column. `display:
+inline-flex; gap: 8px; justify-self: end`.
+
 ## [0.8.5] — gallery floor: stop despawning when viewed from below
 
 - The reflective gallery floor is a `MeshReflectorMaterial` plane,

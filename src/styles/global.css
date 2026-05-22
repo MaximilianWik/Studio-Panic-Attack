@@ -483,6 +483,18 @@ video {
 .spa-nav__item:hover::after, .spa-nav__item--active::after { content: ""; position: absolute; left: 12px; right: 12px; bottom: 4px; height: 1px; background: var(--blood); }
 .spa-nav__cta { pointer-events: auto; padding: 8px 14px; border: 1px solid var(--paper); border-radius: 999px; background: transparent; color: var(--paper); cursor: none; transition: background 0.2s, color 0.2s; }
 .spa-nav__cta:hover { background: var(--blood); border-color: var(--blood); }
+
+/* Action cluster — perf button, debug grid, hamburger. Sits in the
+   nav's third grid column so adding more buttons doesn't bump them
+   onto a new row. */
+.spa-nav__actions {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  pointer-events: auto;
+  justify-self: end;
+}
+
 @media (max-width: 900px) { .spa-nav__list { display: none; } }
 
 /* ----- Category card grid (dark theme) ----- */
