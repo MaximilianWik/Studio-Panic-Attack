@@ -2,6 +2,35 @@
 
 All notable changes to Studio Panic Attack are tracked here.
 
+## [0.8.9] — fix: weserv proxy on the live Vercel deploy
+
+**Bug**: prod deploy at
+`studio-panic-attack-maximilian.vercel.app` 404'd every gallery
+image. `assetUrl.ts` had a hardcoded `PROD_ORIGIN =
+'https://max-wik.com'` left over from copy-pasting the helper
+from a different project — weserv was being asked to fetch
+`max-wik.com/landing/artist-frame-1.png` (which doesn't exist on
+that host), got a 404, and the ErrorBoundary tipped over with
+"the render flatlined". Local dev worked because dev returns the
+path unmodified.
+
+**Fix**: read the source host at runtime from
+`window.location.host` instead of hardcoding it. Works on:
+
+- the canonical Vercel URL,
+- any Vercel preview deploy (PR-specific URL),
+- any future custom domain — no code change needed.
+
+Defensive fallback: if `window.location.host` is somehow empty
+(SSR / weird environment), `assetUrl` returns the raw `/landing/`
+path so the image still loads (slowly) instead of 404'ing.
+
+Also dropped the four `<link rel="preload">` weserv URLs from
+`index.html` — they had to be byte-identical to the JS-emitted
+URLs to share a browser-cache entry, which is impossible with a
+runtime origin. The JS preload gate (`usePreloadGate`) already
+covers the same first-batch images.
+
 ## [0.8.8] — palette cycler in the debug cluster
 
 - New `helpers/paletteStore.ts`: zustand store with a list of

@@ -13,8 +13,10 @@
  *   - In dev (`vite`) the local origin is localhost — weserv can't reach it,
  *     so we return the local path unchanged. Devtools network tab shows
  *     full-size originals; that's fine in dev.
- *   - In prod, source URL is rooted at PROD_ORIGIN so weserv can fetch
- *     from the public site.
+ *   - In prod, source URL is rooted at the *current* deploy origin
+ *     (window.location.host). That makes the proxy work on the canonical
+ *     Vercel URL, on Vercel preview deploys, and on any future custom
+ *     domain — no hardcoded host to keep in sync.
  *
  * CORS:
  *   weserv responds with `Access-Control-Allow-Origin: *`, and three.js'
@@ -22,7 +24,6 @@
  *   `useTexture` works with these URLs without extra config.
  */
 
-const PROD_ORIGIN = 'https://max-wik.com';
 const PROXY = 'https://images.weserv.nl/';
 
 export interface AssetUrlOpts {
@@ -30,6 +31,11 @@ export interface AssetUrlOpts {
   width?: number;
   /** WebP quality 1–100. Defaults to 82. */
   quality?: number;
+}
+
+function currentHost(): string {
+  if (typeof window === 'undefined') return '';
+  return window.location.host;
 }
 
 /**
@@ -42,14 +48,17 @@ export function assetUrl(path: string, opts: AssetUrlOpts = {}): string {
   if (import.meta.env.DEV) return path;
   if (!path.startsWith('/landing/')) return path;
 
+  const host = currentHost();
+  // Defensive: if for any reason we can't get a host (SSR / edge cases),
+  // skip the proxy and serve the original. Better a slow image than a 404.
+  if (!host) return path;
+
   const w = opts.width ?? 2000;
   const q = opts.quality ?? 82;
 
-  // Build the query string by hand (rather than URLSearchParams) so the
-  // resulting URL stays byte-identical to the hand-written preload tags
-  // in index.html. URLSearchParams percent-encodes `/` in values, which
-  // would create a separate cache entry from `<link rel="preload">` and
-  // defeat the point of preloading.
-  const src = PROD_ORIGIN.replace(/^https?:\/\//, '') + path;
+  // Build the query string by hand (rather than URLSearchParams) so we
+  // keep `/` characters un-encoded in the source URL — weserv accepts
+  // both but consistent encoding makes the URL easier to read and debug.
+  const src = host + path;
   return PROXY + '?url=' + src + '&w=' + w + '&output=webp&q=' + q + '&we=1';
 }
