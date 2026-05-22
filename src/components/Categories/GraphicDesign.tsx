@@ -25,7 +25,12 @@ import { CategorySection } from './CategorySection';
  */
 export function GraphicDesign() {
   const profile = useDeviceProfile();
-  const visibility = useSectionVisibility('graphic');
+  // Knot lives at section centre + 7 in world Y (heroPos.y in
+  // CategorySection). Pass the offset into useSectionVisibility so
+  // the visibility window tracks where the sculpture actually is
+  // on screen — without it the sculpture pops out as soon as you
+  // scroll a hair past the section start.
+  const visibility = useSectionVisibility('graphic', 7);
   const groupRef = useRef<THREE.Group>(null);
   const { viewport } = useThree();
   const fitScale = Math.max(0.55, Math.min(1, viewport.width / 6.4));
@@ -44,7 +49,7 @@ export function GraphicDesign() {
       </group>
       <DebugLabel
         name="Sculpture: Knot (01 graphic)"
-        worldY={getSectionWorldY('graphic') + 10}
+        worldY={getSectionWorldY('graphic') + 7}
         offset={[0, 1.6, 0.5]}
       />
     </CategorySection>

@@ -83,7 +83,10 @@ function fibSphere(n: number): THREE.Vector3[] {
 export function AIArt() {
   const profile = useDeviceProfile();
   const progress = useSectionProgress('ai');
-  const visibility = useSectionVisibility('ai');
+  // Hedgehog lives at section centre + 7 in world Y — see
+  // CategorySection.heroPos. Offset must be passed so the
+  // visibility trapezoid shifts back to match.
+  const visibility = useSectionVisibility('ai', 7);
   const { viewport } = useThree();
   const fitScale = Math.max(0.55, Math.min(1, viewport.width / 6.4));
 
@@ -105,7 +108,7 @@ export function AIArt() {
       </group>
       <DebugLabel
         name="Sculpture: Hedgehog (03 ai)"
-        worldY={getSectionWorldY('ai') + 10}
+        worldY={getSectionWorldY('ai') + 7}
         offset={[0, 1.4, 0.5]}
       />
     </CategorySection>

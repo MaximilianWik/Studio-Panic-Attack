@@ -2,6 +2,53 @@
 
 All notable changes to Studio Panic Attack are tracked here.
 
+## [0.8.2] — sculptures down 3 + fix the early-despawn bug
+
+### fix(visibility): sculptures vanished when scrolling slightly past
+
+`useSectionVisibility` ramps up over a window centred on the
+section's scroll range. With sculptures lifted to `section_Y + 10`
+in v0.8.1, they entered the camera ~10 world-units (~0.155 scroll
+units) **earlier** than the visibility window opened — but the
+sculpture's own `useFrame` short-circuits with
+`if (v < 0.005) mesh.visible = false`. So the sculpture was on
+screen but mesh-hidden until the section's own visibility ramp
+caught up — the "appears too late" symptom. Same in reverse on
+exit: window closed before the sculpture had finished scrolling
+out of frame, so it popped out a beat early.
+
+Added an optional `worldYOffset` parameter to `useSectionVisibility`
+that converts the offset to scroll-units (`worldYOffset / 64.5`,
+since Layout.tsx travels 64.5 world units per scroll unit) and
+shifts the visibility window backwards by that amount.
+
+- `GraphicDesign.tsx`: `useSectionVisibility('graphic', 7)` (Knot
+  is at section centre + 7).
+- `AIArt.tsx`: `useSectionVisibility('ai', 7)` (Hedgehog same).
+- Other call sites (`Gallery`, `Vocabulary`) pass no offset —
+  default `0` keeps current behaviour.
+
+### move: sculptures + scattered down 3 (current value − 3)
+
+- `CategorySection.heroPos.y`: `+10` → `+7`.
+- `ScatteredImages.worldY` bias: `+10` → `+7`.
+- DebugLabel `worldY` arguments in `GraphicDesign` and `AIArt`
+  updated to match (`getSectionWorldY(id) + 7`).
+
+Resulting world Y for the affected entities:
+
+| entity | v0.8.1 | now |
+|---|---:|---:|
+| Knot (01)      | -20.5 | **-23.5** |
+| Hedgehog (03)  | -33.5 | **-36.5** |
+| Scatter (graphic affinity) | ~-20 | **~-23** |
+| Scatter (threeD) | ~-26 | **~-29** |
+| Scatter (ai)     | ~-33 | **~-36** |
+| Scatter (ux)     | ~-42 | **~-45** |
+
+Section anchors and category text positions (`htmlPos.y = -10`)
+unchanged from v0.8.1.
+
 ## [0.8.1] — manual placement: text −10, bg +10 within categories
 
 Per direct positional spec from the design pass: split the text

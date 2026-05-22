@@ -41,7 +41,7 @@ export function CategorySection({
 
   const heroPos: [number, number, number] = [
     (side === 'left' ? 2.4 : -2.4) * xFit,
-    10,
+    7,
     0,
   ];
   const htmlPos: [number, number, number] = [

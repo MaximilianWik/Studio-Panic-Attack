@@ -92,11 +92,11 @@ function buildLayout(lowPower: boolean): ScatteredItem[] {
     // each item lands roughly between -0.6 and +2.4 of the section
     // centre, then random jitter adds ±0.5.
     const ySpread = ((i % 3) / 2 - 0.2) * VIEWPORT_HEIGHT_UNITS * 0.3;
-    // Lifted +10 worldY so the bg cluster sits well above the
-    // CategorySection text (which itself is dropped -10 inside
+    // Lifted +7 worldY so the bg cluster sits well above the
+    // CategorySection text (which is dropped -10 inside
     // CategorySection). Net separation between scattered cluster
-    // and text body: 20 world units.
-    const worldY = yCenter + ySpread + (r1 - 0.5) * 1.0 + 10;
+    // and text body: 17 world units.
+    const worldY = yCenter + ySpread + (r1 - 0.5) * 1.0 + 7;
 
     const side = i % 2 === 0 ? -1 : 1;
     const offsetX = side * (4.2 + r2 * 1.4);
