@@ -158,15 +158,11 @@ export function Gallery() {
           letterSpacing={0.3} fillOpacity={0.15}>
           STUDIO PANIC ATTACK
         </Text>
-        <Text position={[0, 0.01, -4]} rotation={[-Math.PI / 2, 0, 0]}
-          fontSize={0.4} color="#f6f3ee" anchorX="center" anchorY="middle"
-          letterSpacing={0.02} fillOpacity={0.7} fontStyle="italic">
+        <Text position={[0, 0.01, 3]} rotation={[-Math.PI / 2, 0, 0]}
+          font="https://cdn.jsdelivr.net/npm/@fontsource/cormorant-garamond@5.0.0/files/cormorant-garamond-latin-500-italic.woff"
+          fontSize={0.5} color="#f6f3ee" anchorX="center" anchorY="middle"
+          letterSpacing={0.04} fillOpacity={0.55}>
           Have a peek inside my brain
-        </Text>
-        <Text position={[0, 0.01, 5]} rotation={[-Math.PI / 2, 0, 0]}
-          fontSize={0.18} color="#f6f3ee" anchorX="center" anchorY="middle"
-          letterSpacing={0.5} fillOpacity={0.3}>
-          PROJECTS · GALLERY · 2024 — 2026
         </Text>
         <Text position={[-6, 0.01, 1]} rotation={[-Math.PI / 2, 0, Math.PI / 2]}
           fontSize={0.12} color="#f6f3ee" anchorX="center" anchorY="middle"

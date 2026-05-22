@@ -2,6 +2,18 @@
 
 All notable changes to Studio Panic Attack are tracked here.
 
+## [0.5.1] — gallery floor text refresh
+
+- `Gallery.tsx`: removed the duplicate floor texts. The italic
+  "Have a peek inside my brain" at `z=-4` is gone; the small
+  uppercase "PROJECTS · GALLERY · 2024 — 2026" at `z=5` is gone.
+  In their place, a single `Have a peek inside my brain` set in
+  Cormorant Garamond italic 500 at `z=3`, fontSize 0.5, cream
+  on the reflective floor. Loaded from
+  `cdn.jsdelivr.net/.../@fontsource/cormorant-garamond` so drei
+  `<Text>` (troika-three-text) can ship the glyphs as MSDF without
+  needing a bundled font file.
+
 ## [0.5.0] — image-CDN proxy + first-paint loading gate
 
 ### perf(assets): route /landing/ images through images.weserv.nl
