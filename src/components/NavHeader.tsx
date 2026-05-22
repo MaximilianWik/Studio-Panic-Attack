@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 
 import { useDebug } from '../helpers/debugStore';
 import { usePerfOverride } from '../helpers/perfOverride';
+import { PALETTES, usePalette } from '../helpers/paletteStore';
 import { useDeviceProfile } from '../helpers/useDeviceProfile';
 
 /**
@@ -39,6 +40,9 @@ export function NavHeader() {
   const perfOverride = usePerfOverride((s) => s.value);
   const cyclePerf = usePerfOverride((s) => s.cycle);
   const profile = useDeviceProfile();
+  const paletteIdx = usePalette((s) => s.idx);
+  const cyclePalette = usePalette((s) => s.cycle);
+  const palette = PALETTES[paletteIdx];
 
   // Label shows the *active* tier so you can see at a glance
   // whether you're on the auto-detected one or a forced override.
@@ -70,6 +74,20 @@ export function NavHeader() {
         </ul>
         <div className="spa-nav__actions">
           <span className="spa-nav__actions-label" aria-hidden>Debug Tools</span>
+          <button
+            type="button"
+            className="spa-nav__palette"
+            aria-label={'Background palette: ' + palette.id + '. Click to cycle.'}
+            title={'Palette: ' + palette.id + ' (' + (paletteIdx + 1) + '/' + PALETTES.length + '). Click to cycle.'}
+            onClick={cyclePalette}
+            style={{
+              ['--palette-accent' as string]: palette.colors[4],
+              ['--palette-mid' as string]: palette.colors[3],
+            }}
+          >
+            <span className="spa-nav__palette-swatch" aria-hidden />
+            <span className="spa-nav__palette-id">{palette.id}</span>
+          </button>
           <button
             type="button"
             className={'spa-nav__perf' + (perfOverride !== 'auto' ? ' spa-nav__perf--forced' : '')}

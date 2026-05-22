@@ -1,5 +1,7 @@
 import { MeshGradient } from '@paper-design/shaders-react';
 
+import { PALETTES, usePalette } from '../../helpers/paletteStore';
+
 interface HeroOverlayProps {
   /** True once the first-batch gallery textures are preloaded.
       LoadingScreen renders on top while false; logo + scroll prompt
@@ -8,6 +10,10 @@ interface HeroOverlayProps {
 }
 
 export function HeroOverlay({ ready }: HeroOverlayProps) {
+  // Subscribe to the palette index so the gradient re-renders when
+  // the user cycles palettes from the nav debug cluster.
+  const paletteIdx = usePalette((s) => s.idx);
+  const colors = PALETTES[paletteIdx].colors;
   return (
     <>
       {/* Red mesh-gradient backdrop — ALWAYS visible (entire site bg) */}
@@ -23,7 +29,7 @@ export function HeroOverlay({ ready }: HeroOverlayProps) {
       >
         <MeshGradient
           style={{ width: '100%', height: '100%' }}
-          colors={['#050505', '#0a0a0a', '#1a0606', '#3a0a04', '#d30000']}
+          colors={colors}
           distortion={0.85}
           swirl={0.42}
           speed={0.3}

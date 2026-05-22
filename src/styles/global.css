@@ -703,6 +703,50 @@ video {
 .spa-nav__hamburger:hover { border-color: var(--blood); color: var(--blood); }
 .spa-nav__hamburger svg { width: 18px; height: 18px; }
 
+/* Palette swatch — same height as the perf button. Two-part:
+   a small circle showing the palette's accent + mid colours,
+   and the palette ID. Lights the border with the accent on
+   hover so you can see what you're cycling into. */
+.spa-nav__palette {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  background: transparent;
+  border: 1px solid rgba(246, 243, 238, 0.22);
+  height: 34px;
+  padding: 0 12px 0 8px;
+  border-radius: 4px;
+  cursor: none;
+  pointer-events: auto;
+  font-family: var(--font-mono);
+  font-size: 10px;
+  letter-spacing: 0.16em;
+  color: rgba(246, 243, 238, 0.7);
+  transition: border-color 0.18s, color 0.18s, box-shadow 0.18s;
+}
+.spa-nav__palette:hover {
+  border-color: var(--palette-accent, var(--blood));
+  color: #f6f3ee;
+  box-shadow: 0 0 12px color-mix(in srgb, var(--palette-accent, var(--blood)) 45%, transparent);
+}
+.spa-nav__palette-swatch {
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  background:
+    radial-gradient(circle at 35% 35%,
+      var(--palette-accent, #d30000) 0%,
+      var(--palette-mid, #3a0a04) 60%,
+      #050505 100%);
+  box-shadow:
+    0 0 0 1px rgba(246, 243, 238, 0.18),
+    0 0 8px color-mix(in srgb, var(--palette-accent, #d30000) 65%, transparent);
+}
+.spa-nav__palette-id {
+  white-space: nowrap;
+}
+
 /* Perf-tier override — cycles AUTO → T0 → T1 → T2 → T3. Mono
    font, fixed width so the label width doesn't jitter as the
    text changes. Lights up red when a manual tier is forced. */

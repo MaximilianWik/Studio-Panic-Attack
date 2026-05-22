@@ -2,6 +2,31 @@
 
 All notable changes to Studio Panic Attack are tracked here.
 
+## [0.8.8] — palette cycler in the debug cluster
+
+- New `helpers/paletteStore.ts`: zustand store with a list of
+  named 5-stop palettes (`BLOOD`, `OCEAN`, `AMBER`, `MOSS`,
+  `VIOLET`, `BUBBLEGUM`, `CYAN`, `INK`) plus `idx` / `set` /
+  `cycle` / `current()`. Persists to
+  `localStorage['spa-palette']`.
+- All palettes follow the original five-stop format
+  (`ink → smoke → muted accent → mid accent → bright accent`)
+  so the page edges stay grounded and only the dominant hue
+  changes.
+- `HeroOverlay.tsx`: subscribes to the palette index and feeds
+  the current colour list straight into `<MeshGradient colors=…/>`.
+- `NavHeader.tsx`: new `.spa-nav__palette` button as the first
+  control in the Debug Tools cluster (left of the perf button).
+  Two-part layout — a 16 px circular swatch using the active
+  palette's accent + mid colours via CSS `radial-gradient`,
+  next to the palette ID in mono. Click cycles to the next
+  palette. Hover lights the border + adds a soft glow in the
+  current accent (via `color-mix`), so you can see what you're
+  about to switch to.
+- New CSS: `.spa-nav__palette`, `.spa-nav__palette-swatch`,
+  `.spa-nav__palette-id`. Uses CSS custom properties
+  (`--palette-accent`, `--palette-mid`) inlined per render.
+
 ## [0.8.7] — nav: "Debug Tools" label next to the action cluster
 
 - `NavHeader.tsx`: small `<span class="spa-nav__actions-label">
