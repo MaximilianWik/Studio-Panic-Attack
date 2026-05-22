@@ -2,6 +2,45 @@
 
 All notable changes to Studio Panic Attack are tracked here.
 
+## [0.9.0] — portrait fix: text clipping + UX↔Highlights overlap
+
+Two real-world bugs surfaced on iPhone:
+
+1. **Body text clipped on the left** — in v0.8.x's Option B layout
+   the text Html anchor sat at `(side === 'left' ? -1.6 : 1.6) *
+   xFit` even on portrait. With xFit ≈ 0.6 the anchor projects to
+   ~25 % from left of screen; with `Html center=true` and a 62 vw
+   wide box the left edge ended up ~45 px off-screen, clipping the
+   first letter of every line.
+2. **04 UX Design overlapping "Featured pieces"** — text was
+   dropped −10 world units everywhere. UX text at `−52.5 − 10 =
+   −62.5`; Highlights anchor at `−67.5`. Only 5 world units apart.
+   On a portrait viewport (~8.4 world units tall at FOV 70°)
+   that's well within one viewport, so both render on screen at
+   the same scroll.
+
+Fix: per-orientation positioning in `CategorySection.tsx`. Landscape
+unchanged; portrait gets a tighter, centred layout:
+
+| | landscape (unchanged) | portrait (new) |
+|---|---|---|
+| `heroPos` | `[±2.4 · xFit, +7, 0]` | `[0, +4, 0]` |
+| `htmlPos` | `[∓1.6 · xFit, −10, 0]` | `[0, −4, 0]` |
+| Html width | `min(760 px, 86 vw)` | `min(440 px, 78 vw)` |
+
+Portrait policy now: centre both halves on X (text overlays
+sculpture, layered/editorial — the Option B trade-off we already
+accepted), and use small Y offsets so adjacent sections never
+share screen space at the same scroll. UX text at section_Y − 4
+= −56.5 vs Highlights at −67.5 → 11 world units apart, larger
+than the ~8.4-unit portrait viewport, so they exit/enter cleanly.
+
+Caveat: this means per-element worldY differs between portrait
+and landscape, breaking strict v0.8.0 "same Y on every viewport".
+Still consistent within each orientation though, and the
+overlap/clip bugs were a much worse experience than that
+abstraction was worth.
+
 ## [0.8.9] — fix: weserv proxy on the live Vercel deploy
 
 **Bug**: prod deploy at

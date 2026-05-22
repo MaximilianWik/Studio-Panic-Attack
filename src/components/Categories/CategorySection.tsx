@@ -36,23 +36,37 @@ export function CategorySection({
   const portrait = viewport.width / viewport.height < 1;
 
   // X-scale: 1.0 on a wide desktop, ~0.5 on an extreme portrait
-  // phone. Keeps both halves on screen without changing Y.
+  // phone. Keeps both halves on screen without changing Y on
+  // landscape.
   const xFit = Math.min(1, Math.max(0.4, viewport.width / 6.4));
 
-  const heroPos: [number, number, number] = [
-    (side === 'left' ? 2.4 : -2.4) * xFit,
-    7,
-    0,
-  ];
-  const htmlPos: [number, number, number] = [
-    (side === 'left' ? -1.6 : 1.6) * xFit,
-    -10,
-    0,
-  ];
+  // Per-orientation positioning.
+  //
+  // Landscape: side-by-side at the section centre, sculpture lifted
+  // +7, text dropped −10 (the manual placement values from v0.8.x).
+  //
+  // Portrait: phone viewports are ~8.4 world units tall (FOV 70°),
+  // so the landscape Y offsets crowd adjacent sections — UX text
+  // (at section_Y − 10) ends up only 5 units above the Highlights
+  // anchor (5 < 8.4) and the two visibly stack on screen. We also
+  // can't keep the X side-bias on portrait — at the current xFit
+  // the Html anchor projects so far off-centre that a 62 vw wide
+  // text box overflows the left edge of the viewport (the "first
+  // letter of every line is cut off" symptom).
+  //
+  // Portrait policy: centre both halves on X (text overlays
+  // sculpture, layered/editorial), and keep Y offsets small enough
+  // that no two sections share screen space at the same scroll.
+  const heroPos: [number, number, number] = portrait
+    ? [0, 4, 0]
+    : [(side === 'left' ? 2.4 : -2.4) * xFit, 7, 0];
+  const htmlPos: [number, number, number] = portrait
+    ? [0, -4, 0]
+    : [(side === 'left' ? -1.6 : 1.6) * xFit, -10, 0];
 
   // Html screen-space width: narrower on portrait so the text
   // doesn't fully blanket the sculpture.
-  const htmlWidth = portrait ? 'min(440px, 62vw)' : 'min(760px, 86vw)';
+  const htmlWidth = portrait ? 'min(440px, 78vw)' : 'min(760px, 86vw)';
 
   return (
     <group position={[0, yPos, 0]}>
