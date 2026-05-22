@@ -19,13 +19,13 @@ const ARC_R = 30;
 const SLOT_COUNT = 18;
 
 /** Minimum offset separation enforced when a slot re-enters on the
-    right after wrapping. As slots drift at different speeds the
-    initial uniform spacing breaks down; without this check they can
-    bunch up and the pointer-tilt causes their geometry to clip.
-    One cascade pass at spawn time is enough — the gap won't
-    perfectly survive the next lap, but it prevents the worst
-    accumulation at the moment of re-entry. */
-const MIN_SPAWN_GAP = 2.2;
+    right after wrapping. Larger gap = more breathing room between
+    images, more visible spread across the carousel. */
+const MIN_SPAWN_GAP = 3.8;
+
+/** Screen-pixel to carousel-offset multiplier for click-and-drag.
+    300 px drag ≈ 6 offset units at this value. */
+const DRAG_SENSITIVITY = 0.02;
 
 /** Stage-local Z range for slots. Negative = further from camera.
     Front cap is well behind the gallery floor's "Have a peek inside
@@ -126,6 +126,44 @@ export function Gallery() {
     };
   }, [mistTexA, mistTexB]);
 
+  // ── Click-and-drag carousel spin ──────────────────────────────
+  // Window-level pointer listeners so the user can drag anywhere on
+  // screen while the gallery is in view. A 5 px movement threshold
+  // distinguishes drags from slot-open clicks. Releasing after a
+  // drag gives the carousel a brief momentum burst that decays.
+  const drag = useRef({ active: false, startX: 0, lastX: 0, isDrag: false, momentum: 0 });
+  useEffect(() => {
+    const onDown = (e: PointerEvent) => {
+      drag.current = { active: true, startX: e.clientX, lastX: e.clientX, isDrag: false, momentum: 0 };
+    };
+    const onMove = (e: PointerEvent) => {
+      if (!drag.current.active) return;
+      if (!drag.current.isDrag && Math.abs(e.clientX - drag.current.startX) > 5) {
+        drag.current.isDrag = true;
+      }
+      if (!drag.current.isDrag) return;
+      const delta = (e.clientX - drag.current.lastX) * DRAG_SENSITIVITY;
+      drag.current.lastX = e.clientX;
+      drag.current.momentum = delta;
+      for (const s of slots.current) s.offset += delta;
+    };
+    const onUp = () => {
+      if (drag.current.isDrag) {
+        // Carry last-frame delta as momentum (scaled to units/sec).
+        drag.current.momentum = drag.current.momentum * 55;
+      }
+      drag.current.active = false;
+    };
+    window.addEventListener('pointerdown', onDown);
+    window.addEventListener('pointermove', onMove);
+    window.addEventListener('pointerup', onUp);
+    return () => {
+      window.removeEventListener('pointerdown', onDown);
+      window.removeEventListener('pointermove', onMove);
+      window.removeEventListener('pointerup', onUp);
+    };
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
+
   // De-duplicated pool of gallery images
   const pool = useMemo(() => {
     const seen = new Set<string>();
@@ -167,8 +205,8 @@ export function Gallery() {
       // falls off as the slot moves further back.
       const dist = STAGE_TO_CAMERA - depth;
       const minDist = STAGE_TO_CAMERA - SLOT_Z_FRONT; // front-row distance
-      const baseSpeed = Math.pow(minDist / dist, 0.55); // ~1.0 front, ~0.55 back
-      const jitter = 0.8 + ((i * 6151) % 100) / 100 * 0.4; // 0.8..1.2
+      const baseSpeed = Math.pow(minDist / dist, 0.70); // ~1.0 front, ~0.45 back
+      const jitter = 0.65 + ((i * 6151) % 100) / 100 * 0.70; // 0.65..1.35
       return {
         asset: pool[i % pool.length],
         offset: i * spacing - CAROUSEL_WIDTH / 2,
@@ -205,6 +243,13 @@ export function Gallery() {
     const v = visibility();
     groupRef.current.visible = v > 0.02;
     if (v < 0.02) return;
+
+    // Drain drag momentum — after the user lets go, keep the
+    // carousel drifting in the same direction, decaying over ~0.8 s.
+    if (!drag.current.active && Math.abs(drag.current.momentum) > 0.005) {
+      for (const s of slots.current) s.offset += drag.current.momentum * dt;
+      drag.current.momentum *= Math.pow(0.88, 60 * dt);
+    }
 
     // Advance carousel — each slot uses its own speedFactor for
     // parallax (far slots drift slower than near). Spacing drifts

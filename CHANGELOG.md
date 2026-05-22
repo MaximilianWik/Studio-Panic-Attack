@@ -2,6 +2,44 @@
 
 All notable changes to Studio Panic Attack are tracked here.
 
+## [0.9.7] — gallery: wider gaps, stronger parallax, click-and-drag
+
+### Spawn gap widened
+
+`MIN_SPAWN_GAP` 2.2 → **3.8**. Slots that re-enter after wrapping
+are pushed rightward until they are 3.8 offset units from every
+neighbour. Gives more breathing room between images and a less
+packed, more browseable feel.
+
+### Stronger speed variation
+
+Speed-factor formula updated in two places:
+
+| | before | now |
+|---|---|---|
+| exponent | `pow(minDist/dist, 0.55)` | `pow(minDist/dist, 0.70)` |
+| jitter range | 0.8 … 1.2 | **0.65 … 1.35** |
+
+Front/back ratio now ~2.2× (was ~1.8×). Jitter span doubled
+from ±20 % to ±35 %. The parallax between adjacent slots is now
+visibly distinct on any screen.
+
+### Click-and-drag to spin
+
+New `drag` ref + window-level pointer listener inside `Gallery`.
+
+- `pointerdown` — arm the drag, remember `startX`.
+- `pointermove` — after a 5 px threshold (distinguishes from
+  slot-open clicks), apply `Δx × DRAG_SENSITIVITY` directly to
+  every slot's offset each frame.  Dragging left accelerates the
+  carousel; dragging right decelerates or reverses it.
+- `pointerup` — carry the last-frame delta as momentum
+  (`lastDelta × 55 units/s`). In `useFrame`, the momentum is
+  applied to all slot offsets and decays at `0.88^(60×dt)` per
+  second (~0.8 s half-life).
+- `DRAG_SENSITIVITY = 0.02` (300 px drag ≈ 6 offset units).
+- Event listeners cleaned up on unmount.
+
 ## [0.9.6] — gallery: density 18 + spawn-gap safeguard
 
 - `SLOT_COUNT` 26 → **18**.
