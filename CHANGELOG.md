@@ -2,6 +2,14 @@
 
 All notable changes to Studio Panic Attack are tracked here.
 
+## [0.6.4] — loader %: outline the symbol to match the number
+
+- `.spa-loader__pct-sym`: dropped the filled-cream override.
+  Symbol is now `color: transparent` with `-webkit-text-stroke:
+  1.4px var(--blood)` — same red outlined treatment as the
+  number, stroke scaled down for the smaller font size so the
+  visual weight stays balanced.
+
 ## [0.6.3] — loader %: red stroke matching category numbers
 
 - `.spa-loader__pct`: stroke colour swapped from cream to
