@@ -11,17 +11,32 @@ import { create } from 'zustand';
 export interface Palette {
   /** Short uppercase label rendered in the nav button. */
   id: string;
-  /** Five-stop colour list passed straight to <MeshGradient colors>. */
+  /**
+   * Five-stop colour list.
+   * - For `type === 'mesh'` (default): passed straight to <MeshGradient colors>.
+   * - For `type === 'whiteboard'`: colours[3]/[4] drive the nav swatch only.
+   */
   colors: [string, string, string, string, string];
+  /**
+   * Background renderer to use.
+   * - `'mesh'` (default when absent): animated MeshGradient shader.
+   * - `'whiteboard'`: CSS cross-grid pattern on a light background.
+   */
+  type?: 'mesh' | 'whiteboard';
 }
 
 /**
  * Five-stop format mirrors the original: ink → smoke → muted accent
  * → mid accent → bright accent. Keep the first two near-black so the
  * page edges stay grounded; the last three carry the hue.
+ *
+ * WHITEBOARD is index 0 — the default. All mesh-gradient palettes
+ * follow and remain fully accessible via the palette cycle button.
  */
 export const PALETTES: Palette[] = [
-  // Default — the current site
+  // Default — whiteboard cross-grid (light background)
+  { id: 'GRID', type: 'whiteboard', colors: ['#fafafa', '#f0f0f0', '#e0e0e0', '#d4d4d4', '#a0a0a0'] },
+  // Mesh-gradient colourways
   { id: 'BLOOD',  colors: ['#050505', '#0a0a0a', '#1a0606', '#3a0a04', '#d30000'] },
   { id: 'OCEAN',  colors: ['#050505', '#0a0a0a', '#06141a', '#04203a', '#0066d3'] },
   { id: 'AMBER',  colors: ['#050505', '#0a0a0a', '#1a1306', '#3a2a04', '#d39000'] },

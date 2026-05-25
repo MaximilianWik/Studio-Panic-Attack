@@ -2,6 +2,13 @@
 
 All notable changes to Studio Panic Attack are tracked here.
 
+## [1.0.2] — debug: whiteboard grid background
+
+- Added `type?: 'mesh' | 'whiteboard'` discriminator to the `Palette` interface in `paletteStore.ts`.
+- Added `GRID` palette (type `'whiteboard'`) as index 0 — now the default background. All existing mesh-gradient palettes (BLOOD → INK) shift to indices 1–8 and remain accessible via the cycle button.
+- `HeroOverlay`: branches on `palette.type`. When `'whiteboard'`, renders a CSS cross-grid (48 px tiled SVG: faint `#d4d4d4` grid lines + `#a8a8a8` `+` crosses at every intersection, `#fafafa` base). When `'mesh'`, renders `<MeshGradient>` as before.
+- No changes to NavHeader — the swatch uses `palette.colors[3]/[4]` which are set to grey tones for the GRID entry.
+
 ## [1.0.1] — gallery: spawn gap 5.5 → 4.5
 
 - `MIN_SPAWN_GAP` 5.5 → 4.5.
