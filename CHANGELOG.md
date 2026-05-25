@@ -2,6 +2,11 @@
 
 All notable changes to Studio Panic Attack are tracked here.
 
+## [1.0.8] -- whiteboard: stronger number shadow + black logo shadow
+
+- `spa-cat-elegant__number`: drop-shadow values increased (0.18/0.13 -> 0.38/0.28, blur 20/5 -> 40/10) so they're actually visible.
+- `HeroOverlay`: logo filter is now conditional -- whiteboard drops the red `rgba(211,0,0,0.4)` second shadow, dark-only in its place.
+
 ## [1.0.7] -- whiteboard: number shadow outside outline
 
 - `spa-cat-elegant__number`: replaced `text-shadow` (renders behind fill, bleeds through transparent interior) with `filter: drop-shadow()` which operates on composited pixels — shadow falls outside the stroke, not inside it.

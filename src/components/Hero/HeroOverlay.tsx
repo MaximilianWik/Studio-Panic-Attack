@@ -79,7 +79,9 @@ export function HeroOverlay({ ready }: HeroOverlayProps) {
             width: 'clamp(220px, 70vw, 840px)',
             maxWidth: '92vw',
             height: 'auto',
-            filter: 'drop-shadow(0 6px 28px rgba(10,10,10,0.55)) drop-shadow(0 1px 0 rgba(211,0,0,0.4))',
+            filter: isWhiteboard
+              ? 'drop-shadow(0 6px 28px rgba(10,10,10,0.45))'
+              : 'drop-shadow(0 6px 28px rgba(10,10,10,0.55)) drop-shadow(0 1px 0 rgba(211,0,0,0.4))',
           }}
         />
         <div className={'spa-scroll-prompt' + (ready ? ' spa-scroll-prompt--ready' : '')}>
