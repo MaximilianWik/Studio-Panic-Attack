@@ -1300,6 +1300,8 @@ video {
 [data-spa-theme="whiteboard"] .spa-cat-elegant__body-wrap {
   background: rgba(250, 250, 250, 0.55);
   border-color: rgba(0, 0, 0, 0.12);
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
 }
 
 /* ── Red accent bar on body-wrap → black ──────────────────────────── */

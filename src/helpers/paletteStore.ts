@@ -59,15 +59,7 @@ interface PaletteState {
 const KEY = 'spa-palette';
 
 function readInitial(): number {
-  if (typeof window === 'undefined') return 0;
-  try {
-    const raw = window.localStorage.getItem(KEY);
-    const n = raw == null ? 0 : Number(raw);
-    if (Number.isInteger(n) && n >= 0 && n < PALETTES.length) return n;
-    return 0;
-  } catch {
-    return 0;
-  }
+  return 0; // Always start on GRID (index 0)
 }
 
 function persist(idx: number) {
