@@ -2,6 +2,11 @@
 
 All notable changes to Studio Panic Attack are tracked here.
 
+## [1.0.6] -- whiteboard: number shadows + nav monochrome
+
+- `spa-cat-elegant__number` shadow strengthened: `0 0 60px rgba(0,0,0,0.08)` (invisible) replaced with `0 8px 32px / 0 2px 8px rgba(0,0,0,0.18/0.14)` so the giant numbers lift off the light background.
+- Nav bar in whiteboard: light glass bg (`rgba(248,248,248,0.92)`), dark text, dark borders. Covers: nav base, brand name, item number prefixes, hover/active states, underline, Debug Tools label, palette/perf/debug/hamburger buttons, --forced/--on states, mobile overlay and its items.
+
 ## [1.0.5] -- whiteboard: monochrome site theme
 
 - `paletteStore.ts`: exported `useIsWhiteboard()` hook; placed after `usePalette` declaration.
