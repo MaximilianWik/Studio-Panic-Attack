@@ -1066,7 +1066,7 @@ video {
    numbers. The small `%` symbol stays filled cream as an editorial
    counterpoint. */
 .spa-loader__pct {
-  font-family: "CormorantGaramondLoader", "PP Editorial Old", Georgia, serif;
+  font-family: var(--font-display);
   font-style: italic;
   font-weight: 500;
   font-size: clamp(120px, 22vw, 320px);
