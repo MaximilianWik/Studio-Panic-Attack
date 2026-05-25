@@ -6,7 +6,7 @@ import * as THREE from 'three';
 import { theme } from '../../config/theme';
 import { useDeviceProfile } from '../../helpers/useDeviceProfile';
 import { useSectionVisibility } from '../../helpers/useScrollSection';
-import { useSculptureEvents } from '../../helpers/sculptureEvents';
+import { useSculptureEvents, getEvents, decay } from '../../helpers/sculptureEvents';
 import { getSectionWorldY } from '../../config/sections';
 import { useIsWhiteboard } from '../../helpers/paletteStore';
 import { DebugLabel } from '../Debug/DebugOverlay';
@@ -103,17 +103,48 @@ export function GraphicDesign() {
 
 function BackgroundHeadline() {
   const ref = useRef<THREE.Group>(null);
+  const headlineRef = useRef<THREE.Mesh>(null);
+  const subtitleRef = useRef<THREE.Mesh>(null);
   const wb = useIsWhiteboard();
 
   useFrame((state) => {
     if (!ref.current) return;
     ref.current.rotation.y =
       Math.sin(state.clock.elapsedTime * 0.18) * 0.18;
+
+    // During knifeSlash effect: flash both texts toward white so
+    // chromatic aberration produces visible RGB ghosts. Only in
+    // whiteboard mode (on dark palettes the texts are already
+    // opaque/neutral enough to split visibly).
+    if (!wb) return;
+    const d = decay(getEvents().knifeSlashAt, 0.5);
+    if (headlineRef.current) {
+      const mat = (headlineRef.current as any).material;
+      if (d > 0) {
+        const v = THREE.MathUtils.lerp(10 / 255, 1, d);
+        mat.color.setRGB(v, v, v);
+      } else {
+        mat.color.setRGB(10 / 255, 10 / 255, 10 / 255);
+      }
+    }
+    if (subtitleRef.current) {
+      const mat = (subtitleRef.current as any).material;
+      if (d > 0) {
+        mat.color.setRGB(
+          THREE.MathUtils.lerp(211 / 255, 1, d),
+          THREE.MathUtils.lerp(0, 1, d),
+          THREE.MathUtils.lerp(0, 1, d),
+        );
+      } else {
+        mat.color.setRGB(211 / 255, 0, 0);
+      }
+    }
   });
 
   return (
     <group ref={ref} position={[0, 0, -1.2]}>
       <Text
+        ref={headlineRef}
         fontSize={0.5}
         anchorX="center"
         anchorY="middle"
@@ -128,6 +159,7 @@ function BackgroundHeadline() {
         DESIGN BEYOND THE TRADITIONAL FORMAT
       </Text>
       <Text
+        ref={subtitleRef}
         fontSize={0.12}
         anchorX="center"
         anchorY="middle"
