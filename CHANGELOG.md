@@ -2,6 +2,22 @@
 
 All notable changes to Studio Panic Attack are tracked here.
 
+## [1.1.5] -- transparent headline text + scale-pop hover
+
+- GraphicDesign: 'DESIGN BEYOND THE TRADITIONAL FORMAT' gets `fillOpacity={0}` when whiteboard (invisible behind the torus knot lens).
+- CarouselSlot hover revamped: removed the rim glow plane entirely. Replaced with a smooth scale-pop (1.0 -> 1.05 lerped at 8x dt) + 15%% brightness boost. The 3D box physically grows toward the viewer on hover -- cleaner interaction signal that works with the thick box geometry. No extra meshes, no additive blending.
+
+## [1.1.4] -- gallery: larger fading disc + shadows visible from below
+
+- Ambient disc radius doubled (24 -> 48); added `alphaMap={floorAlphaMap}` so edges dissolve radially instead of a hard cutoff.
+- ContactShadows gets a `ref={shadowRef}`; a `useEffect` traverses the group and sets `material.side = THREE.DoubleSide` on the internal mesh, making the shadow texture visible from below when scrolling past.
+
+## [1.1.3] -- gallery: fix shadow cursor-dependence + underside visibility
+
+- Moved `<ContactShadows>` + ambient disc OUTSIDE `stageRef` (into `groupRef` directly). The stage tilts/pans with the pointer for parallax, but the shadow plane now stays fixed — shadows no longer drift with cursor movement.
+- Added a DoubleSide ambient disc (r=24, black, opacity 0.08) at y=-1.32 — provides a soft ground indicator visible from below when scrolling past the gallery.
+- ContactShadows position converted from stageRef-local [0,-0.8,0] to groupRef-space [0,-1.3,-2].
+
 ## [1.1.2] -- whiteboard: visual tuning pass
 
 - ContactShadows opacity 0.5 -> 0.75 (more visible).

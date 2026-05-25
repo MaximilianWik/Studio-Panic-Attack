@@ -78,6 +78,7 @@ function BackgroundHeadline() {
         lineHeight={0.92}
         letterSpacing={-0.02}
         color={wb ? '#0a0a0a' : theme.paper}
+        fillOpacity={wb ? 0 : 1}
         position={[0, 0.7, 0]}
       >
         DESIGN BEYOND THE TRADITIONAL FORMAT

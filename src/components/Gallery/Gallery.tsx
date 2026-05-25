@@ -357,15 +357,15 @@ export function Gallery() {
 
   return (
     <group ref={groupRef} position={[0, yPos, 0]}>
-      <group ref={stageRef} position={[0, -0.5, -2]}>
-        {/* Floor: dark reflective pedestal (normal palettes) or
-            contact shadows (whiteboard mode). Shadow plane sits 0.8
-            units below the carousel so even thin objects cast visible
-            soft shadows. frames=Infinity for the moving carousel. */}
-        {wb ? (
+      {/* Whiteboard: ContactShadows + DoubleSide ambient disc.
+          Placed OUTSIDE stageRef so pointer-driven tilt/pan doesn't
+          move the shadow plane. Positioned in groupRef space at
+          y=-1.3 (stageRef y=-0.5 plus 0.8 units below its floor). */}
+      {wb && (
+        <>
           <ContactShadows
-            position={[0, -0.8, 0]}
-            opacity={0.5}
+            position={[0, -1.3, -2]}
+            opacity={0.75}
             scale={60}
             blur={3}
             far={10}
@@ -373,9 +373,28 @@ export function Gallery() {
             resolution={profile.isLowPower ? 128 : 256}
             color="#000000"
           />
-        ) : (
+          {/* Static ambient disc — DoubleSide + radial alpha fade.
+              ContactShadows handles the top-view; this handles the
+              underside (smooth gradient, no pixelation). */}
+          <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, -1.32, -2]}>
+            <circleGeometry args={[48, 64]} />
+            <meshBasicMaterial
+              color="#000000"
+              transparent
+              opacity={0.12}
+              alphaMap={floorAlphaMap ?? undefined}
+              depthWrite={false}
+              side={THREE.DoubleSide}
+              toneMapped={false}
+            />
+          </mesh>
+        </>
+      )}
+
+      <group ref={stageRef} position={[0, -0.5, -2]}>
+        {/* Dark palettes: reflective pedestal + mist + floor text */}
+        {!wb && (
           <>
-            {/* Reflective floor — circular pedestal, radial alpha fade. */}
             <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, 0, 0]}>
               <circleGeometry args={[32, 96]} />
               <MeshReflectorMaterial
@@ -393,8 +412,6 @@ export function Gallery() {
                 alphaMap={floorAlphaMap ?? undefined}
               />
             </mesh>
-
-            {/* Underside fade. */}
             <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, 0, 0]}>
               <circleGeometry args={[32, 96]} />
               <meshBasicMaterial
@@ -408,8 +425,6 @@ export function Gallery() {
                 toneMapped={false}
               />
             </mesh>
-
-            {/* Ground mist */}
             {mistTexA ? (
               <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, 0.06, 0]} renderOrder={1}>
                 <circleGeometry args={[30, 64]} />
@@ -438,8 +453,6 @@ export function Gallery() {
                 />
               </mesh>
             ) : null}
-
-            {/* Floor text */}
             <Text position={[0, 0.01, -2]} rotation={[-Math.PI / 2, 0, 0]}
               fontSize={0.6} color="#d30000" anchorX="center" anchorY="middle"
               letterSpacing={0.3} fillOpacity={0.15}>
@@ -502,7 +515,7 @@ function CarouselSlot({ slotIndex, slots }: CarouselSlotProps) {
   useCursor(hover);
   const groupRef = useRef<THREE.Group>(null);
   const boxRef = useRef<THREE.Mesh>(null);
-  const rimRef = useRef<THREE.Mesh>(null);
+  const hoverScale = useRef(1);
   const wb = useIsWhiteboard();
 
   const slot = slots.current[slotIndex];
@@ -522,7 +535,6 @@ function CarouselSlot({ slotIndex, slots }: CarouselSlotProps) {
   const clampedH = Math.min(h, 9);
   const clampedW = Math.min(w, 8);
 
-  // Thick enough to see the image wrapping around the edges.
   const boxDepth = 0.7;
 
   useFrame((state, dt) => {
@@ -552,18 +564,17 @@ function CarouselSlot({ slotIndex, slots }: CarouselSlotProps) {
       THREE.MathUtils.clamp((z + 28) / 26, 0, 1),
     );
 
-    // Tint the textured box for depth dimming + hover brightness
-    const mat = boxRef.current.material as THREE.MeshBasicMaterial;
-    const brightness = hover ? Math.min(1, depthFactor * 1.12) : depthFactor;
-    mat.color.setRGB(brightness, brightness, brightness);
+    // Hover: smooth scale pop (1.0 → 1.05) + brightness boost
+    const targetScale = hover ? 1.05 : 1;
+    hoverScale.current += (targetScale - hoverScale.current) * Math.min(1, 8 * dt);
+    const hs = hoverScale.current;
+    boxRef.current.scale.set(clampedW * hs, clampedH * hs, boxDepth * hs);
+    boxRef.current.position.y = (clampedH * hs) / 2;
 
-    // Rim glow on hover
-    if (rimRef.current) {
-      const rmat = rimRef.current.material as THREE.MeshBasicMaterial;
-      const target = hover ? 0.55 : 0;
-      rmat.opacity += (target - rmat.opacity) * Math.min(1, 6 * dt);
-      rimRef.current.visible = rmat.opacity > 0.01;
-    }
+    // Tint: depth dimming + hover brightness
+    const mat = boxRef.current.material as THREE.MeshBasicMaterial;
+    const brightness = hover ? Math.min(1, depthFactor * 1.15) : depthFactor;
+    mat.color.setRGB(brightness, brightness, brightness);
   });
 
   return (
@@ -578,25 +589,6 @@ function CarouselSlot({ slotIndex, slots }: CarouselSlotProps) {
       >
         <boxGeometry />
         <meshBasicMaterial map={texture} toneMapped={false} />
-      </mesh>
-      {/* Rim glow — behind the box, slightly larger, additive */}
-      <mesh
-        ref={rimRef}
-        raycast={() => null}
-        scale={[clampedW * 1.06, clampedH * 1.06, 1]}
-        position={[0, clampedH / 2, -(boxDepth / 2 + 0.05)]}
-        visible={false}
-      >
-        <planeGeometry />
-        <meshBasicMaterial
-          color={wb ? '#2563eb' : '#d30000'}
-          transparent
-          opacity={0}
-          blending={THREE.AdditiveBlending}
-          depthWrite={false}
-          toneMapped={false}
-          fog={false}
-        />
       </mesh>
     </group>
   );
