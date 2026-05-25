@@ -2,6 +2,15 @@
 
 All notable changes to Studio Panic Attack are tracked here.
 
+## [1.0.3] — debug: whiteboard perspective grid revamp
+
+- Replaced CSS SVG-tile whiteboard (crosses at cell centres, not intersections) with `WhiteboardBackground.tsx` — a `<canvas>`-based animated perspective grid.
+- Single vanishing point at 38 % of viewport height, centre-x. Vertical lines radiate from VP to viewport edge. Horizontal lines scroll toward the viewer at 0.55 rows/s.
+- `+` crosses drawn at every mathematically computed row × column intersection (perspective-projected), so they are precisely at grid-line meetings at every depth.
+- Depth-based weight: near horizon = faint/tiny; approaching viewer = thicker lines, larger crosses (arm 1.5 → 8 px). Horizon fog gradient prevents a hard cutoff.
+- HiDPI-aware: canvas sized in physical pixels, all drawing in logical pixels via `ctx.setTransform`.
+- `HeroOverlay`: removed `WHITEBOARD_TILE` CSS constant; now mounts `<WhiteboardBackground />` for the `'whiteboard'` palette type.
+
 ## [1.0.2] — debug: whiteboard grid background
 
 - Added `type?: 'mesh' | 'whiteboard'` discriminator to the `Palette` interface in `paletteStore.ts`.
