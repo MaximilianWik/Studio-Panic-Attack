@@ -2,6 +2,10 @@
 
 All notable changes to Studio Panic Attack are tracked here.
 
+## [1.0.7] -- whiteboard: number shadow outside outline
+
+- `spa-cat-elegant__number`: replaced `text-shadow` (renders behind fill, bleeds through transparent interior) with `filter: drop-shadow()` which operates on composited pixels — shadow falls outside the stroke, not inside it.
+
 ## [1.0.6] -- whiteboard: number shadows + nav monochrome
 
 - `spa-cat-elegant__number` shadow strengthened: `0 0 60px rgba(0,0,0,0.08)` (invisible) replaced with `0 8px 32px / 0 2px 8px rgba(0,0,0,0.18/0.14)` so the giant numbers lift off the light background.
