@@ -71,7 +71,7 @@ export function HeroOverlay({ ready }: HeroOverlayProps) {
         }}
       >
         <img
-          src="/logo/PanicAttackLogo.png"
+          src={isWhiteboard ? '/logo/PanicAttackLogoBlack.png' : '/logo/PanicAttackLogo.png'}
           alt="Studio Panic Attack"
           decoding="sync"
           fetchPriority="high"

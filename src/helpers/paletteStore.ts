@@ -79,8 +79,7 @@ function persist(idx: number) {
   }
 }
 
-export const usePalette = create<PaletteState>((set, get) => ({
-  idx: readInitial(),
+export const usePalette = create<PaletteState>((set, get) => ({  idx: readInitial(),
   current: () => PALETTES[get().idx],
   set: (idx) => {
     const clamped = ((idx % PALETTES.length) + PALETTES.length) % PALETTES.length;
@@ -93,3 +92,8 @@ export const usePalette = create<PaletteState>((set, get) => ({
     set({ idx: next });
   },
 }));
+
+/** Returns true when the active palette uses the whiteboard renderer. */
+export function useIsWhiteboard(): boolean {
+  return usePalette((s) => PALETTES[s.idx].type === 'whiteboard');
+}

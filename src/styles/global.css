@@ -1279,3 +1279,129 @@ video {
   25%       { transform: translateX(-5px); opacity: 0.9; }
   75%       { transform: translateX(5px); opacity: 0.9; }
 }
+
+/* ============================================================
+   Whiteboard theme
+   Applied via data-spa-theme="whiteboard" on <body>.
+   Overrides blood/paper colours to a clean monochrome palette.
+   Only active when the GRID palette is selected.
+   ============================================================ */
+
+/* ── Category numbers (01 / 02 / 03 / 04) ─────────────────────────── */
+[data-spa-theme="whiteboard"] .spa-cat-elegant__number {
+  -webkit-text-stroke-color: #0a0a0a;
+  text-shadow: 0 0 60px rgba(0, 0, 0, 0.08);
+}
+
+/* ── Category section title ("Graphic Design", etc.) ──────────────── */
+[data-spa-theme="whiteboard"] .spa-cat-elegant__title {
+  color: #0a0a0a;
+  text-shadow:
+    0 2px 8px rgba(0, 0, 0, 0.06),
+    0 1px 0 rgba(0, 0, 0, 0.08);
+}
+
+/* ── Body-wrap card — light background so dark text reads ─────────── */
+[data-spa-theme="whiteboard"] .spa-cat-elegant__body-wrap {
+  background: rgba(250, 250, 250, 0.88);
+  border-color: rgba(0, 0, 0, 0.12);
+}
+
+/* ── Red accent bar on body-wrap → black ──────────────────────────── */
+[data-spa-theme="whiteboard"] .spa-cat-elegant__body-wrap::before {
+  background: #0a0a0a;
+}
+
+/* ── Body copy ─────────────────────────────────────────────────────── */
+[data-spa-theme="whiteboard"] .spa-cat-elegant__body {
+  color: rgba(10, 10, 10, 0.82);
+}
+
+/* ── Highlights section (all text except .spa-title itself) ────────── */
+[data-spa-theme="whiteboard"] .spa-eyebrow {
+  color: #0a0a0a;
+}
+
+[data-spa-theme="whiteboard"] .spa-highlights-quote {
+  color: rgba(10, 10, 10, 0.75);
+  border-right-color: rgba(10, 10, 10, 0.4);
+}
+
+[data-spa-theme="whiteboard"] .spa-footer__row {
+  color: rgba(10, 10, 10, 0.55);
+}
+
+[data-spa-theme="whiteboard"] .spa-card__num {
+  color: #0a0a0a;
+}
+
+[data-spa-theme="whiteboard"] .spa-card__title {
+  color: #0a0a0a;
+}
+
+[data-spa-theme="whiteboard"] .spa-meta {
+  color: rgba(10, 10, 10, 0.58);
+}
+
+/* ── Loading screen — full monochrome ─────────────────────────────── */
+[data-spa-theme="whiteboard"] .spa-loader {
+  background: #fafafa;
+  color: #0a0a0a;
+}
+
+/* Percentage counter — black stroke, no red glow */
+[data-spa-theme="whiteboard"] .spa-loader__pct {
+  -webkit-text-stroke-color: #0a0a0a;
+  text-shadow: none;
+}
+
+[data-spa-theme="whiteboard"] .spa-loader__pct-sym {
+  color: transparent;
+  -webkit-text-stroke-color: #0a0a0a;
+}
+
+/* Progress bar track */
+[data-spa-theme="whiteboard"] .spa-loader__bar {
+  background: rgba(0, 0, 0, 0.1);
+}
+
+/* Bar fill + tip — black, no red glow */
+[data-spa-theme="whiteboard"] .spa-loader__bar-fill {
+  background: #0a0a0a;
+  box-shadow: 0 0 8px rgba(0, 0, 0, 0.2);
+}
+
+[data-spa-theme="whiteboard"] .spa-loader__bar-tip {
+  background: #0a0a0a;
+  box-shadow: 0 0 8px rgba(0, 0, 0, 0.3);
+}
+
+/* Corner labels */
+[data-spa-theme="whiteboard"] .spa-loader__corner {
+  color: rgba(10, 10, 10, 0.52);
+}
+
+[data-spa-theme="whiteboard"] .spa-loader__blink {
+  color: #0a0a0a;
+}
+
+/* Phrase ticker */
+[data-spa-theme="whiteboard"] .spa-loader__phrase-item {
+  color: rgba(10, 10, 10, 0.45);
+}
+
+[data-spa-theme="whiteboard"] .spa-loader__phrase-item.is-active {
+  color: rgba(10, 10, 10, 0.78);
+}
+
+/* Scan-lines — swap light stripes for very faint dark ones */
+[data-spa-theme="whiteboard"] .spa-loader__scanlines {
+  background: repeating-linear-gradient(
+    to bottom,
+    rgba(0, 0, 0, 0.018) 0px,
+    rgba(0, 0, 0, 0.018) 1px,
+    transparent 1px,
+    transparent 3px
+  );
+  mix-blend-mode: multiply;
+}

@@ -8,6 +8,7 @@ import { useDeviceProfile } from '../../helpers/useDeviceProfile';
 import { useSectionVisibility } from '../../helpers/useScrollSection';
 import { useSculptureEvents } from '../../helpers/sculptureEvents';
 import { getSectionWorldY } from '../../config/sections';
+import { useIsWhiteboard } from '../../helpers/paletteStore';
 import { DebugLabel } from '../Debug/DebugOverlay';
 import { CategorySection } from './CategorySection';
 
@@ -58,6 +59,7 @@ export function GraphicDesign() {
 
 function BackgroundHeadline() {
   const ref = useRef<THREE.Group>(null);
+  const wb = useIsWhiteboard();
 
   useFrame((state) => {
     if (!ref.current) return;
@@ -75,7 +77,7 @@ function BackgroundHeadline() {
         maxWidth={6.2}
         lineHeight={0.92}
         letterSpacing={-0.02}
-        color={theme.paper}
+        color={wb ? '#0a0a0a' : theme.paper}
         position={[0, 0.7, 0]}
       >
         DESIGN BEYOND THE TRADITIONAL FORMAT
@@ -84,7 +86,7 @@ function BackgroundHeadline() {
         fontSize={0.12}
         anchorX="center"
         anchorY="middle"
-        color={theme.blood}
+        color={wb ? '#0a0a0a' : theme.blood}
         position={[0, -0.55, 0]}
         letterSpacing={0.4}
       >

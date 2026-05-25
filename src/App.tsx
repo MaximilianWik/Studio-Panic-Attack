@@ -15,6 +15,7 @@ import Lightbox from './components/Lightbox';
 import { useDeviceProfile } from './helpers/useDeviceProfile';
 import { assets } from './helpers/useImageAssets';
 import { usePreloadGate } from './helpers/usePreloadGate';
+import { useIsWhiteboard } from './helpers/paletteStore';
 
 /**
  * Track viewport aspect with a resize listener so the camera can pick a
@@ -45,6 +46,13 @@ export function App() {
   const aspect = useViewportAspect();
   const fov = chooseFov(aspect);
   const dpr: [number, number] = profile.isLowPower ? [0.85, 1.1] : [1, 1.6];
+
+  // Sync whiteboard palette state to a body data attribute so all
+  // DOM components can theme themselves with pure CSS selectors.
+  const isWhiteboard = useIsWhiteboard();
+  useEffect(() => {
+    document.body.dataset.spaTheme = isWhiteboard ? 'whiteboard' : '';
+  }, [isWhiteboard]);
 
   // Pre-warm the first batch of gallery textures so the carousel is
   // populated by the time the user scrolls past the hero. Limited to the

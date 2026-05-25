@@ -8,6 +8,7 @@ import { useSectionVisibility } from '../../helpers/useScrollSection';
 import { assets, type AssetEntry } from '../../helpers/useImageAssets';
 import { useDeviceProfile } from '../../helpers/useDeviceProfile';
 import { openLightbox } from '../../helpers/lightbox';
+import { useIsWhiteboard } from '../../helpers/paletteStore';
 
 const CAROUSEL_SPEED = 0.38;
 const CAROUSEL_WIDTH = 44;
@@ -70,6 +71,7 @@ export function Gallery() {
   const yPos = getSectionWorldY('gallery');
   const visibility = useSectionVisibility('gallery');
   const profile = useDeviceProfile();
+  const wb = useIsWhiteboard();
   const groupRef = useRef<THREE.Group>(null);
   const stageRef = useRef<THREE.Group>(null);
   const camTarget = useRef({ x: 0, y: 0 });
@@ -432,8 +434,8 @@ export function Gallery() {
 
         {/* Floor text */}
         <Text position={[0, 0.01, -2]} rotation={[-Math.PI / 2, 0, 0]}
-          fontSize={0.6} color="#d30000" anchorX="center" anchorY="middle"
-          letterSpacing={0.3} fillOpacity={0.15}>
+          fontSize={0.6} color={wb ? '#ffffff' : '#d30000'} anchorX="center" anchorY="middle"
+          letterSpacing={0.3} fillOpacity={wb ? 0.5 : 0.15}>
           STUDIO PANIC ATTACK
         </Text>
         <Text position={[0, 0.01, 3]} rotation={[-Math.PI / 2, 0, 0]}

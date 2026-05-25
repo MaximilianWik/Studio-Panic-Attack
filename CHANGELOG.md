@@ -2,6 +2,15 @@
 
 All notable changes to Studio Panic Attack are tracked here.
 
+## [1.0.5] -- whiteboard: monochrome site theme
+
+- `paletteStore.ts`: exported `useIsWhiteboard()` hook; placed after `usePalette` declaration.
+- `App.tsx`: syncs `useIsWhiteboard()` to `document.body.dataset.spaTheme` via `useEffect`.
+- `HeroOverlay.tsx`: logo switches to `PanicAttackLogoBlack.png` when whiteboard active.
+- `GraphicDesign.tsx`: headline + subtitle switch paper/blood to `#0a0a0a` when whiteboard.
+- `Gallery.tsx`: 'STUDIO PANIC ATTACK' floor text -> `#ffffff`, `fillOpacity 0.5` when whiteboard.
+- `global.css`: `[data-spa-theme=whiteboard]` block -- category numbers (black stroke), titles (dark), body-wrap (light bg, black accent bar), highlights (all text black except .spa-title), loading screen (white bg, black bar/labels/stroke, dark scanlines).
+
 ## [1.0.4] â€” whiteboard: full-width grid + lighter fog
 
 - Horizontal lines now span `0 â†’ Wl` (full viewport width) instead of clipping to `projX(Â±NUM_COLS, t)`.
