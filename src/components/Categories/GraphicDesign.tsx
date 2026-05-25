@@ -121,8 +121,7 @@ function BackgroundHeadline() {
     if (headlineRef.current) {
       const mat = (headlineRef.current as any).material;
       if (d > 0) {
-        const v = THREE.MathUtils.lerp(10 / 255, 1, d);
-        mat.color.setRGB(v, v, v);
+        mat.color.setRGB(1, 1, 1);
       } else {
         mat.color.setRGB(10 / 255, 10 / 255, 10 / 255);
       }
@@ -130,11 +129,7 @@ function BackgroundHeadline() {
     if (subtitleRef.current) {
       const mat = (subtitleRef.current as any).material;
       if (d > 0) {
-        mat.color.setRGB(
-          THREE.MathUtils.lerp(211 / 255, 1, d),
-          THREE.MathUtils.lerp(0, 1, d),
-          THREE.MathUtils.lerp(0, 1, d),
-        );
+        mat.color.setRGB(1, 1, 1);
       } else {
         mat.color.setRGB(211 / 255, 0, 0);
       }
