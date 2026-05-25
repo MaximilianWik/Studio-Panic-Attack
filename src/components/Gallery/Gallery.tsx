@@ -1,5 +1,5 @@
 import { useFrame } from '@react-three/fiber';
-import { Image, MeshReflectorMaterial, Text, Html, useCursor, useTexture } from '@react-three/drei';
+import { Image, MeshReflectorMaterial, Text, Html, useCursor, useTexture, ContactShadows } from '@react-three/drei';
 import { Suspense, useEffect, useMemo, useRef, useState } from 'react';
 import * as THREE from 'three';
 
@@ -358,97 +358,103 @@ export function Gallery() {
   return (
     <group ref={groupRef} position={[0, yPos, 0]}>
       <group ref={stageRef} position={[0, -0.5, -2]}>
-        {/* Reflective floor — circular pedestal, radial alpha fade.
-            The disc reads as a deliberate stage instead of an
-            arbitrary square slice, and the alphaMap dissolves the
-            edge so there's no hard "this is where the floor ends"
-            line. Reflection naturally fades with the alpha. */}
-        <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, 0, 0]}>
-          <circleGeometry args={[32, 96]} />
-          <MeshReflectorMaterial
-            blur={profile.isLowPower ? [0, 0] : [300, 100]}
+        {/* Floor: dark reflective pedestal (normal palettes) or
+            contact shadows only (whiteboard mode). */}
+        {wb ? (
+          <ContactShadows
+            position={[0, -0.01, 0]}
+            opacity={0.35}
+            scale={50}
+            blur={2.5}
+            far={12}
             resolution={profile.isLowPower ? 128 : 256}
-            mixBlur={1}
-            mixStrength={profile.isLowPower ? 40 : 80}
-            roughness={1}
-            depthScale={1.2}
-            minDepthThreshold={0.4}
-            maxDepthThreshold={1.4}
-            color="#050505"
-            metalness={0.5}
-            transparent
-            alphaMap={floorAlphaMap ?? undefined}
+            color="#000000"
           />
-        </mesh>
+        ) : (
+          <>
+            {/* Reflective floor — circular pedestal, radial alpha fade. */}
+            <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, 0, 0]}>
+              <circleGeometry args={[32, 96]} />
+              <MeshReflectorMaterial
+                blur={profile.isLowPower ? [0, 0] : [300, 100]}
+                resolution={profile.isLowPower ? 128 : 256}
+                mixBlur={1}
+                mixStrength={profile.isLowPower ? 40 : 80}
+                roughness={1}
+                depthScale={1.2}
+                minDepthThreshold={0.4}
+                maxDepthThreshold={1.4}
+                color="#050505"
+                metalness={0.5}
+                transparent
+                alphaMap={floorAlphaMap ?? undefined}
+              />
+            </mesh>
 
-        {/* Underside fade. Same circle + same alpha so the back-face
-            visible from below shares the soft rim. BackSide-only so
-            it doesn't z-fight with the reflective top. */}
-        <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, 0, 0]}>
-          <circleGeometry args={[32, 96]} />
-          <meshBasicMaterial
-            color="#050505"
-            side={THREE.BackSide}
-            transparent
-            opacity={0.55}
-            alphaMap={floorAlphaMap ?? undefined}
-            depthWrite={false}
-            fog={false}
-            toneMapped={false}
-          />
-        </mesh>
+            {/* Underside fade. */}
+            <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, 0, 0]}>
+              <circleGeometry args={[32, 96]} />
+              <meshBasicMaterial
+                color="#050505"
+                side={THREE.BackSide}
+                transparent
+                opacity={0.55}
+                alphaMap={floorAlphaMap ?? undefined}
+                depthWrite={false}
+                fog={false}
+                toneMapped={false}
+              />
+            </mesh>
 
-        {/* Ground mist (item H) — two soft-noise sheets just above
-            the floor, scrolling in opposite directions so the
-            carousel looks like it's emerging from low fog. Both
-            depthWrite=false so they don't break frame depth. Skipped
-            entirely on low-power tier. */}
-        {mistTexA ? (
-          <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, 0.06, 0]} renderOrder={1}>
-            <circleGeometry args={[30, 64]} />
-            <meshBasicMaterial
-              color="#1a0606"
-              transparent
-              opacity={0.32}
-              alphaMap={mistTexA}
-              depthWrite={false}
-              fog={false}
-              toneMapped={false}
-            />
-          </mesh>
-        ) : null}
-        {mistTexB ? (
-          <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, 0.32, 0]} renderOrder={2}>
-            <circleGeometry args={[28, 64]} />
-            <meshBasicMaterial
-              color="#0a0a0a"
-              transparent
-              opacity={0.22}
-              alphaMap={mistTexB}
-              depthWrite={false}
-              fog={false}
-              toneMapped={false}
-            />
-          </mesh>
-        ) : null}
+            {/* Ground mist */}
+            {mistTexA ? (
+              <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, 0.06, 0]} renderOrder={1}>
+                <circleGeometry args={[30, 64]} />
+                <meshBasicMaterial
+                  color="#1a0606"
+                  transparent
+                  opacity={0.32}
+                  alphaMap={mistTexA}
+                  depthWrite={false}
+                  fog={false}
+                  toneMapped={false}
+                />
+              </mesh>
+            ) : null}
+            {mistTexB ? (
+              <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, 0.32, 0]} renderOrder={2}>
+                <circleGeometry args={[28, 64]} />
+                <meshBasicMaterial
+                  color="#0a0a0a"
+                  transparent
+                  opacity={0.22}
+                  alphaMap={mistTexB}
+                  depthWrite={false}
+                  fog={false}
+                  toneMapped={false}
+                />
+              </mesh>
+            ) : null}
 
-        {/* Floor text */}
-        <Text position={[0, 0.01, -2]} rotation={[-Math.PI / 2, 0, 0]}
-          fontSize={0.6} color={wb ? '#ffffff' : '#d30000'} anchorX="center" anchorY="middle"
-          letterSpacing={0.3} fillOpacity={wb ? 0.5 : 0.15}>
-          STUDIO PANIC ATTACK
-        </Text>
-        <Text position={[0, 0.01, 3]} rotation={[-Math.PI / 2, 0, 0]}
-          font="https://cdn.jsdelivr.net/npm/@fontsource/cormorant-garamond@5.0.0/files/cormorant-garamond-latin-500-italic.woff"
-          fontSize={0.5} color="#f6f3ee" anchorX="center" anchorY="middle"
-          letterSpacing={0.04} fillOpacity={0.55}>
-          Have a peek inside my brain
-        </Text>
-        <Text position={[-6, 0.01, 1]} rotation={[-Math.PI / 2, 0, Math.PI / 2]}
-          fontSize={0.12} color="#f6f3ee" anchorX="center" anchorY="middle"
-          letterSpacing={0.6} fillOpacity={0.18}>
-          EMA STOYANOVA
-        </Text>
+            {/* Floor text */}
+            <Text position={[0, 0.01, -2]} rotation={[-Math.PI / 2, 0, 0]}
+              fontSize={0.6} color="#d30000" anchorX="center" anchorY="middle"
+              letterSpacing={0.3} fillOpacity={0.15}>
+              STUDIO PANIC ATTACK
+            </Text>
+            <Text position={[0, 0.01, 3]} rotation={[-Math.PI / 2, 0, 0]}
+              font="https://cdn.jsdelivr.net/npm/@fontsource/cormorant-garamond@5.0.0/files/cormorant-garamond-latin-500-italic.woff"
+              fontSize={0.5} color="#f6f3ee" anchorX="center" anchorY="middle"
+              letterSpacing={0.04} fillOpacity={0.55}>
+              Have a peek inside my brain
+            </Text>
+            <Text position={[-6, 0.01, 1]} rotation={[-Math.PI / 2, 0, Math.PI / 2]}
+              fontSize={0.12} color="#f6f3ee" anchorX="center" anchorY="middle"
+              letterSpacing={0.6} fillOpacity={0.18}>
+              EMA STOYANOVA
+            </Text>
+          </>
+        )}
 
         {/* Slots — each renders the asset currently assigned to it.
             Per-slot Suspense keeps texture loads local: if a slot's texture

@@ -1287,17 +1287,6 @@ video {
    Only active when the GRID palette is selected.
    ============================================================ */
 
-/* ── Category numbers (01 / 02 / 03 / 04) ─────────────────────────── */
-/* drop-shadow() operates on composited pixels (the stroke outline),
-   so the shadow falls outside the glyph — not through the transparent fill. */
-[data-spa-theme="whiteboard"] .spa-cat-elegant__number {
-  -webkit-text-stroke-color: #0a0a0a;
-  text-shadow: none;
-  filter:
-    drop-shadow(0 8px 40px rgba(0, 0, 0, 0.38))
-    drop-shadow(0 3px 10px rgba(0, 0, 0, 0.28));
-}
-
 /* ── Category section title ("Graphic Design", etc.) ──────────────── */
 [data-spa-theme="whiteboard"] .spa-cat-elegant__title {
   color: #0a0a0a;

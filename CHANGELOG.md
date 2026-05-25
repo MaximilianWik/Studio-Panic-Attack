@@ -2,6 +2,11 @@
 
 All notable changes to Studio Panic Attack are tracked here.
 
+## [1.0.9] -- whiteboard: contact shadows + revert red numbers
+
+- Gallery floor: when whiteboard active, the full reflective pedestal (reflector + backface + mist + floor text) is hidden. In its place, drei `<ContactShadows>` renders soft drop-shadows below the carousel frames (opacity 0.35, scale 50, blur 2.5, far 12). Normal palettes keep the full dark reflector unchanged.
+- Category numbers (01-04): removed the whiteboard-specific `[data-spa-theme=whiteboard] .spa-cat-elegant__number` CSS override entirely — numbers now keep their default red stroke + red glow on ALL palettes including GRID.
+
 ## [1.0.8] -- whiteboard: stronger number shadow + black logo shadow
 
 - `spa-cat-elegant__number`: drop-shadow values increased (0.18/0.13 -> 0.38/0.28, blur 20/5 -> 40/10) so they're actually visible.
