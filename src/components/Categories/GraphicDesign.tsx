@@ -86,7 +86,7 @@ function BackgroundHeadline() {
         fontSize={0.12}
         anchorX="center"
         anchorY="middle"
-        color={wb ? '#0a0a0a' : theme.blood}
+        color={theme.blood}
         position={[0, -0.55, 0]}
         letterSpacing={0.4}
       >

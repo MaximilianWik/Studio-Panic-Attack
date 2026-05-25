@@ -1,5 +1,5 @@
 import { useFrame } from '@react-three/fiber';
-import { Image, MeshReflectorMaterial, Text, Html, useCursor, useTexture, ContactShadows } from '@react-three/drei';
+import { MeshReflectorMaterial, Text, Html, useCursor, useTexture, ContactShadows } from '@react-three/drei';
 import { Suspense, useEffect, useMemo, useRef, useState } from 'react';
 import * as THREE from 'three';
 
@@ -359,14 +359,17 @@ export function Gallery() {
     <group ref={groupRef} position={[0, yPos, 0]}>
       <group ref={stageRef} position={[0, -0.5, -2]}>
         {/* Floor: dark reflective pedestal (normal palettes) or
-            contact shadows only (whiteboard mode). */}
+            contact shadows (whiteboard mode). Shadow plane sits 0.8
+            units below the carousel so even thin objects cast visible
+            soft shadows. frames=Infinity for the moving carousel. */}
         {wb ? (
           <ContactShadows
-            position={[0, -0.01, 0]}
-            opacity={0.35}
-            scale={50}
-            blur={2.5}
-            far={12}
+            position={[0, -0.8, 0]}
+            opacity={0.5}
+            scale={60}
+            blur={3}
+            far={10}
+            frames={Infinity}
             resolution={profile.isLowPower ? 128 : 256}
             color="#000000"
           />
@@ -498,53 +501,39 @@ function CarouselSlot({ slotIndex, slots }: CarouselSlotProps) {
   const [hover, setHover] = useState(false);
   useCursor(hover);
   const groupRef = useRef<THREE.Group>(null);
-  const frameRef = useRef<THREE.Mesh>(null);
-  const imageRef = useRef<THREE.Mesh>(null);
+  const boxRef = useRef<THREE.Mesh>(null);
   const rimRef = useRef<THREE.Mesh>(null);
-  const colorTarget = useMemo(() => new THREE.Color('#f6f3ee'), []);
+  const wb = useIsWhiteboard();
 
-  // Track current url so we can rebuild the Image when it changes
   const slot = slots.current[slotIndex];
   const [currentUrl, setCurrentUrl] = useState(slot.asset.url);
+  const texture = useTexture(currentUrl);
 
-  // Variable frame size based on aspect of the CURRENTLY assigned asset
   const aspect = slot.asset.aspect;
-  // Per-slot stable size multiplier — wider range for true variation
-  // between intimate small slots and statement large slots.
-  const sizeMultiplier = useMemo(() => 0.55 + Math.random() * 1.1, []); // 0.55 .. 1.65
+  const sizeMultiplier = useMemo(() => 0.55 + Math.random() * 1.1, []);
 
-  // Depth-driven size compensation. Slots further from the camera
-  // need to be physically larger or they shrink to specks. Curve
-  // is a soft power of distance/4 so back slots are roughly 4× the
-  // physical size of front slots — they read at a similar apparent
-  // size on screen but with subtle "further away" diminishing.
-  // sizeMultiplier still varies them per-slot on top.
   const depth = slot.depth;
-  const distance = STAGE_TO_CAMERA - depth; // approx; ignores arc curve
+  const distance = STAGE_TO_CAMERA - depth;
   const depthSizeFactor = Math.pow(distance / 4, 0.72);
 
-  // Base sizes; aspect drives orientation
   const baseW = aspect >= 1 ? 1.54 : 1.05;
   const w = baseW * sizeMultiplier * depthSizeFactor;
   const h = w / aspect;
-  // Generous caps so the back-rank slots can actually be huge without
-  // the carousel turning into a wall of identical rectangles.
   const clampedH = Math.min(h, 9);
   const clampedW = Math.min(w, 8);
 
+  // Thick enough to see the image wrapping around the edges.
+  const boxDepth = 0.7;
+
   useFrame((state, dt) => {
     const s = slots.current[slotIndex];
-    if (!groupRef.current || !imageRef.current || !frameRef.current) return;
+    if (!groupRef.current || !boxRef.current) return;
 
-    // If this slot's asset changed (due to wrap), force a re-render to swap the texture
     if (s.asset.url !== currentUrl) {
       setCurrentUrl(s.asset.url);
     }
 
-    // I — curved arc. The carousel is no longer a straight belt:
-    // each slot's offset is treated as arc-length along a circle of
-    // radius ARC_R, so slots curve gently away in Z toward the
-    // edges. Slot rotation faces toward the centre of the arc.
+    // Curved arc positioning
     const angle = s.offset / ARC_R;
     const sinA = Math.sin(angle);
     const cosA = Math.cos(angle);
@@ -552,17 +541,10 @@ function CarouselSlot({ slotIndex, slots }: CarouselSlotProps) {
     groupRef.current.position.z = (cosA - 1) * ARC_R + s.depth;
     groupRef.current.position.y = Math.sin(state.clock.elapsedTime * 0.35 + s.seed * 6.28) * 0.025;
 
-    // K — pointer tilt. Each slot rotates a few degrees around Y
-    // following the cursor X, on top of the arc-facing rotation.
-    // Reads as the carousel "watching" the user without breaking
-    // the arc's geometry.
+    // Pointer tilt
     groupRef.current.rotation.y = -angle + state.pointer.x * 0.20;
 
-    // E — depth dimming. Slots farther from the camera (more
-    // negative position.z relative to the stage) get tinted darker.
-    // With SLOT_Z_FRONT = -2 and arc-curve up to ~-8 at the edges,
-    // z ranges roughly +0/-2 (centre, front) down to ~-28 (far edge,
-    // back). Map [-28, -2] onto [0.45, 1.0].
+    // Depth dimming — map z ∈ [-28, -2] onto [0.45, 1.0]
     const z = groupRef.current.position.z;
     const depthFactor = THREE.MathUtils.lerp(
       0.45,
@@ -570,32 +552,16 @@ function CarouselSlot({ slotIndex, slots }: CarouselSlotProps) {
       THREE.MathUtils.clamp((z + 28) / 26, 0, 1),
     );
 
-    // Image colour tint via the material's `color` uniform.
-    const imat = imageRef.current.material as THREE.Material & { color?: THREE.Color };
-    if (imat.color) imat.color.setRGB(depthFactor, depthFactor, depthFactor);
+    // Tint the textured box for depth dimming + hover brightness
+    const mat = boxRef.current.material as THREE.MeshBasicMaterial;
+    const brightness = hover ? Math.min(1, depthFactor * 1.12) : depthFactor;
+    mat.color.setRGB(brightness, brightness, brightness);
 
-    // Subtle breathing zoom centered on 1.0 — keeps the full image visible
-    const mat = imageRef.current.material as THREE.Material & { zoom?: number };
-    if (mat) mat.zoom = 0.97 + Math.sin(s.seed * 10000 + state.clock.elapsedTime / 3) * 0.03;
-
-    // Existing frame colour, modulated by depthFactor so the frames
-    // also dim with distance — keeps the frame visually attached
-    // to the image rather than glowing at full strength on a
-    // dimmed background.
-    colorTarget.set(hover ? '#d30000' : '#f6f3ee').multiplyScalar(depthFactor);
-    const fmat = frameRef.current.material as THREE.MeshBasicMaterial;
-    fmat.color.lerp(colorTarget, Math.min(1, 8 * dt));
-
-    // F — rim glow on hover. A red additive plane sitting just
-    // behind the image, slightly larger, opacity ramps in over
-    // ~250 ms when hovered. Reads as the slot lighting up from
-    // behind without disturbing the rest of the frame.
+    // Rim glow on hover
     if (rimRef.current) {
       const rmat = rimRef.current.material as THREE.MeshBasicMaterial;
-      const target = hover ? 0.6 : 0;
+      const target = hover ? 0.55 : 0;
       rmat.opacity += (target - rmat.opacity) * Math.min(1, 6 * dt);
-      // Hide the mesh entirely once it's effectively zero so it's
-      // not eating draw calls when no slot is hovered.
       rimRef.current.visible = rmat.opacity > 0.01;
     }
   });
@@ -603,38 +569,33 @@ function CarouselSlot({ slotIndex, slots }: CarouselSlotProps) {
   return (
     <group ref={groupRef}>
       <mesh
+        ref={boxRef}
         onPointerOver={(e) => { e.stopPropagation(); setHover(true); }}
         onPointerOut={() => setHover(false)}
         onClick={(e) => { e.stopPropagation(); openLightbox(currentUrl); }}
-        scale={[clampedW, clampedH, 0.05]}
+        scale={[clampedW, clampedH, boxDepth]}
         position={[0, clampedH / 2, 0]}
       >
         <boxGeometry />
-        <meshStandardMaterial color="#151515" metalness={0.5} roughness={0.5} envMapIntensity={2} />
-        <mesh ref={frameRef} raycast={() => null} scale={[0.9, 0.93, 0.9]} position={[0, 0, 0.2]}>
-          <boxGeometry />
-          <meshBasicMaterial toneMapped={false} fog={false} />
-        </mesh>
-        {/* Rim glow plane — sits just behind the image, slightly
-            larger, additively blended. Hidden until hover. */}
-        <mesh ref={rimRef} raycast={() => null} scale={[1.08, 1.08, 1]} position={[0, 0, 0.65]} visible={false}>
-          <planeGeometry />
-          <meshBasicMaterial
-            color="#d30000"
-            transparent
-            opacity={0}
-            blending={THREE.AdditiveBlending}
-            depthWrite={false}
-            toneMapped={false}
-            fog={false}
-          />
-        </mesh>
-        <Image
-          key={currentUrl}
-          ref={imageRef}
-          raycast={() => null}
-          position={[0, 0, 0.7]}
-          url={currentUrl}
+        <meshBasicMaterial map={texture} toneMapped={false} />
+      </mesh>
+      {/* Rim glow — behind the box, slightly larger, additive */}
+      <mesh
+        ref={rimRef}
+        raycast={() => null}
+        scale={[clampedW * 1.06, clampedH * 1.06, 1]}
+        position={[0, clampedH / 2, -(boxDepth / 2 + 0.05)]}
+        visible={false}
+      >
+        <planeGeometry />
+        <meshBasicMaterial
+          color={wb ? '#2563eb' : '#d30000'}
+          transparent
+          opacity={0}
+          blending={THREE.AdditiveBlending}
+          depthWrite={false}
+          toneMapped={false}
+          fog={false}
         />
       </mesh>
     </group>

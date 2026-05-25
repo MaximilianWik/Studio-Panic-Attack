@@ -18,7 +18,7 @@ import { useEffect, useRef } from 'react';
 
 // ── Tunables ────────────────────────────────────────────────────────────────
 
-const VP_Y_FRAC  = 0.38;  // vanishing point as fraction of screen height
+const VP_Y_FRAC  = 0.18;  // vanishing point as fraction of screen height
 const SCROLL_RPS = 0.55;  // rows that scroll past per second
 const NUM_ROWS   = 22;    // horizontal lines visible at once
 const NUM_COLS   = 11;    // base columns each side (determines cell spacing)

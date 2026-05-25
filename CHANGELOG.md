@@ -2,6 +2,31 @@
 
 All notable changes to Studio Panic Attack are tracked here.
 
+## [1.1.2] -- whiteboard: visual tuning pass
+
+- ContactShadows opacity 0.5 -> 0.75 (more visible).
+- Slot boxDepth doubled: 0.35 -> 0.7 (canvas-wrap depth clearly visible).
+- WhiteboardBackground VP_Y_FRAC 0.38 -> 0.18 (grid now covers ~82%% of viewport, was ~62%%).
+- CSS: `.spa-cat-elegant__title` in whiteboard: white (`#ffffff`) with heavy black shadows (matches Featured Pieces treatment).
+- CSS: `.spa-cat-elegant__body-wrap` opacity reduced to 0.55 (semi-transparent, grid visible behind).
+- GraphicDesign: subtitle 'A LIVING CANVAS, REFRACTED' stays blood red on all palettes (was being forced to black in whiteboard).
+
+## [1.1.1] -- gallery: image-wrapped 3D slots + ContactShadows fix
+
+### Slots revamped
+- Removed multi-mesh frame architecture (outer dark box + inner frame + separate drei Image). Replaced with a single thick box (depth 0.35) that uses the loaded texture directly via `meshBasicMaterial map={texture}`. The image now wraps around all faces of the box — front shows the full image, sides show a canvas-wrap continuation.
+- Hover: box brightens slightly (depthFactor * 1.12); additive rim glow behind the box uses `#2563eb` (blue) when whiteboard or `#d30000` (red) on dark palettes.
+- Thicker geometry (0.05 -> 0.35) eliminates the sub-pixel AA artifacts at corners that occurred with ultra-thin boxes.
+- `useTexture(currentUrl)` replaces drei `<Image>`. Per-slot `<Suspense>` still handles loading gracefully.
+
+### ContactShadows
+- Brought back `<ContactShadows>` for whiteboard floor (replaced the ambient disc).
+- Shadow plane lowered to y=-0.8 so objects have clearance for visible shadow spread. `blur=3`, `opacity=0.5`, `frames=Infinity` (continuous for animated carousel), `scale=60`.
+
+## [1.1.0] -- whiteboard gallery: ambient shadow disc replaces ContactShadows
+
+- Removed `<ContactShadows>` (shadows only visible at edges, invisible on center slots, single-sided). Replaced with a simple ambient shadow disc: `circleGeometry [22,64]`, black at 7% opacity, uses the existing radial `floorAlphaMap` for soft center-to-edge fade, `side: DoubleSide` so it's visible from below when scrolling past. Much cleaner grounding for the carousel against the perspective grid.
+
 ## [1.0.9] -- whiteboard: contact shadows + revert red numbers
 
 - Gallery floor: when whiteboard active, the full reflective pedestal (reflector + backface + mist + floor text) is hidden. In its place, drei `<ContactShadows>` renders soft drop-shadows below the carousel frames (opacity 0.35, scale 50, blur 2.5, far 12). Normal palettes keep the full dark reflector unchanged.
