@@ -1,4 +1,4 @@
-import { MeshTransmissionMaterial, Text } from '@react-three/drei';
+import { MeshTransmissionMaterial, Text, Html } from '@react-three/drei';
 import { useFrame, useThree } from '@react-three/fiber';
 import { useRef } from 'react';
 import * as THREE from 'three';
@@ -47,6 +47,50 @@ export function GraphicDesign() {
       <group ref={groupRef} scale={fitScale}>
         <BackgroundHeadline />
         <Lens lowPower={profile.isLowPower} visibility={visibility} />
+        {/* Comic speech bubble — outside the rotating BackgroundHeadline
+            group so it stays fixed. Position matches the subtitle's
+            world-space location (y=-0.85 below subtitle at y=-0.55,
+            z=-1.2 matching the BackgroundHeadline group offset). */}
+        <Html position={[0, -0.85, -1.0]} center style={{ pointerEvents: 'none' }}>
+          <div style={{
+            position: 'relative',
+            background: '#fffde6',
+            border: '3px solid #0a0a0a',
+            borderRadius: '12px 12px 4px 12px',
+            padding: '6px 14px',
+            fontFamily: '"Comic Sans MS", "Chalkboard SE", cursive',
+            fontWeight: 'bold',
+            fontSize: '13px',
+            color: '#0a0a0a',
+            whiteSpace: 'nowrap',
+            transform: 'rotate(-3deg)',
+            boxShadow: '3px 3px 0 #0a0a0a',
+          }}>
+            Spin me!!
+            <span style={{
+              position: 'absolute',
+              top: '-10px',
+              left: '50%',
+              marginLeft: '-6px',
+              width: 0,
+              height: 0,
+              borderLeft: '6px solid transparent',
+              borderRight: '6px solid transparent',
+              borderBottom: '10px solid #0a0a0a',
+            }} />
+            <span style={{
+              position: 'absolute',
+              top: '-6px',
+              left: '50%',
+              marginLeft: '-5px',
+              width: 0,
+              height: 0,
+              borderLeft: '5px solid transparent',
+              borderRight: '5px solid transparent',
+              borderBottom: '8px solid #fffde6',
+            }} />
+          </div>
+        </Html>
       </group>
       <DebugLabel
         name="Sculpture: Knot (01 graphic)"
@@ -78,7 +122,7 @@ function BackgroundHeadline() {
         lineHeight={0.92}
         letterSpacing={-0.02}
         color={wb ? '#0a0a0a' : theme.paper}
-        fillOpacity={wb ? 0 : 1}
+        fillOpacity={wb ? 0.15 : 1}
         position={[0, 0.7, 0]}
       >
         DESIGN BEYOND THE TRADITIONAL FORMAT
@@ -91,7 +135,7 @@ function BackgroundHeadline() {
         position={[0, -0.55, 0]}
         letterSpacing={0.4}
       >
-        — A LIVING CANVAS, REFRACTED —
+        — Plzz click me!! :3 —
       </Text>
     </group>
   );
