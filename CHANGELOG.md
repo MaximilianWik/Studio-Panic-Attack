@@ -2,6 +2,12 @@
 
 All notable changes to Studio Panic Attack are tracked here.
 
+## [1.2.8] -- navbar: logo 2× larger (56px desktop, 44px mobile)
+
+- `.spa-nav__brandmark` height: 28px → 56px (desktop), 22px → 44px (mobile).
+- Nav padding reduced from 14px → 8px (desktop) and 12px → 8px (mobile) to keep the bar compact with the larger logo.
+- Projects breadcrumb `top` updated: 78px → 82px (desktop), 70px → 66px (mobile) to stay clear of the resized nav bar.
+
 ## [1.2.7] -- navbar: replace "Ema Stoyanova" text with PanicAttackLogoBlack.png
 
 - `NavHeader` brand section: removed the small `PanicAttackLogo.png` icon + `<span>Ema Stoyanova</span>` text. Replaced with `<img class="spa-nav__brandmark" src="/logo/PanicAttackLogoBlack.png">`.

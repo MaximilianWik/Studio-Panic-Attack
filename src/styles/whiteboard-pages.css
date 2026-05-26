@@ -848,7 +848,7 @@ img[data-failed="1"] {
 
 .spa-pb__breadcrumb {
   position: fixed;
-  top: 78px;
+  top: 82px;
   left: 50%;
   transform: translateX(-50%);
   z-index: 50;
@@ -1309,7 +1309,7 @@ img[data-failed="1"] {
 .spa-polaroid--ev .spa-polaroid__inner { aspect-ratio: 4 / 3; }
 
 @media (max-width: 900px) {
-  .spa-pb__breadcrumb { top: 70px; }
+  .spa-pb__breadcrumb { top: 66px; }
   .spa-pb__board { padding: 130px 24px 60px; }
   .spa-pb__head-title { font-size: clamp(40px, 9vw, 64px); }
   .spa-pb__mini { right: 16px; top: 124px; grid-template-columns: repeat(4, 44px); grid-auto-rows: 36px; }
