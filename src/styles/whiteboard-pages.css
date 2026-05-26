@@ -95,6 +95,49 @@ img[data-failed="1"] {
   background: #111;
 }
 
+/* ── Lightbox — video + error panel ────────────────────────────── */
+.spa-lightbox__vid {
+  max-width: 92vw;
+  max-height: 88vh;
+  border: 6px solid var(--smoke);
+  box-shadow: 0 18px 60px rgba(0, 0, 0, 0.6);
+  background: #000;
+  outline: none;
+}
+.spa-lightbox__error {
+  max-width: 480px;
+  padding: 32px 28px;
+  background: var(--smoke);
+  color: var(--paper);
+  text-align: center;
+  font-family: var(--font-body);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+}
+.spa-lightbox__error p {
+  font-size: 15px;
+  line-height: 1.5;
+  margin-bottom: 12px;
+}
+.spa-lightbox__error-sub {
+  font-size: 12px !important;
+  color: rgba(246, 243, 238, 0.55);
+}
+.spa-lightbox__dl {
+  display: inline-block;
+  margin-top: 14px;
+  padding: 10px 18px;
+  background: var(--blood);
+  color: var(--paper);
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  cursor: none;
+  pointer-events: auto;
+  text-decoration: none;
+}
+.spa-lightbox__dl:hover { background: var(--paper); color: var(--ink); }
+
 /* ── Polaroid frame primitive — used on Highlights + Projects ─────── */
 .spa-polaroid {
   position: absolute;

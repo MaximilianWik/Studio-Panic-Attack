@@ -253,7 +253,7 @@ function Board({ project, index, total, onPrev, onNext, onJumpTo, active, hydrat
                     key={a.url}
                     className="spa-polaroid spa-polaroid--ev"
                     style={{ ['--rot' as string]: a.rot + 'deg' }}
-                    onClick={() => a.type === 'image' && openLightbox(a.url)}
+                    onClick={() => openLightbox(a.url)}
                     type="button"
                     aria-label={'View ' + a.file}
                   >
@@ -280,7 +280,7 @@ function Board({ project, index, total, onPrev, onNext, onJumpTo, active, hydrat
                       ['--rot' as string]: a.rot + 'deg',
                       zIndex: a.z + 10,
                     }}
-                    onClick={() => a.type === 'image' && openLightbox(a.url)}
+                    onClick={() => openLightbox(a.url)}
                     aria-label={'View ' + a.file}
                   >
                     <span className="spa-polaroid__inner">
@@ -318,7 +318,7 @@ function Board({ project, index, total, onPrev, onNext, onJumpTo, active, hydrat
                         key={a.url}
                         type="button"
                         className="spa-pb__overflow-tile"
-                        onClick={() => a.type === 'image' && openLightbox(a.url)}
+                        onClick={() => openLightbox(a.url)}
                         aria-label={'View ' + a.file}
                       >
                         <span className="spa-pb__overflow-tile-inner">

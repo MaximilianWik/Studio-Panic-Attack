@@ -66,7 +66,14 @@ export function Vid({ src, poster, webm, className, style, ...rest }: VidProps) 
   const [hasData, setHasData] = useState(false);
   const posterUrl = poster ?? derivePoster(src);
 
+  // .mov files (QuickTime/HEVC) usually can't auto-decode in Chrome on
+  // Windows. Skip the IO observer + autoplay + metadata preload for them so
+  // we don't burn bandwidth on a video we can't preview. The user can still
+  // click the polaroid to try to play it in the Lightbox with full controls.
+  const isMov = /\.mov(\?|#|$)/i.test(src);
+
   useEffect(() => {
+    if (isMov) return;
     const el = ref.current;
     if (!el) return;
     const io = new IntersectionObserver(
@@ -77,9 +84,10 @@ export function Vid({ src, poster, webm, className, style, ...rest }: VidProps) 
     );
     io.observe(el);
     return () => io.disconnect();
-  }, []);
+  }, [isMov]);
 
   useEffect(() => {
+    if (isMov) return;
     const v = ref.current;
     if (!v) return;
     if (visible) {
@@ -87,7 +95,7 @@ export function Vid({ src, poster, webm, className, style, ...rest }: VidProps) 
     } else {
       v.pause();
     }
-  }, [visible]);
+  }, [visible, isMov]);
 
   return (
     <div className={'spa-vid-wrap' + (className ? ' ' + className : '')} style={style}>
@@ -101,7 +109,7 @@ export function Vid({ src, poster, webm, className, style, ...rest }: VidProps) 
             <rect x="38" y="31" width="6" height="7" />
             <polygon points="20,17 20,31 34,24" fill="currentColor" stroke="none" />
           </svg>
-          <span>video</span>
+          <span>{isMov ? 'click to play' : 'video'}</span>
         </div>
       )}
       <video
@@ -110,7 +118,7 @@ export function Vid({ src, poster, webm, className, style, ...rest }: VidProps) 
         muted
         loop
         playsInline
-        preload="metadata"
+        preload={isMov ? 'none' : 'metadata'}
         onLoadedData={() => setHasData(true)}
         onCanPlay={() => setHasData(true)}
         {...rest}
@@ -118,7 +126,7 @@ export function Vid({ src, poster, webm, className, style, ...rest }: VidProps) 
         {webm ? <source src={webm} type="video/webm" /> : null}
         <source src={src} type={
           src.toLowerCase().endsWith('.webm') ? 'video/webm' :
-          src.toLowerCase().endsWith('.mov') ? 'video/quicktime' :
+          isMov ? 'video/quicktime' :
           'video/mp4'
         } />
       </video>

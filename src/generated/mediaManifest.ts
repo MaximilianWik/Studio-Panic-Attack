@@ -876,6 +876,36 @@ export const PROJECT_FOLDERS: ProjectFolder[] = [
     "folder": "15. Projection Mapping + VJ + Lights",
     "assets": [
       {
+        "file": "IMG_2765.MOV",
+        "url": "/2.%20Projects/15.%20Projection%20Mapping%20+%20VJ%20+%20Lights/IMG_2765.MOV",
+        "type": "video"
+      },
+      {
+        "file": "IMG_2766.MOV",
+        "url": "/2.%20Projects/15.%20Projection%20Mapping%20+%20VJ%20+%20Lights/IMG_2766.MOV",
+        "type": "video"
+      },
+      {
+        "file": "IMG_2767.MOV",
+        "url": "/2.%20Projects/15.%20Projection%20Mapping%20+%20VJ%20+%20Lights/IMG_2767.MOV",
+        "type": "video"
+      },
+      {
+        "file": "IMG_2769.MOV",
+        "url": "/2.%20Projects/15.%20Projection%20Mapping%20+%20VJ%20+%20Lights/IMG_2769.MOV",
+        "type": "video"
+      },
+      {
+        "file": "IMG_2769(1).MOV",
+        "url": "/2.%20Projects/15.%20Projection%20Mapping%20+%20VJ%20+%20Lights/IMG_2769(1).MOV",
+        "type": "video"
+      },
+      {
+        "file": "IMG_2771.MOV",
+        "url": "/2.%20Projects/15.%20Projection%20Mapping%20+%20VJ%20+%20Lights/IMG_2771.MOV",
+        "type": "video"
+      },
+      {
         "file": "IMG_2776.png",
         "url": "/2.%20Projects/15.%20Projection%20Mapping%20+%20VJ%20+%20Lights/IMG_2776.png",
         "type": "image"
@@ -884,6 +914,16 @@ export const PROJECT_FOLDERS: ProjectFolder[] = [
         "file": "IMG_2778.png",
         "url": "/2.%20Projects/15.%20Projection%20Mapping%20+%20VJ%20+%20Lights/IMG_2778.png",
         "type": "image"
+      },
+      {
+        "file": "IMG_2780.MOV",
+        "url": "/2.%20Projects/15.%20Projection%20Mapping%20+%20VJ%20+%20Lights/IMG_2780.MOV",
+        "type": "video"
+      },
+      {
+        "file": "IMG_2781.MOV",
+        "url": "/2.%20Projects/15.%20Projection%20Mapping%20+%20VJ%20+%20Lights/IMG_2781.MOV",
+        "type": "video"
       }
     ]
   },

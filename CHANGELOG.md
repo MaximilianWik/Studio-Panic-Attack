@@ -2,6 +2,13 @@
 
 All notable changes to Studio Panic Attack are tracked here.
 
+## [1.2.5] -- MOV files: click-to-play in lightbox + film placeholder
+
+- **MOV files restored to manifest.** Re-added `.mov` to `VID_EXT` so all 8 Projection Mapping clips show up again — but as click-to-play tiles, not autoplay previews.
+- **`<Vid>` skips IO/autoplay/preload for `.mov`.** Detects `.mov` by URL and short-circuits the IntersectionObserver + autoplay + `preload="metadata"`. Saves on bandwidth (these are 4–52 MB files, mostly HEVC) and stops them looking like broken black boxes. Polaroid shows the film-strip placeholder with the label "click to play".
+- **Lightbox now handles videos.** When the URL ends in `.mp4 / .webm / .mov / .m4v / .ogv`, the lightbox renders `<video controls autoPlay playsInline>` instead of `<img>`. If the browser refuses the codec (HEVC MOV on Chrome/Windows), an `onError` listener swaps in a "can't play" panel with an explanation and a download link.
+- **Polaroid click-handlers** dropped the `a.type === 'image' &&` filter — both images and videos open the lightbox now (scatter, events grid, overflow grid).
+
 ## [1.2.4] -- Projection: remove unplayable MOV files + video placeholder
 
 - **`.MOV` files excluded from manifest.** QuickTime `.MOV` containers (all from the Projection Mapping folder — 8 files, up to 52 MB each) are typically HEVC/H.265 encoded from iPhone. Chrome on Windows cannot play them without a separate codec pack; they render as solid black. Removed `.mov` from `VID_EXT` in the manifest builder. Projection board now shows its 2 PNG images cleanly. To restore: convert the MOV files to H.264 MP4 (e.g. `ffmpeg -i IMG_2765.MOV -c:v libx264 -c:a aac IMG_2765.mp4`) then re-run `npm run gen:manifest`.

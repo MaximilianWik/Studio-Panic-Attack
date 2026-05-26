@@ -18,11 +18,13 @@ const PUBLIC_DIR = join(ROOT, 'public');
 const OUT = join(ROOT, 'src', 'generated', 'mediaManifest.ts');
 
 const IMG_EXT = new Set(['.jpg', '.jpeg', '.png', '.webp', '.gif']);
-// .mov files are QuickTime containers — typically HEVC/H.265 from iPhones.
-// Chrome on Windows cannot play them without platform codec support, so they
-// render as solid black video elements. Exclude them from the manifest until
-// they've been transcoded to H.264 MP4. Re-add '.mov' here once converted.
-const VID_EXT = new Set(['.mp4', '.webm']);
+// .mov files are QuickTime containers — typically H.264 or HEVC. Chrome on
+// Windows can play H.264 MOVs but not HEVC. We include them anyway: in the
+// polaroid grid the <Vid> placeholder shows a film icon, and clicking opens
+// the lightbox with a real <video controls> element. Unsupported codecs
+// produce a visible "can't play" error inside the lightbox + download link
+// instead of silently breaking.
+const VID_EXT = new Set(['.mp4', '.webm', '.mov']);
 
 function urlPath(absInsidePublic) {
   // Encode path segments for use in a URL src attribute.
