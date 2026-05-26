@@ -516,7 +516,6 @@ function CarouselSlot({ slotIndex, slots }: CarouselSlotProps) {
   const groupRef = useRef<THREE.Group>(null);
   const boxRef = useRef<THREE.Mesh>(null);
   const hoverScale = useRef(1);
-  const wb = useIsWhiteboard();
 
   const slot = slots.current[slotIndex];
   const [currentUrl, setCurrentUrl] = useState(slot.asset.url);
