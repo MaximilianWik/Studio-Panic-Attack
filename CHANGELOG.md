@@ -2,6 +2,10 @@
 
 All notable changes to Studio Panic Attack are tracked here.
 
+## [1.2.10] -- highlights: update intro copy
+
+- Replaced "A scrolling cork-board of recent pieces…" with "Some of my favourite pieces that I've created so far, as a multidisciplinary artist".
+
 ## [1.2.9] -- projects: every asset goes in the scatter; overflow grid removed
 
 - `src/config/projects.ts`: drop `SCATTER_CAP` and the `Project.overflow` field. All assets per folder go through `scatter()` with bounds widened to `x: 8–88%`, `y: 3–97%` and `tries: 140` so dense folders (3D — 64 pieces, Digital Art — 21, Graphic Design — 20) still find non-overlapping slots.

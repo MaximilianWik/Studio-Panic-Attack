@@ -16,8 +16,7 @@ export function Highlights() {
         <p className="spa-hl__eyebrow">— highlights —</p>
         <h1 className="spa-hl__title">Some of my work&hellip;</h1>
         <p className="spa-hl__intro">
-          A scrolling cork-board of recent pieces. Click any frame to view it large.
-          Videos auto-play silently when they come into view.
+          Some of my favourite pieces that I&rsquo;ve created so far, as a multidisciplinary artist
         </p>
       </header>
 
