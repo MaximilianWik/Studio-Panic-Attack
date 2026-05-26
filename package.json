@@ -7,7 +7,9 @@
     "dev": "vite",
     "build": "tsc -b && vite build",
     "preview": "vite preview",
-    "typecheck": "tsc -b --noEmit"
+    "typecheck": "tsc -b --noEmit",
+    "gen:manifest": "node scripts/build-media-manifest.mjs",
+    "optimize": "node scripts/optimize-public-assets.mjs"
   },
   "dependencies": {
     "@paper-design/shaders-react": "^0.0.50",

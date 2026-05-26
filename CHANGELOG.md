@@ -2,6 +2,44 @@
 
 All notable changes to Studio Panic Attack are tracked here.
 
+## [1.2.0] -- whiteboard pages: about, vocabulary, highlights, contact, projects board
+
+### New routes (no more under-construction)
+- `/about` -- two-column whiteboard layout with handwritten "Hi! I'm Ema :)", bold ABOUT headline, lede + body, paper-tape contact card (email + IG/FB/LinkedIn icons), circular vignette portrait. Bottom-of-page CSS film strip with sprocket-hole rows + Kodak-style frame numbers, scrollable horizontally.
+- `/vocabulary` -- "Glossary" intro + 3 alternating-side entries (A Aesthetic, B Bloom, C Curiosity). Each entry has a giant ghost letter behind the image, original copy. Click image opens the existing site lightbox.
+- `/highlights` -- 2-column polaroid grid with seeded micro-tilt per tile. Click image -> lightbox; videos auto-play muted on viewport entry via the new `<Vid>` helper.
+- `/contact` -- sticky-note styled form (name / email / subject / message) submitting to Web3Forms; mailto: fallback when the access key is empty or the request fails. `Layer 1 star.png` scattered as decoration.
+- `/projects` and `/projects/<slug>` -- horizontally-scrolling Miro-style whiteboard with one full-viewport "board" per category (16 boards). Scroll-snap, hand-drawn arrows at the edges (prev / next labels), keyboard ArrowLeft/Right, breadcrumb pill at the top to jump anywhere. URL stays in sync via `history.replaceState`.
+  - Per-board content: title + description + decorative stickers (printer / folder / paperclip SVGs) + polaroid scatter laid out by a deterministic seed (Mulberry32 + collision avoidance).
+  - **Folder hover micro-interaction**: each board has a 4-wide mini-grid of all 16 categories rendered as closed manila folders. On hover (or `is-active`) the lid rotates up and two pages slide out -- pure CSS transform transitions.
+  - **Events board** is special-cased: pulls hand-cleaned HTML from `EventText.docx` (extracted via a one-off PowerShell script and stored in `src/generated/eventsText.html.ts`). Renders the long-form copy in the left column with project photos in the right.
+
+### New helpers / scaffolding
+- `src/components/PageShell/PageShell.tsx` -- common chrome (NavHeader + Cursor + Lightbox + ErrorBoundary) for every whiteboard page. Forces GRID palette so `data-spa-theme="whiteboard"` is set on `<body>`.
+- `src/components/PageShell/Stickers.tsx` -- three original inline-SVG stickers (printer with paper curl, manila folder with peeking pages, stack of paperclips).
+- `src/components/PageShell/FolderTile.tsx` -- the folder mini-tile with hover-open animation hook points (`.spa-folder-tile__lid` / `__pageA` / `__pageB`).
+- `src/helpers/media.tsx` -- `<Img>` (lazy + `<picture>` with auto `.webp` fallback) and `<Vid>` (muted/loop/autoplay-on-visible via IntersectionObserver, auto poster + webm derivation).
+- `src/helpers/seedScatter.ts` -- Mulberry32 + FNV-1a seed hash + collision-avoiding scatter with configurable bounds, size range, max rotation. Used to lay out polaroids deterministically per project slug.
+- `src/config/projects.ts` -- per-folder metadata (slug, title, kind, description, sticker accent), wraps the auto-generated manifest into `Project[]` with seeded scatter applied. Edit this file to override copy / descriptions / future inline notes.
+- `src/generated/mediaManifest.ts` -- AUTO-GENERATED. Source of truth for what's in `public/2. Projects/*`, `public/3. Highlights`, `4. Vocabulary`, `5. About`, `6. Contact`, `landing/`. Re-generate via `npm run gen:manifest`.
+- `src/generated/eventsText.html.ts` -- hand-cleaned HTML copy of `EventText.docx`.
+
+### Build pipeline
+- `scripts/build-media-manifest.mjs` -- scans `public/` and emits `mediaManifest.ts` with properly percent-encoded URLs (handles spaces, backticks, special chars in folder names like `11. UX\`UI`).
+- `scripts/optimize-public-assets.mjs` -- best-effort `sharp` -> `.webp` + 8x12 LQIP for images >= 200 KB; `ffmpeg` -> `.webm` + `.poster.jpg` for `.mp4`. Soft-skips quietly when libs are missing -- the site still works on raw assets.
+- `package.json` -- new `gen:manifest` and `optimize` scripts.
+
+### Routing
+- `src/main.tsx` rewritten: previous "list of paths -> UnderConstruction" replaced with concrete component routing. `/projects/<slug>` is parsed via regex; everything unknown still falls through to `UnderConstruction`.
+
+### Styles
+- New `src/styles/whiteboard-pages.css` (~800 lines) imported from `main.tsx`. Sections: page shell + bg cross-grid, polaroid + post-it primitives, sticker base, About (incl. film strip), Vocabulary (alternating sides + ghost letter), Highlights (2-col polaroid grid), Contact (sticky-note form + scattered stars), Projects (horizontal snap-track + breadcrumb pill + folder mini-grid + hand-drawn arrows + events grid).
+
+### Known follow-ups
+- `WEB3FORMS_KEY` in `Contact.tsx` is empty -- set it to the real access key from web3forms.com to switch off the mailto: fallback.
+- Run `npm install sharp` (and have `ffmpeg` on PATH) before `npm run optimize` to actually produce the WebP/WebM/LQIP assets. Until then the site ships raw originals and `<Img>`/`<Vid>` silently fall back via `<picture>`/`<source>`.
+- Seeded scatter positions are decent but not pixel-perfect -- `src/config/projects.ts` is the place to hand-tune `assets[].x/y/rot/w` per board, or to add `notes: [{x,y,text,color}]`.
+
 ## [1.1.5] -- transparent headline text + scale-pop hover
 
 - GraphicDesign: 'DESIGN BEYOND THE TRADITIONAL FORMAT' gets `fillOpacity={0}` when whiteboard (invisible behind the torus knot lens).
