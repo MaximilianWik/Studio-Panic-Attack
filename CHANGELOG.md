@@ -2,6 +2,15 @@
 
 All notable changes to Studio Panic Attack are tracked here.
 
+## [1.2.1] -- whiteboard pages: fix broken images + scrollable boards
+
+- **`<Img>` no longer wraps in `<picture>`**: the `<source srcSet="*.webp">` was being selected by all webp-supporting browsers (i.e. all of them), and when the .webp 404s the browser shows the broken-image icon — `<picture>` does NOT fall back to the `<img>` child on a 404 source. Reverted to a plain `<img>`. Once `npm run optimize` has actually produced sibling .webp files we can reintroduce `<picture>` gated by a manifest of optimised URLs.
+- Same gotcha applied to `<Vid>`: the auto-derived `.webm` `<source>` is now only emitted when explicitly passed via the `webm` prop.
+- **Projects boards now scroll vertically**: `.spa-pb__board` switched from `overflow: hidden` to `overflow-y: auto`. Each board is its own scroll container; the horizontal snap track still moves between boards.
+- Events board: dropped the inner `.spa-pb__events-doc { overflow-y: auto }` scroller — now the whole board scrolls so all the long-form event copy is reachable.
+- Scatter boards: `.spa-pb__scatter` switched from absolute `inset` to relative + `min-height: calc(100vh - 280px)` so the polaroid scatter has somewhere to scroll into when there are more than a screenful of items.
+- `.spa-pb__count` repositioned to `position: fixed` (bottom-right pill, glass-blur) and gated to the active board so 16 stacked pills don't overlap. `.spa-pb__arrow` got a glass-blur background so it stays legible against scattered photos and a clamp-based top so it never sits behind the head when scrolled.
+
 ## [1.2.0] -- whiteboard pages: about, vocabulary, highlights, contact, projects board
 
 ### New routes (no more under-construction)

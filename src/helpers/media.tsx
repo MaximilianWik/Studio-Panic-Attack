@@ -3,11 +3,16 @@ import { useEffect, useRef, useState } from 'react';
 /**
  * Tiny media helpers shared by the whiteboard pages.
  *
- * <Img>  — lazy <img> wrapper. Tries a sibling .webp first via <picture>
- *          when available; falls back silently to the source if the build
- *          step never produced one. Adds decoding="async" + loading="lazy"
- *          + fetchpriority="auto" by default. Honours an optional
- *          `eager` prop to preload above-the-fold imagery.
+ * <Img>  — lazy <img> wrapper with sensible defaults (decoding=async,
+ *          loading=lazy, draggable=false). Adds eager preload for
+ *          above-the-fold use via the `eager` prop.
+ *
+ *          NOTE: an earlier version emitted <picture><source srcSet=*.webp>
+ *          but browsers do NOT fall back to the <img> child if the picked
+ *          <source> 404s — they just show the broken-image icon. Until the
+ *          asset-optimization pass actually produces sibling .webp files,
+ *          we ship a plain <img>. Reintroduce <picture> later by reading
+ *          a manifest of known-optimized URLs.
  *
  * <Vid>   — autoplay-on-visible muted-loop video. Uses an IntersectionObserver
  *          so we only stream bytes when the user actually scrolls onto it.
@@ -19,34 +24,18 @@ interface ImgProps extends React.ImgHTMLAttributes<HTMLImageElement> {
   alt?: string;
   /** Force eager load (above-the-fold hero images). */
   eager?: boolean;
-  /** Optional .webp sibling URL — defaults to swapping the extension. */
-  webp?: string;
 }
 
-function deriveWebp(src: string): string {
-  // Replace last extension with .webp. Works for percent-encoded URLs because
-  // the encoded characters don't contain a literal '.'.
-  return src.replace(/\.[a-zA-Z0-9]+(?=\?|#|$)/, '.webp');
-}
-
-export function Img({ src, alt = '', eager, webp, className, style, ...rest }: ImgProps) {
-  const webpUrl = webp ?? deriveWebp(src);
-  const isWebpDifferent = webpUrl !== src;
-
-  // We don't HEAD-check whether the .webp exists — if it 404s, the browser
-  // falls back to the <img> source automatically. <picture> handles this.
+export function Img({ src, alt = '', eager, ...rest }: ImgProps) {
   return (
-    <picture className={className} style={style}>
-      {isWebpDifferent ? <source srcSet={webpUrl} type="image/webp" /> : null}
-      <img
-        src={src}
-        alt={alt}
-        loading={eager ? 'eager' : 'lazy'}
-        decoding="async"
-        draggable={false}
-        {...rest}
-      />
-    </picture>
+    <img
+      src={src}
+      alt={alt}
+      loading={eager ? 'eager' : 'lazy'}
+      decoding="async"
+      draggable={false}
+      {...rest}
+    />
   );
 }
 
@@ -54,7 +43,7 @@ interface VidProps extends React.VideoHTMLAttributes<HTMLVideoElement> {
   src: string;
   /** Optional poster (defaults to swapping ext for .poster.jpg). */
   poster?: string;
-  /** Optional .webm sibling. */
+  /** Optional .webm sibling — only emitted as <source> when explicitly passed. */
   webm?: string;
 }
 
@@ -62,15 +51,12 @@ function derivePoster(src: string): string {
   return src.replace(/\.[a-zA-Z0-9]+(?=\?|#|$)/, '.poster.jpg');
 }
 
-function deriveWebm(src: string): string {
-  return src.replace(/\.mp4(?=\?|#|$)/i, '.webm');
-}
-
 export function Vid({ src, poster, webm, className, style, ...rest }: VidProps) {
   const ref = useRef<HTMLVideoElement>(null);
   const [visible, setVisible] = useState(false);
+  // Poster: only used if the file actually exists. We pass it as a hint;
+  // browsers handle a missing poster gracefully (just skip it).
   const posterUrl = poster ?? derivePoster(src);
-  const webmUrl = webm ?? deriveWebm(src);
 
   useEffect(() => {
     const el = ref.current;
@@ -108,8 +94,10 @@ export function Vid({ src, poster, webm, className, style, ...rest }: VidProps) 
       preload="metadata"
       {...rest}
     >
-      {webmUrl !== src ? <source src={webmUrl} type="video/webm" /> : null}
-      <source src={src} type="video/mp4" />
+      {/* Only emit a <source> for an alt format if it was explicitly
+          provided — same 404-fallback gotcha as <picture> applies. */}
+      {webm ? <source src={webm} type="video/webm" /> : null}
+      <source src={src} type={src.toLowerCase().endsWith('.webm') ? 'video/webm' : 'video/mp4'} />
     </video>
   );
 }
