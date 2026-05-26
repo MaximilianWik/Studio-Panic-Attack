@@ -482,22 +482,22 @@ export const PROJECT_FOLDERS: ProjectFolder[] = [
     "assets": [
       {
         "file": "Jolly Smile design 2.png",
-        "url": "/2.%20Projects/5.%20Product%20Design%20%26%20Brand%20Identity/Jolly%20Smile%20design%202.png",
+        "url": "/2.%20Projects/5.%20Product%20Design%20&%20Brand%20Identity/Jolly%20Smile%20design%202.png",
         "type": "image"
       },
       {
         "file": "Jolly Smile design.png",
-        "url": "/2.%20Projects/5.%20Product%20Design%20%26%20Brand%20Identity/Jolly%20Smile%20design.png",
+        "url": "/2.%20Projects/5.%20Product%20Design%20&%20Brand%20Identity/Jolly%20Smile%20design.png",
         "type": "image"
       },
       {
         "file": "Paper.Portfolio_Journal.3.PNG",
-        "url": "/2.%20Projects/5.%20Product%20Design%20%26%20Brand%20Identity/Paper.Portfolio_Journal.3.PNG",
+        "url": "/2.%20Projects/5.%20Product%20Design%20&%20Brand%20Identity/Paper.Portfolio_Journal.3.PNG",
         "type": "image"
       },
       {
         "file": "Paper.Portfolio_Journal.9.PNG",
-        "url": "/2.%20Projects/5.%20Product%20Design%20%26%20Brand%20Identity/Paper.Portfolio_Journal.9.PNG",
+        "url": "/2.%20Projects/5.%20Product%20Design%20&%20Brand%20Identity/Paper.Portfolio_Journal.9.PNG",
         "type": "image"
       }
     ]
@@ -602,7 +602,7 @@ export const PROJECT_FOLDERS: ProjectFolder[] = [
       },
       {
         "file": "Firefly inflated, puffy shapes made of white soft cotton, folds and wrinkles on materials, isolated  AA.png",
-        "url": "/2.%20Projects/7.%20AI/Firefly%20inflated%2C%20puffy%20shapes%20made%20of%20white%20soft%20cotton%2C%20folds%20and%20wrinkles%20on%20materials%2C%20isolated%20%20AA.png",
+        "url": "/2.%20Projects/7.%20AI/Firefly%20inflated,%20puffy%20shapes%20made%20of%20white%20soft%20cotton,%20folds%20and%20wrinkles%20on%20materials,%20isolated%20%20AA.png",
         "type": "image"
       },
       {
@@ -762,27 +762,27 @@ export const PROJECT_FOLDERS: ProjectFolder[] = [
     "assets": [
       {
         "file": "Skjermbilde 2024-05-19 191532.png",
-        "url": "/2.%20Projects/11.%20UX%60UI/Skjermbilde%202024-05-19%20191532.png",
+        "url": "/2.%20Projects/11.%20UX`UI/Skjermbilde%202024-05-19%20191532.png",
         "type": "image"
       },
       {
         "file": "Skjermbilde 2024-05-19 191908.png",
-        "url": "/2.%20Projects/11.%20UX%60UI/Skjermbilde%202024-05-19%20191908.png",
+        "url": "/2.%20Projects/11.%20UX`UI/Skjermbilde%202024-05-19%20191908.png",
         "type": "image"
       },
       {
         "file": "Skjermbilde 2024-05-19 192023.png",
-        "url": "/2.%20Projects/11.%20UX%60UI/Skjermbilde%202024-05-19%20192023.png",
+        "url": "/2.%20Projects/11.%20UX`UI/Skjermbilde%202024-05-19%20192023.png",
         "type": "image"
       },
       {
         "file": "Skjermbilde 2024-05-19 192042.png",
-        "url": "/2.%20Projects/11.%20UX%60UI/Skjermbilde%202024-05-19%20192042.png",
+        "url": "/2.%20Projects/11.%20UX`UI/Skjermbilde%202024-05-19%20192042.png",
         "type": "image"
       },
       {
         "file": "Skjermbilde 2024-05-19 192201.png",
-        "url": "/2.%20Projects/11.%20UX%60UI/Skjermbilde%202024-05-19%20192201.png",
+        "url": "/2.%20Projects/11.%20UX`UI/Skjermbilde%202024-05-19%20192201.png",
         "type": "image"
       }
     ]
@@ -792,12 +792,12 @@ export const PROJECT_FOLDERS: ProjectFolder[] = [
     "assets": [
       {
         "file": "Holistic Letter from the Editor & 3D article.png",
-        "url": "/2.%20Projects/12.%20Holistic%20Art%20Magazine/Holistic%20Letter%20from%20the%20Editor%20%26%203D%20article.png",
+        "url": "/2.%20Projects/12.%20Holistic%20Art%20Magazine/Holistic%20Letter%20from%20the%20Editor%20&%203D%20article.png",
         "type": "image"
       },
       {
         "file": "Holistic Letter from the Editor & 3D article2.png",
-        "url": "/2.%20Projects/12.%20Holistic%20Art%20Magazine/Holistic%20Letter%20from%20the%20Editor%20%26%203D%20article2.png",
+        "url": "/2.%20Projects/12.%20Holistic%20Art%20Magazine/Holistic%20Letter%20from%20the%20Editor%20&%203D%20article2.png",
         "type": "image"
       },
       {
@@ -876,54 +876,14 @@ export const PROJECT_FOLDERS: ProjectFolder[] = [
     "folder": "15. Projection Mapping + VJ + Lights",
     "assets": [
       {
-        "file": "IMG_2765.MOV",
-        "url": "/2.%20Projects/15.%20Projection%20Mapping%20%2B%20VJ%20%2B%20Lights/IMG_2765.MOV",
-        "type": "video"
-      },
-      {
-        "file": "IMG_2766.MOV",
-        "url": "/2.%20Projects/15.%20Projection%20Mapping%20%2B%20VJ%20%2B%20Lights/IMG_2766.MOV",
-        "type": "video"
-      },
-      {
-        "file": "IMG_2767.MOV",
-        "url": "/2.%20Projects/15.%20Projection%20Mapping%20%2B%20VJ%20%2B%20Lights/IMG_2767.MOV",
-        "type": "video"
-      },
-      {
-        "file": "IMG_2769.MOV",
-        "url": "/2.%20Projects/15.%20Projection%20Mapping%20%2B%20VJ%20%2B%20Lights/IMG_2769.MOV",
-        "type": "video"
-      },
-      {
-        "file": "IMG_2769(1).MOV",
-        "url": "/2.%20Projects/15.%20Projection%20Mapping%20%2B%20VJ%20%2B%20Lights/IMG_2769(1).MOV",
-        "type": "video"
-      },
-      {
-        "file": "IMG_2771.MOV",
-        "url": "/2.%20Projects/15.%20Projection%20Mapping%20%2B%20VJ%20%2B%20Lights/IMG_2771.MOV",
-        "type": "video"
-      },
-      {
         "file": "IMG_2776.png",
-        "url": "/2.%20Projects/15.%20Projection%20Mapping%20%2B%20VJ%20%2B%20Lights/IMG_2776.png",
+        "url": "/2.%20Projects/15.%20Projection%20Mapping%20+%20VJ%20+%20Lights/IMG_2776.png",
         "type": "image"
       },
       {
         "file": "IMG_2778.png",
-        "url": "/2.%20Projects/15.%20Projection%20Mapping%20%2B%20VJ%20%2B%20Lights/IMG_2778.png",
+        "url": "/2.%20Projects/15.%20Projection%20Mapping%20+%20VJ%20+%20Lights/IMG_2778.png",
         "type": "image"
-      },
-      {
-        "file": "IMG_2780.MOV",
-        "url": "/2.%20Projects/15.%20Projection%20Mapping%20%2B%20VJ%20%2B%20Lights/IMG_2780.MOV",
-        "type": "video"
-      },
-      {
-        "file": "IMG_2781.MOV",
-        "url": "/2.%20Projects/15.%20Projection%20Mapping%20%2B%20VJ%20%2B%20Lights/IMG_2781.MOV",
-        "type": "video"
       }
     ]
   },
@@ -1060,7 +1020,7 @@ export const HIGHLIGHTS_ASSETS: MediaAsset[] = [
 export const VOCABULARY_ASSETS: MediaAsset[] = [
   {
     "file": "Firefly inflated, puffy shapes made of white soft cotton, folds and wrinkles on materials, isolated  AA_edited.png",
-    "url": "/4.%20Vocabulary/Firefly%20inflated%2C%20puffy%20shapes%20made%20of%20white%20soft%20cotton%2C%20folds%20and%20wrinkles%20on%20materials%2C%20isolated%20%20AA_edited.png",
+    "url": "/4.%20Vocabulary/Firefly%20inflated,%20puffy%20shapes%20made%20of%20white%20soft%20cotton,%20folds%20and%20wrinkles%20on%20materials,%20isolated%20%20AA_edited.png",
     "type": "image"
   },
   {

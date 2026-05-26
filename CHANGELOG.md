@@ -2,6 +2,18 @@
 
 All notable changes to Studio Panic Attack are tracked here.
 
+## [1.2.4] -- Projection: remove unplayable MOV files + video placeholder
+
+- **`.MOV` files excluded from manifest.** QuickTime `.MOV` containers (all from the Projection Mapping folder — 8 files, up to 52 MB each) are typically HEVC/H.265 encoded from iPhone. Chrome on Windows cannot play them without a separate codec pack; they render as solid black. Removed `.mov` from `VID_EXT` in the manifest builder. Projection board now shows its 2 PNG images cleanly. To restore: convert the MOV files to H.264 MP4 (e.g. `ffmpeg -i IMG_2765.MOV -c:v libx264 -c:a aac IMG_2765.mp4`) then re-run `npm run gen:manifest`.
+- **`<Vid>` now shows a film-strip placeholder** when video data hasn't loaded. Wraps `<video>` in a `.spa-vid-wrap` div; before `onLoadedData`/`onCanPlay` fires, a centred play-triangle + "video" label is overlaid so unsupported formats produce a clear indicator rather than solid black.
+- CSS: `.spa-vid-wrap` + `.spa-vid-wrap__placeholder` added; all container selectors (`spa-polaroid__inner`, `spa-hl__photo`, `spa-pb__overflow-tile-inner`) updated to include `.spa-vid-wrap`.
+
+## [1.2.3] -- fix broken images (URL encoding) + breadcrumb overflow + MOV mime type
+
+- **URL encoding root cause fixed.** The manifest builder was using `encodeURIComponent` which over-encodes `& + ,` into `%26 %2B %2C`. These are valid characters in URI path segments (RFC 3986). Some browsers — particularly on the HTML parser side — re-interpret `%26` in a `src` attribute as a literal `&` BEFORE forming the HTTP request, then re-encode inconsistently, causing the request to differ from what the server expects. Switched to a minimal path encoder that only encodes the characters that genuinely break URL parsing: space (`%20`), `#` (`%23`), `?` (`%3F`), and existing `%` literals (`%25` to prevent double-encoding). Manifest regenerated — `&`, `+`, `,` are now literal in all paths. Fixes broken images in: Product Design & Brand Identity, AI (Firefly file with commas), Holistic Art Magazine (filenames with &), Projection Mapping + VJ + Lights, Vocabulary letter A (Firefly file with commas).
+- **Navbar breadcrumb no longer clips projects.** Text labels (`span.spa-pb__crumb-label`) are hidden below 1100 px — each crumb shows only its two-digit number, which fits all 16 within the pill. `flex-shrink: 0` + `white-space: nowrap` + `flex-wrap: nowrap` ensure the pill itself stays single-row and scrolls rather than wrapping.
+- **`.MOV` MIME type fixed.** `<Vid>` was emitting `type="video/mp4"` for `.mov` files. Corrected to `type="video/quicktime"` so the browser correctly identifies the Projection Mapping videos.
+
 ## [1.2.2] -- projects: show every asset + virtualised boards + perf pass
 
 - **Every project asset is now reachable.** Drop `slice(0, 12)` cap in `src/config/projects.ts`. The first 8 assets per project still get the seeded scatter (visual chaos at the top); everything beyond is rendered in a clean `auto-fill minmax(180px, 1fr)` overflow grid below the scatter, with a "More from <category>" header showing the total count. Scrolling the board reveals the rest -- 3D's full 64 pieces, Digital Art's 21, etc. all show up.

@@ -61,6 +61,40 @@ img[data-failed="1"] {
   font-size: 0;
 }
 
+/* ── Video wrapper — fills its parent like a bare <video> would ───── */
+.spa-vid-wrap {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  background: #1a1a1a;
+  overflow: hidden;
+}
+.spa-vid-wrap video {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+/* Film-strip placeholder — visible until onLoadedData fires */
+.spa-vid-wrap__placeholder {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  color: rgba(255, 255, 255, 0.35);
+  font-family: var(--font-mono);
+  font-size: 9px;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  pointer-events: none;
+  background: #111;
+}
+
 /* ── Polaroid frame primitive — used on Highlights + Projects ─────── */
 .spa-polaroid {
   position: absolute;
@@ -101,7 +135,8 @@ img[data-failed="1"] {
 }
 .spa-polaroid__inner picture,
 .spa-polaroid__inner img,
-.spa-polaroid__inner video {
+.spa-polaroid__inner video,
+.spa-polaroid__inner .spa-vid-wrap {
   width: 100%;
   height: 100%;
   object-fit: cover;
@@ -577,7 +612,8 @@ img[data-failed="1"] {
 }
 .spa-hl__photo img,
 .spa-hl__photo picture,
-.spa-hl__photo video {
+.spa-hl__photo video,
+.spa-hl__photo .spa-vid-wrap {
   width: 100%;
   height: 100%;
   object-fit: cover;
@@ -748,7 +784,7 @@ img[data-failed="1"] {
   display: flex;
   align-items: center;
   gap: 2px;
-  padding: 6px 8px;
+  padding: 4px 6px;
   background: rgba(255, 255, 255, 0.85);
   border: 1px solid rgba(0, 0, 0, 0.1);
   border-radius: 999px;
@@ -759,13 +795,16 @@ img[data-failed="1"] {
   overflow-x: auto;
   scrollbar-width: none;
   font-family: var(--font-mono);
+  /* Don't force wrapping — stay single-line and scroll */
+  white-space: nowrap;
+  flex-wrap: nowrap;
 }
 .spa-pb__breadcrumb::-webkit-scrollbar { display: none; }
 .spa-pb__crumb {
   display: inline-flex;
   align-items: center;
-  gap: 6px;
-  padding: 6px 12px;
+  gap: 4px;
+  padding: 5px 10px;
   border: 0;
   background: transparent;
   color: rgba(10, 10, 10, 0.55);
@@ -774,12 +813,18 @@ img[data-failed="1"] {
   border-radius: 999px;
   cursor: none;
   white-space: nowrap;
+  flex-shrink: 0;
   transition: background 0.2s, color 0.2s;
   font-family: inherit;
 }
 .spa-pb__crumb:hover { background: rgba(0, 0, 0, 0.05); color: #0a0a0a; }
 .spa-pb__crumb.is-active { background: #0a0a0a; color: #fafafa; }
-.spa-pb__crumb-num { opacity: 0.6; font-size: 9px; }
+.spa-pb__crumb-num { opacity: 0.7; font-size: 9px; letter-spacing: 0.1em; }
+/* Labels visible on wide screens, hidden on narrow so the pill fits */
+.spa-pb__crumb-label { font-size: 10px; }
+@media (max-width: 1100px) { .spa-pb__crumb-label { display: none; } }
+@media (max-width: 1100px) { .spa-pb__crumb { padding: 5px 8px; } }
+@media (max-width: 1100px) { .spa-pb__crumb-num { font-size: 10px; opacity: 1; } }
 
 .spa-pb__track {
   position: relative;
@@ -1078,7 +1123,8 @@ img[data-failed="1"] {
   overflow: hidden;
 }
 .spa-pb__overflow-tile-inner img,
-.spa-pb__overflow-tile-inner video {
+.spa-pb__overflow-tile-inner video,
+.spa-pb__overflow-tile-inner .spa-vid-wrap {
   width: 100%;
   height: 100%;
   object-fit: cover;
@@ -1192,9 +1238,7 @@ img[data-failed="1"] {
 .spa-polaroid--ev .spa-polaroid__inner { aspect-ratio: 4 / 3; }
 
 @media (max-width: 900px) {
-  .spa-pb__breadcrumb { top: 70px; max-width: 96vw; padding: 4px 6px; }
-  .spa-pb__crumb-label { display: none; }
-  .spa-pb__crumb-num { font-size: 11px; }
+  .spa-pb__breadcrumb { top: 70px; }
   .spa-pb__board { padding: 130px 24px 60px; }
   .spa-pb__head-title { font-size: clamp(40px, 9vw, 64px); }
   .spa-pb__mini { right: 16px; top: 124px; grid-template-columns: repeat(4, 44px); grid-auto-rows: 36px; }

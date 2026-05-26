@@ -16,7 +16,9 @@ import { useEffect, useRef, useState } from 'react';
  *
  * <Vid>   — autoplay-on-visible muted-loop video. Uses an IntersectionObserver
  *          so we only stream bytes when the user actually scrolls onto it.
- *          Falls back to a poster image when the video is paused.
+ *          Shows a film-strip placeholder until the video has loaded data,
+ *          so unsupported formats (e.g. MOV on Chrome/Windows) show a clear
+ *          "video" indicator instead of a solid black box.
  */
 
 interface ImgProps extends React.ImgHTMLAttributes<HTMLImageElement> {
@@ -35,9 +37,6 @@ export function Img({ src, alt = '', eager, onError, ...rest }: ImgProps) {
       decoding="async"
       draggable={false}
       onError={(e) => {
-        // Mark the element so CSS can hide the broken-image icon, and log
-        // the URL once so we can chase it down. Production code keeps the
-        // log behind a flag — for now leave it on; it's tiny.
         const img = e.currentTarget;
         img.dataset.failed = '1';
         // eslint-disable-next-line no-console
@@ -64,8 +63,7 @@ function derivePoster(src: string): string {
 export function Vid({ src, poster, webm, className, style, ...rest }: VidProps) {
   const ref = useRef<HTMLVideoElement>(null);
   const [visible, setVisible] = useState(false);
-  // Poster: only used if the file actually exists. We pass it as a hint;
-  // browsers handle a missing poster gracefully (just skip it).
+  const [hasData, setHasData] = useState(false);
   const posterUrl = poster ?? derivePoster(src);
 
   useEffect(() => {
@@ -85,7 +83,6 @@ export function Vid({ src, poster, webm, className, style, ...rest }: VidProps) 
     const v = ref.current;
     if (!v) return;
     if (visible) {
-      // Best-effort autoplay; ignored if browser blocks. muted attr is set.
       void v.play().catch(() => {});
     } else {
       v.pause();
@@ -93,21 +90,38 @@ export function Vid({ src, poster, webm, className, style, ...rest }: VidProps) 
   }, [visible]);
 
   return (
-    <video
-      ref={ref}
-      className={className}
-      style={style}
-      poster={posterUrl}
-      muted
-      loop
-      playsInline
-      preload="metadata"
-      {...rest}
-    >
-      {/* Only emit a <source> for an alt format if it was explicitly
-          provided — same 404-fallback gotcha as <picture> applies. */}
-      {webm ? <source src={webm} type="video/webm" /> : null}
-      <source src={src} type={src.toLowerCase().endsWith('.webm') ? 'video/webm' : 'video/mp4'} />
-    </video>
+    <div className={'spa-vid-wrap' + (className ? ' ' + className : '')} style={style}>
+      {!hasData && (
+        <div className="spa-vid-wrap__placeholder" aria-hidden>
+          <svg viewBox="0 0 48 48" width="28" height="28" fill="none" stroke="currentColor" strokeWidth="1.5">
+            <rect x="4" y="10" width="40" height="28" rx="2" />
+            <rect x="4" y="10" width="6" height="7" />
+            <rect x="4" y="31" width="6" height="7" />
+            <rect x="38" y="10" width="6" height="7" />
+            <rect x="38" y="31" width="6" height="7" />
+            <polygon points="20,17 20,31 34,24" fill="currentColor" stroke="none" />
+          </svg>
+          <span>video</span>
+        </div>
+      )}
+      <video
+        ref={ref}
+        poster={posterUrl}
+        muted
+        loop
+        playsInline
+        preload="metadata"
+        onLoadedData={() => setHasData(true)}
+        onCanPlay={() => setHasData(true)}
+        {...rest}
+      >
+        {webm ? <source src={webm} type="video/webm" /> : null}
+        <source src={src} type={
+          src.toLowerCase().endsWith('.webm') ? 'video/webm' :
+          src.toLowerCase().endsWith('.mov') ? 'video/quicktime' :
+          'video/mp4'
+        } />
+      </video>
+    </div>
   );
 }

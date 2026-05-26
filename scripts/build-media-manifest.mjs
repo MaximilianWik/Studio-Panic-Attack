@@ -18,12 +18,30 @@ const PUBLIC_DIR = join(ROOT, 'public');
 const OUT = join(ROOT, 'src', 'generated', 'mediaManifest.ts');
 
 const IMG_EXT = new Set(['.jpg', '.jpeg', '.png', '.webp', '.gif']);
-const VID_EXT = new Set(['.mp4', '.webm', '.mov']);
+// .mov files are QuickTime containers — typically HEVC/H.265 from iPhones.
+// Chrome on Windows cannot play them without platform codec support, so they
+// render as solid black video elements. Exclude them from the manifest until
+// they've been transcoded to H.264 MP4. Re-add '.mov' here once converted.
+const VID_EXT = new Set(['.mp4', '.webm']);
 
 function urlPath(absInsidePublic) {
-  // Posix-style, percent-encoded per segment, leading slash.
+  // Encode path segments for use in a URL src attribute.
+  // We ONLY encode characters that are actually special in a URL path:
+  //   space   → %20   (breaks the URL parser)
+  //   #       → %23   (starts a fragment)
+  //   ?       → %3F   (starts a query string)
+  //   %       → %25   (already-encoded literals — prevent double-encoding)
+  // Characters like & + , = ; : @ ( ) are valid in path segments per
+  // RFC 3986 and do NOT need encoding. encodeURIComponent is too aggressive
+  // and can confuse some browser URL parsers when used in src attributes.
   const rel = absInsidePublic.replace(/\\/g, '/');
-  return '/' + rel.split('/').map(encodeURIComponent).join('/');
+  return '/' + rel.split('/').map((seg) =>
+    seg
+      .replace(/%/g, '%25')   // must be first
+      .replace(/ /g, '%20')
+      .replace(/#/g, '%23')
+      .replace(/\?/g, '%3F')
+  ).join('/');
 }
 
 async function listDir(dir) {
