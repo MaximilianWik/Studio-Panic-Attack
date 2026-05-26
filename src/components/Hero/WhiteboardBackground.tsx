@@ -12,6 +12,9 @@ import { useEffect, useRef } from 'react';
  * - Vertical lines radiate from the VP and are fixed.
  * - `+` crosses are drawn at every computed intersection (not at cell
  *   centres of a CSS tile — they follow the perspective projection).
+ * - ROW_EXPO > 1 means rows spread apart near the viewer (bottom) and
+ *   compress near the horizon — gives roughly square cells at the bottom
+ *   of the viewport on a typical 16:9 screen.
  * - Everything fades to zero alpha at the horizon (depth fog).
  * - HiDPI-aware: canvas is sized in physical pixels, drawn in logical px.
  */
@@ -20,10 +23,10 @@ import { useEffect, useRef } from 'react';
 
 const VP_Y_FRAC  = 0.18;  // vanishing point as fraction of screen height
 const SCROLL_RPS = 0.55;  // rows that scroll past per second
-const NUM_ROWS   = 22;    // horizontal lines visible at once
+const NUM_ROWS   = 28;    // horizontal lines visible at once (raised to fill the wider spacing)
 const NUM_COLS   = 11;    // base columns each side (determines cell spacing)
 const MAX_COLS   = 38;    // hard cap — near-horizon rows get more columns dynamically
-const ROW_EXPO   = 0.68;  // perspective curvature: lower = more dramatic bunching
+const ROW_EXPO   = 1.60;  // perspective curvature: >1 = rows spread near bottom (square cells)
 
 // ── Colours ─────────────────────────────────────────────────────────────────
 

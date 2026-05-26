@@ -2,6 +2,11 @@
 
 All notable changes to Studio Panic Attack are tracked here.
 
+## [1.2.11] -- homepage grid: square cells at bottom (ROW_EXPO 0.68 → 1.60)
+
+- `ROW_EXPO` raised from `0.68` to `1.60`. Values below 1 compress rows toward the bottom (derivative < 1 near t=1), making grid cells flat wide rectangles. Values above 1 spread rows further apart near the viewer so the cell aspect ratio is approximately 1:1 on a 16:9 screen.
+- `NUM_ROWS` raised from `22` to `28` to compensate for the wider near-viewer spacing and keep the grid dense enough to fill the screen.
+
 ## [1.2.10] -- highlights: update intro copy
 
 - Replaced "A scrolling cork-board of recent pieces…" with "Some of my favourite pieces that I've created so far, as a multidisciplinary artist".
