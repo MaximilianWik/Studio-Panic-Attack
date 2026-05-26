@@ -21,12 +21,12 @@ import { useEffect, useRef } from 'react';
 
 // ── Tunables ────────────────────────────────────────────────────────────────
 
-const VP_Y_FRAC  = 0.18;  // vanishing point as fraction of screen height
-const SCROLL_RPS = 0.55;  // rows that scroll past per second
-const NUM_ROWS   = 14;    // horizontal lines visible at once
-const NUM_COLS   = 6;     // base columns each side (determines cell spacing)
-const MAX_COLS   = 22;    // hard cap — near-horizon rows get more columns dynamically
-const ROW_EXPO   = 1.60;  // perspective curvature: >1 = rows spread near bottom (square cells)
+const VP_Y_FRAC    = 0.18;  // vanishing point as fraction of screen height
+const SCROLL_RPS   = 0.55;  // rows that scroll past per second
+const ROW_EXPO     = 1.60;  // >1 = rows spread near bottom (square cells at viewer)
+/** Target cell size in CSS pixels. numCols and numRows are derived from this
+ *  every frame so the grid always looks the same regardless of viewport width. */
+const TARGET_CELL  = 120;   // px — tweak this single value to change overall cell size
 
 // ── Colours ─────────────────────────────────────────────────────────────────
 
@@ -84,7 +84,14 @@ export function WhiteboardBackground() {
       const VPy      = Hl * VP_Y_FRAC;
       const VPx      = Wl / 2;
       const span     = Hl - VPy;                      // pixel distance VP→bottom
-      const cellBase = VPx / NUM_COLS;                // column spacing at bottom row
+
+      // Dynamic column / row counts — derived from TARGET_CELL so the grid
+      // always shows the same physical cell size regardless of viewport.
+      // Narrow viewports get fewer columns rather than squished cells.
+      const numCols  = Math.max(2, Math.round(VPx / TARGET_CELL));
+      const numRows  = Math.max(4, Math.round(span * ROW_EXPO / TARGET_CELL));
+      const maxCols  = Math.min(60, numCols * 4); // fan cap scales with numCols
+      const cellBase = VPx / numCols;              // column spacing at bottom row
 
       // Project a fractional depth t ∈ [0,1] to a screen y.
       // t=0 → VPy (horizon), t=1 → Hl (bottom).
@@ -100,11 +107,11 @@ export function WhiteboardBackground() {
       ctx.fillRect(0, 0, Wl, Hl);
 
       // ── Precompute visible rows ───────────────────────────────────────────
-      // t_i = (i + rowOffset) / NUM_ROWS.  Only keep rows where t ∈ (0, 1].
+      // t_i = (i + rowOffset) / numRows.  Only keep rows where t ∈ (0, 1].
       type Row = { t: number; tExpo: number; y: number };
       const rows: Row[] = [];
-      for (let i = 0; i <= NUM_ROWS; i++) {
-        const t = (i + rowOffset) / NUM_ROWS;
+      for (let i = 0; i <= numRows; i++) {
+        const t = (i + rowOffset) / numRows;
         if (t <= 0 || t > 1.0) continue;
         const tExpo = Math.pow(t, ROW_EXPO);
         rows.push({ t, tExpo, y: projY(t) });
@@ -115,9 +122,9 @@ export function WhiteboardBackground() {
       // off-screen; canvas clips, but the upper portion fans into the viewport
       // filling the sides that would otherwise be empty near the horizon.
       ctx.lineWidth = 0.4;
-      for (let j = -MAX_COLS; j <= MAX_COLS; j++) {
+      for (let j = -maxCols; j <= maxCols; j++) {
         const xBot    = projX(j, 1); // tExpo=1 at the bottom row
-        const distFrac = Math.abs(j) / MAX_COLS;
+        const distFrac = Math.abs(j) / maxCols;
         const alpha   = (1 - distFrac * 0.55) * 0.20;
         if (alpha < 0.01) continue;
         ctx.beginPath();
@@ -147,7 +154,7 @@ export function WhiteboardBackground() {
         const crossSz   = 1.5 + t * 6.5;  // 1.5 px near horizon → 8 px at bottom
         const crossLW   = 0.6 + t * 0.9;
         const baseAlpha = t * 0.68;
-        const jMax      = Math.min(MAX_COLS, Math.ceil(NUM_COLS / tExpo));
+        const jMax      = Math.min(maxCols, Math.ceil(numCols / tExpo));
 
         ctx.lineWidth = crossLW;
 

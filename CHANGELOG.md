@@ -2,6 +2,13 @@
 
 All notable changes to Studio Panic Attack are tracked here.
 
+## [1.2.13] -- homepage grid: responsive cell count (no squishing on narrow viewports)
+
+- Removed fixed `NUM_COLS`, `NUM_ROWS`, `MAX_COLS` constants. Replaced with a single `TARGET_CELL = 120` (px) tunable.
+- Each frame, `numCols = round(VPx / TARGET_CELL)` and `numRows = round(span * ROW_EXPO / TARGET_CELL)` are computed from the live viewport size. Narrow viewports get fewer columns/rows rather than compressed cells.
+- `maxCols` (fan-out cap) scales with `numCols * 4` so the edge fill stays proportional.
+- To change the overall cell size: edit the single `TARGET_CELL` constant.
+
 ## [1.2.12] -- homepage grid: larger cells (NUM_COLS 11→6, NUM_ROWS 28→14)
 
 - Halved column count and row count so each cell is ~2× bigger in each dimension.
