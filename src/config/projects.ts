@@ -148,8 +148,6 @@ export interface BoardAsset extends MediaAsset, ScatterRect {}
 
 export interface Project extends ProjectMeta {
   assets: BoardAsset[];
-  /** Assets beyond the scatter cap — rendered in a clean grid below the scatter. */
-  overflow: BoardAsset[];
 }
 
 function buildProject(folderEntry: typeof PROJECT_FOLDERS[number]): Project {
@@ -168,31 +166,22 @@ function buildProject(folderEntry: typeof PROJECT_FOLDERS[number]): Project {
       description: '',
       sticker: 'folder',
       assets: [],
-      overflow: [],
     };
   }
   const numMatch = folderEntry.folder.match(/^(\d+)\./);
   const num = numMatch ? parseInt(numMatch[1], 10) : 99;
-  // Cap the scattered "hero" view to keep the visual chaos legible — the
-  // remainder is rendered in a clean grid below the scatter so every asset
-  // is reachable on scroll.
-  const SCATTER_CAP = 8;
-  const scattered = folderEntry.assets.slice(0, SCATTER_CAP);
-  const overflow = folderEntry.assets.slice(SCATTER_CAP);
-  const layout = scatter(hashSeed(meta.slug), scattered.length, {
-    bounds: { minX: 16, maxX: 84, minY: 28, maxY: 82 },
+  // ALL assets go in the scatter — no overflow grid. The scatter container
+  // grows vertically (`min-height` set inline by the board renderer based on
+  // asset count) so dense folders like 3D (64 pieces) get a tall, scrollable
+  // whiteboard feel.
+  const layout = scatter(hashSeed(meta.slug), folderEntry.assets.length, {
+    bounds: { minX: 8, maxX: 88, minY: 3, maxY: 97 },
     size: { min: 13, max: 19 },
     maxRot: 8,
+    tries: 140,
   });
-  const assets: BoardAsset[] = scattered.map((a, i) => ({ ...a, ...layout[i] }));
-  // Overflow assets get phantom layout fields so the type stays uniform —
-  // the projects board renders them via a dedicated grid that ignores
-  // x/y/rot/w.
-  const phantom: BoardAsset[] = overflow.map((a, i) => ({
-    ...a,
-    x: 0, y: 0, rot: 0, w: 0, ar: 1, z: i,
-  }));
-  return { ...meta, folder: folderEntry.folder, num, assets, overflow: phantom };
+  const assets: BoardAsset[] = folderEntry.assets.map((a, i) => ({ ...a, ...layout[i] }));
+  return { ...meta, folder: folderEntry.folder, num, assets };
 }
 
 export const PROJECTS: Project[] = PROJECT_FOLDERS

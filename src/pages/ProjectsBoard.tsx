@@ -248,7 +248,7 @@ function Board({ project, index, total, onPrev, onNext, onJumpTo, active, hydrat
                 dangerouslySetInnerHTML={{ __html: EVENTS_HTML }}
               />
               <div className="spa-pb__events-photos">
-                {project.assets.concat(project.overflow).map((a) => (
+                {project.assets.map((a) => (
                   <button
                     key={a.url}
                     className="spa-polaroid spa-polaroid--ev"
@@ -266,73 +266,52 @@ function Board({ project, index, total, onPrev, onNext, onJumpTo, active, hydrat
               </div>
             </div>
           ) : (
-            <>
-              <div className="spa-pb__scatter">
-                {project.assets.map((a) => (
-                  <button
-                    key={a.url}
-                    type="button"
-                    className="spa-polaroid"
-                    style={{
-                      left: a.x + '%',
-                      top: a.y + '%',
-                      width: a.w + '%',
-                      ['--rot' as string]: a.rot + 'deg',
-                      zIndex: a.z + 10,
-                    }}
-                    onClick={() => openLightbox(a.url)}
-                    aria-label={'View ' + a.file}
-                  >
-                    <span className="spa-polaroid__inner">
-                      {a.type === 'video' ? <Vid src={a.url} /> : <Img src={a.url} alt="" />}
-                    </span>
-                    <span className="spa-polaroid__cap">{a.file.replace(/\.[a-zA-Z0-9]+$/, '')}</span>
-                  </button>
-                ))}
-                {project.notes?.map((n, i) => (
-                  <div
-                    key={i}
-                    className={'spa-note spa-note--' + n.color + ' spa-pb__note'}
-                    style={{ left: n.x + '%', top: n.y + '%' }}
-                  >
-                    <span className="spa-note__pin" aria-hidden />
-                    {n.text}
-                  </div>
-                ))}
-              </div>
-
-              {/* Overflow grid — every other asset in the folder, in a clean
-                  scrollable grid below the scatter. Lazy <img> means bytes
-                  only flow when the user actually scrolls down. */}
-              {project.overflow.length > 0 ? (
-                <div className="spa-pb__overflow">
-                  <div className="spa-pb__overflow-hd">
-                    <span className="spa-pb__overflow-label">More from {project.title}</span>
-                    <span className="spa-pb__overflow-count">
-                      {project.assets.length + project.overflow.length} pieces total
-                    </span>
-                  </div>
-                  <div className="spa-pb__overflow-grid">
-                    {project.overflow.map((a) => (
-                      <button
-                        key={a.url}
-                        type="button"
-                        className="spa-pb__overflow-tile"
-                        onClick={() => openLightbox(a.url)}
-                        aria-label={'View ' + a.file}
-                      >
-                        <span className="spa-pb__overflow-tile-inner">
-                          {a.type === 'video' ? <Vid src={a.url} /> : <Img src={a.url} alt="" />}
-                        </span>
-                        <span className="spa-pb__overflow-tile-cap">
-                          {a.file.replace(/\.[a-zA-Z0-9]+$/, '')}
-                        </span>
-                      </button>
-                    ))}
-                  </div>
+            <div
+              className="spa-pb__scatter"
+              style={{
+                // Each asset gets ~80px of vertical real estate beyond the
+                // viewport baseline. Keeps the scatter dense enough to feel
+                // like a whiteboard while staying tall enough that the
+                // collision-avoidance algorithm can find non-overlapping
+                // slots for everything.
+                minHeight:
+                  'max(calc(100vh - 280px), ' +
+                  Math.max(640, project.assets.length * 80) +
+                  'px)',
+              }}
+            >
+              {project.assets.map((a) => (
+                <button
+                  key={a.url}
+                  type="button"
+                  className="spa-polaroid"
+                  style={{
+                    left: a.x + '%',
+                    top: a.y + '%',
+                    width: a.w + '%',
+                    ['--rot' as string]: a.rot + 'deg',
+                    zIndex: a.z + 10,
+                  }}
+                  onClick={() => openLightbox(a.url)}
+                  aria-label={'View ' + a.file}
+                >
+                  <span className="spa-polaroid__inner">
+                    {a.type === 'video' ? <Vid src={a.url} /> : <Img src={a.url} alt="" />}
+                  </span>
+                  <span className="spa-polaroid__cap">{a.file.replace(/\.[a-zA-Z0-9]+$/, '')}</span>
+                </button>
+              ))}
+              {project.notes?.map((n, i) => (
+                <div
+                  key={i}
+                  className={'spa-note spa-note--' + n.color + ' spa-pb__note'}
+                  style={{ left: n.x + '%', top: n.y + '%' }}
+                >
+                  <span className="spa-note__pin" aria-hidden />
+                  {n.text}
                 </div>
-              ) : null}
-            </>
+              ))}
+            </div>
           )}
         </>
       ) : (

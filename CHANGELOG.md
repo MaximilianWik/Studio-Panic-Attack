@@ -2,7 +2,13 @@
 
 All notable changes to Studio Panic Attack are tracked here.
 
-## [1.2.8] -- navbar: logo 2× larger (56px desktop, 44px mobile)
+## [1.2.9] -- projects: every asset goes in the scatter; overflow grid removed
+
+- `src/config/projects.ts`: drop `SCATTER_CAP` and the `Project.overflow` field. All assets per folder go through `scatter()` with bounds widened to `x: 8–88%`, `y: 3–97%` and `tries: 140` so dense folders (3D — 64 pieces, Digital Art — 21, Graphic Design — 20) still find non-overlapping slots.
+- `ProjectsBoard.tsx`: remove the `<div class="spa-pb__overflow">` block and the events-board's `concat(overflow)`. The board now contains exactly one scrollable scatter container per category.
+- `.spa-pb__scatter` gets an inline `min-height: max(calc(100vh - 280px), N*80px)` driven by the asset count — viewport-tall for small folders, several screens tall for dense ones. The "More from <category>" header + `.spa-pb__overflow-*` CSS is now unused but left in `whiteboard-pages.css` for now (harmless dead rules; can prune in a later pass).
+
+
 
 - `.spa-nav__brandmark` height: 28px → 56px (desktop), 22px → 44px (mobile).
 - Nav padding reduced from 14px → 8px (desktop) and 12px → 8px (mobile) to keep the bar compact with the larger logo.
