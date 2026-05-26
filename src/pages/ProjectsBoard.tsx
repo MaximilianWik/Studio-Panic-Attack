@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import PageShell from '../components/PageShell/PageShell';
 import { Img, Vid } from '../helpers/media';
 import FolderTile from '../components/PageShell/FolderTile';
@@ -15,8 +15,24 @@ interface ProjectsBoardProps {
 /**
  * Projects — horizontally scrolling Miro-style whiteboard. One full-viewport
  * "board" per category; scroll-snap glues the scroll position to the
- * nearest board. Per-board polaroid scatter is laid out by config/projects.ts.
+ * nearest board. Per-board polaroid scatter + overflow grid is laid out
+ * by config/projects.ts.
+ *
+ * Performance notes
+ * -----------------
+ * - 16 boards × ~10 polaroids of large originals = a lot of bytes if we
+ *   render everything up-front. We virtualise: only the active board and
+ *   its immediate neighbours mount full content. Boards further away
+ *   render a lightweight skeleton (head + count + arrows) so the snap
+ *   geometry stays correct. As soon as the user scrolls the active index
+ *   moves and the next board hydrates.
+ * - All <img> are loading="lazy" and the cover-image fill on folder tiles
+ *   is removed so the mini-grid doesn't kick off 16 fetches per board.
  */
+
+/** How many boards on each side of the active one to fully mount. */
+const HYDRATE_RADIUS = 1;
+
 export function ProjectsBoard({ initialSlug }: ProjectsBoardProps) {
   const trackRef = useRef<HTMLDivElement>(null);
   const [activeIdx, setActiveIdx] = useState(() => {
@@ -25,8 +41,7 @@ export function ProjectsBoard({ initialSlug }: ProjectsBoardProps) {
     return i >= 0 ? i : 0;
   });
 
-  // Scroll into the right board on first mount + whenever the URL slug
-  // changes via browser back/forward.
+  // Scroll into the right board on first mount.
   useEffect(() => {
     const track = trackRef.current;
     if (!track) return;
@@ -37,7 +52,7 @@ export function ProjectsBoard({ initialSlug }: ProjectsBoardProps) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  // Sync URL when active board changes (without bloating history — replaceState).
+  // Sync URL when active board changes (replaceState — don't pollute history).
   useEffect(() => {
     const slug = PROJECTS[activeIdx]?.slug;
     if (!slug) return;
@@ -47,7 +62,7 @@ export function ProjectsBoard({ initialSlug }: ProjectsBoardProps) {
     }
   }, [activeIdx]);
 
-  // Listen to scroll to update activeIdx (snap-driven).
+  // Listen to horizontal scroll → update activeIdx.
   useEffect(() => {
     const track = trackRef.current;
     if (!track) return;
@@ -137,6 +152,7 @@ export function ProjectsBoard({ initialSlug }: ProjectsBoardProps) {
             onNext={() => goTo(i + 1)}
             onJumpTo={goTo}
             active={i === activeIdx}
+            hydrated={Math.abs(i - activeIdx) <= HYDRATE_RADIUS}
           />
         ))}
       </div>
@@ -152,17 +168,13 @@ interface BoardProps {
   onNext: () => void;
   onJumpTo: (i: number) => void;
   active: boolean;
+  /** When true, render the full content (mini-grid, scatter, overflow). */
+  hydrated: boolean;
 }
 
-function Board({ project, index, total, onPrev, onNext, onJumpTo, active }: BoardProps) {
+function Board({ project, index, total, onPrev, onNext, onJumpTo, active, hydrated }: BoardProps) {
   const prev = PROJECTS[index - 1];
   const next = PROJECTS[index + 1];
-
-  const miniGrid = useMemo(() => {
-    return PROJECTS.map((p, i) => ({
-      i, p, cover: p.assets[0]?.url,
-    }));
-  }, []);
 
   return (
     <section
@@ -170,8 +182,8 @@ function Board({ project, index, total, onPrev, onNext, onJumpTo, active }: Boar
       aria-label={project.title}
       data-slug={project.slug}
     >
-      {/* Hand-drawn arrow back */}
-      {prev ? (
+      {/* Hand-drawn arrow back — only on hydrated neighbours */}
+      {prev && hydrated ? (
         <button type="button" className="spa-pb__arrow spa-pb__arrow--prev" onClick={onPrev} aria-label={'Previous: ' + prev.title}>
           <span className="spa-pb__arrow-line" aria-hidden>
             <svg viewBox="0 0 80 30" width="80" height="30">
@@ -182,7 +194,7 @@ function Board({ project, index, total, onPrev, onNext, onJumpTo, active }: Boar
           <span className="spa-pb__arrow-label">{prev.title}</span>
         </button>
       ) : null}
-      {next ? (
+      {next && hydrated ? (
         <button type="button" className="spa-pb__arrow spa-pb__arrow--next" onClick={onNext} aria-label={'Next: ' + next.title}>
           <span className="spa-pb__arrow-label">{next.title}</span>
           <span className="spa-pb__arrow-line" aria-hidden>
@@ -202,93 +214,135 @@ function Board({ project, index, total, onPrev, onNext, onJumpTo, active }: Boar
         </p>
       </header>
 
-      {/* Mini-grid of all 16 categories — folder tiles, click to jump */}
-      <div className="spa-pb__mini" aria-label="All projects">
-        {miniGrid.map(({ i, p, cover }) => (
-          <button
-            type="button"
-            key={p.slug}
-            className="spa-pb__mini-btn"
-            onClick={() => onJumpTo(i)}
-            aria-label={'Open ' + p.title}
-          >
-            <FolderTile
-              num={String(p.num).padStart(2, '0')}
-              title={p.title}
-              cover={cover}
-              active={p.slug === project.slug}
-            />
-          </button>
-        ))}
-      </div>
-
-      {/* Decorative stickers — same kind across the board */}
-      <Sticker kind={project.sticker} className="spa-pb__sticker spa-pb__sticker--a" rot={-12} size={110} />
-      <Sticker kind={project.sticker === 'folder' ? 'paperclip' : 'folder'} className="spa-pb__sticker spa-pb__sticker--b" rot={18} size={90} />
-
-      {/* Content surface — events get the docx HTML, normal boards get scatter */}
-      {project.kind === 'events' ? (
-        <div className="spa-pb__events">
-          <article
-            className="spa-pb__events-doc"
-            // eslint-disable-next-line react/no-danger
-            dangerouslySetInnerHTML={{ __html: EVENTS_HTML }}
-          />
-          <div className="spa-pb__events-photos">
-            {project.assets.map((a) => (
+      {hydrated ? (
+        <>
+          {/* Mini-grid of all 16 categories — folder tiles, click to jump.
+              Cover thumbnails removed for perf; tiles are pure SVG. */}
+          <div className="spa-pb__mini" aria-label="All projects">
+            {PROJECTS.map((p, i) => (
               <button
-                key={a.url}
-                className="spa-polaroid spa-polaroid--ev"
-                style={{ ['--rot' as string]: a.rot + 'deg' }}
-                onClick={() => a.type === 'image' && openLightbox(a.url)}
                 type="button"
-                aria-label={'View ' + a.file}
+                key={p.slug}
+                className="spa-pb__mini-btn"
+                onClick={() => onJumpTo(i)}
+                aria-label={'Open ' + p.title}
               >
-                <span className="spa-polaroid__inner">
-                  {a.type === 'video' ? <Vid src={a.url} /> : <Img src={a.url} alt="" />}
-                </span>
-                <span className="spa-polaroid__cap">{a.file.replace(/\.[a-zA-Z0-9]+$/, '')}</span>
+                <FolderTile
+                  num={String(p.num).padStart(2, '0')}
+                  title={p.title}
+                  active={p.slug === project.slug}
+                />
               </button>
             ))}
           </div>
-        </div>
-      ) : (
-        <div className="spa-pb__scatter">
-          {project.assets.map((a) => (
-            <button
-              key={a.url}
-              type="button"
-              className="spa-polaroid"
-              style={{
-                left: a.x + '%',
-                top: a.y + '%',
-                width: a.w + '%',
-                ['--rot' as string]: a.rot + 'deg',
-                zIndex: a.z + 10,
-              }}
-              onClick={() => a.type === 'image' && openLightbox(a.url)}
-              aria-label={'View ' + a.file}
-            >
-              <span className="spa-polaroid__inner">
-                {a.type === 'video' ? <Vid src={a.url} /> : <Img src={a.url} alt="" />}
-              </span>
-              <span className="spa-polaroid__cap">{a.file.replace(/\.[a-zA-Z0-9]+$/, '')}</span>
-            </button>
-          ))}
-          {project.notes?.map((n, i) => (
-            <div
-              key={i}
-              className={'spa-note spa-note--' + n.color + ' spa-pb__note'}
-              style={{ left: n.x + '%', top: n.y + '%' }}
-            >
-              <span className="spa-note__pin" aria-hidden />
-              {n.text}
+
+          {/* Decorative stickers */}
+          <Sticker kind={project.sticker} className="spa-pb__sticker spa-pb__sticker--a" rot={-12} size={110} />
+          <Sticker kind={project.sticker === 'folder' ? 'paperclip' : 'folder'} className="spa-pb__sticker spa-pb__sticker--b" rot={18} size={90} />
+
+          {project.kind === 'events' ? (
+            <div className="spa-pb__events">
+              <article
+                className="spa-pb__events-doc"
+                // eslint-disable-next-line react/no-danger
+                dangerouslySetInnerHTML={{ __html: EVENTS_HTML }}
+              />
+              <div className="spa-pb__events-photos">
+                {project.assets.concat(project.overflow).map((a) => (
+                  <button
+                    key={a.url}
+                    className="spa-polaroid spa-polaroid--ev"
+                    style={{ ['--rot' as string]: a.rot + 'deg' }}
+                    onClick={() => a.type === 'image' && openLightbox(a.url)}
+                    type="button"
+                    aria-label={'View ' + a.file}
+                  >
+                    <span className="spa-polaroid__inner">
+                      {a.type === 'video' ? <Vid src={a.url} /> : <Img src={a.url} alt="" />}
+                    </span>
+                    <span className="spa-polaroid__cap">{a.file.replace(/\.[a-zA-Z0-9]+$/, '')}</span>
+                  </button>
+                ))}
+              </div>
             </div>
-          ))}
+          ) : (
+            <>
+              <div className="spa-pb__scatter">
+                {project.assets.map((a) => (
+                  <button
+                    key={a.url}
+                    type="button"
+                    className="spa-polaroid"
+                    style={{
+                      left: a.x + '%',
+                      top: a.y + '%',
+                      width: a.w + '%',
+                      ['--rot' as string]: a.rot + 'deg',
+                      zIndex: a.z + 10,
+                    }}
+                    onClick={() => a.type === 'image' && openLightbox(a.url)}
+                    aria-label={'View ' + a.file}
+                  >
+                    <span className="spa-polaroid__inner">
+                      {a.type === 'video' ? <Vid src={a.url} /> : <Img src={a.url} alt="" />}
+                    </span>
+                    <span className="spa-polaroid__cap">{a.file.replace(/\.[a-zA-Z0-9]+$/, '')}</span>
+                  </button>
+                ))}
+                {project.notes?.map((n, i) => (
+                  <div
+                    key={i}
+                    className={'spa-note spa-note--' + n.color + ' spa-pb__note'}
+                    style={{ left: n.x + '%', top: n.y + '%' }}
+                  >
+                    <span className="spa-note__pin" aria-hidden />
+                    {n.text}
+                  </div>
+                ))}
+              </div>
+
+              {/* Overflow grid — every other asset in the folder, in a clean
+                  scrollable grid below the scatter. Lazy <img> means bytes
+                  only flow when the user actually scrolls down. */}
+              {project.overflow.length > 0 ? (
+                <div className="spa-pb__overflow">
+                  <div className="spa-pb__overflow-hd">
+                    <span className="spa-pb__overflow-label">More from {project.title}</span>
+                    <span className="spa-pb__overflow-count">
+                      {project.assets.length + project.overflow.length} pieces total
+                    </span>
+                  </div>
+                  <div className="spa-pb__overflow-grid">
+                    {project.overflow.map((a) => (
+                      <button
+                        key={a.url}
+                        type="button"
+                        className="spa-pb__overflow-tile"
+                        onClick={() => a.type === 'image' && openLightbox(a.url)}
+                        aria-label={'View ' + a.file}
+                      >
+                        <span className="spa-pb__overflow-tile-inner">
+                          {a.type === 'video' ? <Vid src={a.url} /> : <Img src={a.url} alt="" />}
+                        </span>
+                        <span className="spa-pb__overflow-tile-cap">
+                          {a.file.replace(/\.[a-zA-Z0-9]+$/, '')}
+                        </span>
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              ) : null}
+            </>
+          )}
+        </>
+      ) : (
+        // Skeleton — preserves snap geometry without rendering any images.
+        <div className="spa-pb__skeleton" aria-hidden>
+          <div className="spa-pb__skeleton-hint">{project.title}</div>
         </div>
       )}
 
-      {/* Index counter */}
+      {/* Index counter — only the active board's instance is visible (CSS) */}
       <div className="spa-pb__count" aria-hidden>
         {String(index + 1).padStart(2, '0')} / {String(total).padStart(2, '0')}
       </div>

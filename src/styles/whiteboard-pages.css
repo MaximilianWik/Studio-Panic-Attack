@@ -45,6 +45,22 @@ html[data-spa-page] body {
   overflow: auto;
 }
 
+/* Hide native broken-image icon for any <Img> that failed; instead show a
+   neutral grey block with a tiny "missing" hint so the page doesn't get
+   peppered with the OS broken-image glyph. */
+img[data-failed="1"] {
+  position: relative;
+  background: repeating-linear-gradient(
+    -45deg,
+    rgba(0, 0, 0, 0.04),
+    rgba(0, 0, 0, 0.04) 6px,
+    rgba(0, 0, 0, 0.08) 6px,
+    rgba(0, 0, 0, 0.08) 12px
+  );
+  color: transparent;
+  font-size: 0;
+}
+
 /* ── Polaroid frame primitive — used on Highlights + Projects ─────── */
 .spa-polaroid {
   position: absolute;
@@ -1005,6 +1021,102 @@ html[data-spa-page] body {
 }
 /* Only the active board renders its fixed count to avoid 16 stacked pills */
 .spa-pb__board:not(.is-active) .spa-pb__count { display: none; }
+
+/* ── Overflow grid — everything beyond the scatter cap ────────────── */
+.spa-pb__overflow {
+  position: relative;
+  z-index: 3;
+  margin: 60px 0 40px;
+  padding-top: 32px;
+  border-top: 1px dashed rgba(0, 0, 0, 0.18);
+}
+.spa-pb__overflow-hd {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 24px;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: rgba(10, 10, 10, 0.55);
+}
+.spa-pb__overflow-label {
+  color: #0a0a0a;
+}
+.spa-pb__overflow-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+  gap: 18px clamp(14px, 1.6vw, 22px);
+}
+.spa-pb__overflow-tile {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  background: #ffffff;
+  border: 1px solid rgba(0, 0, 0, 0.08);
+  padding: 6px 6px 22px;
+  cursor: none;
+  font-family: var(--font-mono);
+  box-shadow:
+    0 1px 0 rgba(0, 0, 0, 0.04),
+    0 6px 12px -4px rgba(0, 0, 0, 0.14);
+  transition: transform 0.2s cubic-bezier(0.2, 0.8, 0.2, 1), box-shadow 0.2s;
+}
+.spa-pb__overflow-tile:hover {
+  transform: translateY(-3px);
+  box-shadow:
+    0 2px 0 rgba(0, 0, 0, 0.05),
+    0 14px 22px -6px rgba(0, 0, 0, 0.2);
+}
+.spa-pb__overflow-tile-inner {
+  display: block;
+  width: 100%;
+  aspect-ratio: 4 / 3;
+  background: #1a1a1a;
+  overflow: hidden;
+}
+.spa-pb__overflow-tile-inner img,
+.spa-pb__overflow-tile-inner video {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+.spa-pb__overflow-tile-cap {
+  display: block;
+  margin-top: 6px;
+  padding: 0 4px;
+  font-size: 9px;
+  letter-spacing: 0.16em;
+  color: rgba(10, 10, 10, 0.55);
+  text-transform: uppercase;
+  text-align: center;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* ── Skeleton (un-hydrated boards) ─────────────────────────────────── */
+.spa-pb__skeleton {
+  position: relative;
+  z-index: 3;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: calc(100vh - 280px);
+  margin-top: 32px;
+  border: 1px dashed rgba(0, 0, 0, 0.12);
+  border-radius: 12px;
+}
+.spa-pb__skeleton-hint {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: 0.32em;
+  text-transform: uppercase;
+  color: rgba(10, 10, 10, 0.32);
+}
 
 /* Events board layout — long-form text + photos. The board itself scrolls
    (we stripped overflow:hidden above), so the inner doc is no longer its

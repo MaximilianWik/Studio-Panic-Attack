@@ -26,7 +26,7 @@ interface ImgProps extends React.ImgHTMLAttributes<HTMLImageElement> {
   eager?: boolean;
 }
 
-export function Img({ src, alt = '', eager, ...rest }: ImgProps) {
+export function Img({ src, alt = '', eager, onError, ...rest }: ImgProps) {
   return (
     <img
       src={src}
@@ -34,6 +34,16 @@ export function Img({ src, alt = '', eager, ...rest }: ImgProps) {
       loading={eager ? 'eager' : 'lazy'}
       decoding="async"
       draggable={false}
+      onError={(e) => {
+        // Mark the element so CSS can hide the broken-image icon, and log
+        // the URL once so we can chase it down. Production code keeps the
+        // log behind a flag — for now leave it on; it's tiny.
+        const img = e.currentTarget;
+        img.dataset.failed = '1';
+        // eslint-disable-next-line no-console
+        console.warn('[Img] failed:', src);
+        if (onError) onError(e);
+      }}
       {...rest}
     />
   );

@@ -2,12 +2,28 @@
 
 All notable changes to Studio Panic Attack are tracked here.
 
-## [1.2.1] -- whiteboard pages: fix broken images + scrollable boards
+## [1.2.2] -- projects: show every asset + virtualised boards + perf pass
+
+- **Every project asset is now reachable.** Drop `slice(0, 12)` cap in `src/config/projects.ts`. The first 8 assets per project still get the seeded scatter (visual chaos at the top); everything beyond is rendered in a clean `auto-fill minmax(180px, 1fr)` overflow grid below the scatter, with a "More from <category>" header showing the total count. Scrolling the board reveals the rest -- 3D's full 64 pieces, Digital Art's 21, etc. all show up.
+- **Board virtualisation.** Only the active board and its immediate neighbours (radius = 1) mount full content (mini-grid, scatter, overflow grid, stickers, arrows). Boards further away render a lightweight skeleton -- preserves the horizontal scroll-snap geometry without paying the DOM/image cost. As the user scrolls horizontally, neighbours hydrate just-in-time. Eliminates the up-front cost of mounting ~16 × N polaroids and 16 × 16 folder thumbnails.
+- **Folder mini-grid: cover thumbnails removed.** `FolderTile` no longer accepts a `cover` prop. The previous `<image href={cover}>` inside an SVG `<pattern>` was kicking off 16 large image fetches for every board (and we render 16 boards), so 256 large fetches per page load. Mini-grid tiles are now pure SVG -- folder lid + tab number + label, opens on hover via CSS transforms. Visually as charming, ~zero network cost.
+- **Broken-image icon suppression.** `<Img>` now sets `data-failed="1"` on the element when its onError fires (and logs the URL once); CSS replaces the broken-image glyph with a neutral diagonal-stripe pattern so any one missing file doesn't pepper the page with OS glyphs. Doesn't fix the underlying 404, but stops the visual breakage.
+
+
 
 - **`<Img>` no longer wraps in `<picture>`**: the `<source srcSet="*.webp">` was being selected by all webp-supporting browsers (i.e. all of them), and when the .webp 404s the browser shows the broken-image icon — `<picture>` does NOT fall back to the `<img>` child on a 404 source. Reverted to a plain `<img>`. Once `npm run optimize` has actually produced sibling .webp files we can reintroduce `<picture>` gated by a manifest of optimised URLs.
 - Same gotcha applied to `<Vid>`: the auto-derived `.webm` `<source>` is now only emitted when explicitly passed via the `webm` prop.
 - **Projects boards now scroll vertically**: `.spa-pb__board` switched from `overflow: hidden` to `overflow-y: auto`. Each board is its own scroll container; the horizontal snap track still moves between boards.
 - Events board: dropped the inner `.spa-pb__events-doc { overflow-y: auto }` scroller — now the whole board scrolls so all the long-form event copy is reachable.
+- Scatter boards: `.spa-pb__scatter` switched from absolute `inset` to relative + `min-height: calc(100vh - 280px)` so the polaroid scatter has somewhere to scroll into when there are more than a screenful of items.
+- `.spa-pb__count` repositioned to `position: fixed` (bottom-right pill, glass-blur) and gated to the active board so 16 stacked pills don't overlap. `.spa-pb__arrow` got a glass-blur background so it stays legible against scattered photos and a clamp-based top so it never sits behind the head when scrolled.
+
+## [1.2.1] -- whiteboard pages: fix broken images + scrollable boards
+
+- **`<Img>` no longer wraps in `<picture>`**: the `<source srcSet="*.webp">` was being selected by all webp-supporting browsers (i.e. all of them), and when the .webp 404s the browser shows the broken-image icon - `<picture>` does NOT fall back to the `<img>` child on a 404 source. Reverted to a plain `<img>`. Once `npm run optimize` has actually produced sibling .webp files we can reintroduce `<picture>` gated by a manifest of optimised URLs.
+- Same gotcha applied to `<Vid>`: the auto-derived `.webm` `<source>` is now only emitted when explicitly passed via the `webm` prop.
+- **Projects boards now scroll vertically**: `.spa-pb__board` switched from `overflow: hidden` to `overflow-y: auto`. Each board is its own scroll container; the horizontal snap track still moves between boards.
+- Events board: dropped the inner `.spa-pb__events-doc { overflow-y: auto }` scroller - now the whole board scrolls so all the long-form event copy is reachable.
 - Scatter boards: `.spa-pb__scatter` switched from absolute `inset` to relative + `min-height: calc(100vh - 280px)` so the polaroid scatter has somewhere to scroll into when there are more than a screenful of items.
 - `.spa-pb__count` repositioned to `position: fixed` (bottom-right pill, glass-blur) and gated to the active board so 16 stacked pills don't overlap. `.spa-pb__arrow` got a glass-blur background so it stays legible against scattered photos and a clamp-based top so it never sits behind the head when scrolled.
 
