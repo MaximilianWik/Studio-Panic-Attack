@@ -476,6 +476,16 @@ video {
 .spa-nav__brand { display: inline-flex; align-items: center; gap: 10px; pointer-events: auto; }
 .spa-nav__logo { width: 20px; height: 20px; }
 .spa-nav__name { font-family: var(--font-display); font-style: italic; font-size: 16px; letter-spacing: -0.01em; text-transform: none; color: var(--paper); }
+/* Logo wordmark replaces the text brand */
+.spa-nav__brandmark {
+  height: 28px;
+  width: auto;
+  display: block;
+  /* Dark backgrounds: invert the black logo to white */
+  filter: invert(1) brightness(10);
+  transition: opacity 0.2s;
+}
+.spa-nav__brand:hover .spa-nav__brandmark { opacity: 0.75; }
 .spa-nav__list { display: flex; justify-content: center; gap: 4px; list-style: none; pointer-events: auto; }
 .spa-nav__item { position: relative; padding: 8px 12px; cursor: none; transition: color 0.2s; }
 .spa-nav__item::before { content: attr(data-num); font-size: 8px; letter-spacing: 0.2em; color: var(--blood); margin-right: 4px; opacity: 0.6; }
@@ -815,6 +825,7 @@ video {
   .spa-nav__cta { display: none; }
   .spa-nav__name { font-size: 14px; }
   .spa-nav__logo { width: 18px; height: 18px; }
+  .spa-nav__brandmark { height: 22px; }
 }
 
 .spa-nav__overlay {
@@ -1411,6 +1422,9 @@ video {
 }
 [data-spa-theme="whiteboard"] .spa-nav__name {
   color: #0a0a0a;
+}
+[data-spa-theme="whiteboard"] .spa-nav__brandmark {
+  filter: none;
 }
 
 /* Nav link number prefixes (small "01" "02"…) */

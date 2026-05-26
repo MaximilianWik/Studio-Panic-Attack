@@ -62,8 +62,12 @@ export function NavHeader() {
     <>
       <nav className="spa-nav" aria-label="Primary">
         <a href="/" className="spa-nav__brand">
-          <img className="spa-nav__logo" src="/logo/PanicAttackLogo.png" alt="" decoding="async" />
-          <span className="spa-nav__name">Ema Stoyanova</span>
+          <img
+            className="spa-nav__brandmark"
+            src="/logo/PanicAttackLogoBlack.png"
+            alt="Studio Panic Attack"
+            decoding="async"
+          />
         </a>
         <ul className="spa-nav__list">
           {LINKS.map((l) => (

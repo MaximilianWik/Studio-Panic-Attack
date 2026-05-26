@@ -2,6 +2,20 @@
 
 All notable changes to Studio Panic Attack are tracked here.
 
+## [1.2.7] -- navbar: replace "Ema Stoyanova" text with PanicAttackLogoBlack.png
+
+- `NavHeader` brand section: removed the small `PanicAttackLogo.png` icon + `<span>Ema Stoyanova</span>` text. Replaced with `<img class="spa-nav__brandmark" src="/logo/PanicAttackLogoBlack.png">`.
+- Dark theme (default): `filter: invert(1) brightness(10)` turns the black logo white. Whiteboard/light theme: `filter: none` so the black logo shows naturally against the light background.
+- Mobile: `height: 22px` (desktop: `28px`).
+
+## [1.2.6] -- video thumbnails captured client-side from the first frame
+
+- **`useVideoThumbnail` hook.** When a `<Vid>` enters viewport, a hidden `<video>` element loads metadata, seeks to ~10% of duration (or 0.5s, whichever is smaller — avoids the black opening frames), draws the frame to a canvas, and reads it back as a JPEG data-URL. The data-URL is set as the visible `<video poster>` and (for MOV where autoplay is disabled) painted as an overlay `<img>` on top of the inert video so the polaroid shows a real preview.
+- **Bandwidth gated by IntersectionObserver.** Thumbnail capture only fires when the wrapper is within 300 px of the viewport — boards offscreen never request anything. Each capture runs on its own throwaway `<video>` element with an 8s safety timeout so a stuck decode doesn't hang the page.
+- **Fallback flow:** if the codec can't be decoded (HEVC MOV in Chrome/Windows, etc.), the seek/error/timeout paths all set `tried=true` and the placeholder reads "click to play" instead of the loading spinner.
+- **Play indicator.** When a captured thumbnail is shown for a MOV polaroid, a small dark circle with a white play triangle appears in the bottom-right corner so the user knows the tile is interactive.
+- Same-origin assets in `/public` decode cleanly without `crossOrigin` since the canvas isn't tainted; tainted-canvas exceptions are still caught and treated as "no thumb".
+
 ## [1.2.5] -- MOV files: click-to-play in lightbox + film placeholder
 
 - **MOV files restored to manifest.** Re-added `.mov` to `VID_EXT` so all 8 Projection Mapping clips show up again — but as click-to-play tiles, not autoplay previews.

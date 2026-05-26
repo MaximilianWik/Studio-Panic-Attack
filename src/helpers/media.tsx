@@ -60,46 +60,156 @@ function derivePoster(src: string): string {
   return src.replace(/\.[a-zA-Z0-9]+(?=\?|#|$)/, '.poster.jpg');
 }
 
-export function Vid({ src, poster, webm, className, style, ...rest }: VidProps) {
-  const ref = useRef<HTMLVideoElement>(null);
-  const [visible, setVisible] = useState(false);
-  const [hasData, setHasData] = useState(false);
-  const posterUrl = poster ?? derivePoster(src);
-
-  // .mov files (QuickTime/HEVC) usually can't auto-decode in Chrome on
-  // Windows. Skip the IO observer + autoplay + metadata preload for them so
-  // we don't burn bandwidth on a video we can't preview. The user can still
-  // click the polaroid to try to play it in the Lightbox with full controls.
-  const isMov = /\.mov(\?|#|$)/i.test(src);
+/**
+ * Pull a single frame out of a video as a jpeg data-URL.
+ *
+ * Strategy: load a hidden <video> at preload="metadata", seek to the early
+ * portion (avoid black opening frames), draw the frame to a canvas, read it
+ * back as a data-URL. Only kicks off when `enabled` is true so we can gate
+ * the network cost behind an IntersectionObserver.
+ *
+ * Bails out gracefully when:
+ * - the codec can't be decoded (HEVC MOV in Chrome/Windows)
+ * - the canvas is tainted (cross-origin without CORS)
+ * - the video doesn't reach the seeked state within 8 seconds
+ *
+ * Same-origin assets in /public are decoded without CORS issues; the
+ * canvas isn't tainted so toDataURL works.
+ */
+function useVideoThumbnail(src: string, enabled: boolean): { thumb: string | null; tried: boolean } {
+  const [thumb, setThumb] = useState<string | null>(null);
+  const [tried, setTried] = useState(false);
 
   useEffect(() => {
-    if (isMov) return;
-    const el = ref.current;
+    if (!enabled) return;
+    if (thumb) return;
+    let cancelled = false;
+    let cleanedUp = false;
+    const video = document.createElement('video');
+    video.muted = true;
+    video.preload = 'metadata';
+    video.playsInline = true;
+
+    const cleanup = () => {
+      if (cleanedUp) return;
+      cleanedUp = true;
+      try {
+        video.removeAttribute('src');
+        video.load();
+      } catch { /* ignore */ }
+    };
+
+    const captureFrame = () => {
+      if (cancelled || cleanedUp) return;
+      try {
+        const w = video.videoWidth;
+        const h = video.videoHeight;
+        if (!w || !h) { cleanup(); setTried(true); return; }
+        const scale = Math.min(1, 480 / Math.max(w, h));
+        const canvas = document.createElement('canvas');
+        canvas.width = Math.round(w * scale);
+        canvas.height = Math.round(h * scale);
+        const ctx = canvas.getContext('2d');
+        if (!ctx) { cleanup(); setTried(true); return; }
+        ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+        const dataUrl = canvas.toDataURL('image/jpeg', 0.7);
+        setThumb(dataUrl);
+      } catch {
+        // codec / tainted canvas
+      }
+      setTried(true);
+      cleanup();
+    };
+
+    video.addEventListener('loadedmetadata', () => {
+      if (cancelled || cleanedUp) return;
+      const target = Math.min(0.5, (video.duration || 0) * 0.1);
+      try {
+        video.currentTime = Number.isFinite(target) ? target : 0;
+      } catch {
+        captureFrame();
+      }
+    });
+    video.addEventListener('seeked', captureFrame);
+    video.addEventListener('error', () => {
+      if (!cancelled) setTried(true);
+      cleanup();
+    });
+
+    const timeoutId = window.setTimeout(() => {
+      if (!cancelled) setTried(true);
+      cleanup();
+    }, 8000);
+
+    video.src = src;
+
+    return () => {
+      cancelled = true;
+      window.clearTimeout(timeoutId);
+      cleanup();
+    };
+    // We deliberately want this to run when src/enabled change, but
+    // not when `thumb` updates (we'd loop). Lint exhaustive-deps is
+    // ok with that since `thumb` is read but not in deps array.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [src, enabled]);
+
+  return { thumb, tried };
+}
+
+export function Vid({ src, poster, webm, className, style, ...rest }: VidProps) {
+  const ref = useRef<HTMLVideoElement>(null);
+  const wrapRef = useRef<HTMLDivElement>(null);
+  const [visible, setVisible] = useState(false);
+  const [hasData, setHasData] = useState(false);
+
+  // .mov files (QuickTime/HEVC) usually can't auto-decode in Chrome on
+  // Windows. Skip autoplay + metadata preload for the visible video, but
+  // still attempt thumbnail capture so the polaroid shows a real frame
+  // when possible. The user clicks the polaroid to open the Lightbox
+  // with a real <video controls> element.
+  const isMov = /\.mov(\?|#|$)/i.test(src);
+
+  // IntersectionObserver: on the wrapper so we can fire it for MOV too
+  // (without having to give the inert <video> an IO observer).
+  useEffect(() => {
+    const el = wrapRef.current;
     if (!el) return;
     const io = new IntersectionObserver(
       (entries) => {
         for (const e of entries) setVisible(e.isIntersecting);
       },
-      { rootMargin: '200px 0px', threshold: 0.05 },
+      { rootMargin: '300px 0px', threshold: 0.05 },
     );
     io.observe(el);
     return () => io.disconnect();
-  }, [isMov]);
+  }, []);
 
+  // Capture thumbnail when the wrapper enters viewport.
+  const { thumb, tried } = useVideoThumbnail(src, visible);
+
+  // Autoplay only for non-MOV when visible.
   useEffect(() => {
     if (isMov) return;
     const v = ref.current;
     if (!v) return;
-    if (visible) {
-      void v.play().catch(() => {});
-    } else {
-      v.pause();
-    }
+    if (visible) void v.play().catch(() => {});
+    else v.pause();
   }, [visible, isMov]);
 
+  // The visible video gets the captured thumbnail as its poster (if we
+  // got one), falling back to the .poster.jpg sibling if none. Once the
+  // video itself has data, the browser swaps the poster out automatically.
+  const posterUrl = thumb ?? poster ?? derivePoster(src);
+
+  // Show placeholder if neither the video nor the thumbnail has produced
+  // visible content. For MOV we trust the thumbnail or fall back to the
+  // film-strip placeholder.
+  const showPlaceholder = !hasData && !thumb;
+
   return (
-    <div className={'spa-vid-wrap' + (className ? ' ' + className : '')} style={style}>
-      {!hasData && (
+    <div ref={wrapRef} className={'spa-vid-wrap' + (className ? ' ' + className : '')} style={style}>
+      {showPlaceholder && (
         <div className="spa-vid-wrap__placeholder" aria-hidden>
           <svg viewBox="0 0 48 48" width="28" height="28" fill="none" stroke="currentColor" strokeWidth="1.5">
             <rect x="4" y="10" width="40" height="28" rx="2" />
@@ -109,8 +219,20 @@ export function Vid({ src, poster, webm, className, style, ...rest }: VidProps) 
             <rect x="38" y="31" width="6" height="7" />
             <polygon points="20,17 20,31 34,24" fill="currentColor" stroke="none" />
           </svg>
-          <span>{isMov ? 'click to play' : 'video'}</span>
+          <span>{isMov ? (tried ? 'click to play' : 'loading…') : 'video'}</span>
         </div>
+      )}
+      {/* When we have a thumbnail and the video isn't auto-playing
+          (MOV case), render the thumb as an <img> overlay — much faster
+          than waiting for the <video> to render its poster. */}
+      {thumb && isMov && (
+        <img
+          className="spa-vid-wrap__thumb"
+          src={thumb}
+          alt=""
+          aria-hidden
+          decoding="async"
+        />
       )}
       <video
         ref={ref}
