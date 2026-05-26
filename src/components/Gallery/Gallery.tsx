@@ -77,6 +77,12 @@ export function Gallery() {
   const camTarget = useRef({ x: 0, y: 0 });
   const camCurrent = useRef({ x: 0, y: 0 });
 
+  // Only mount ContactShadows when the gallery section is actually
+  // near the viewport. Prevents shadow-map rendering (and pixelated
+  // artifacts on mobile) when viewing distant sections.
+  const [shadowsActive, setShadowsActive] = useState(false);
+  const prevNear = useRef(false);
+
   // Drag hint — shows until the user first drags or 6 s elapse.
   const [dragHinted, setDragHinted] = useState(false);
   useEffect(() => {
@@ -272,6 +278,15 @@ export function Gallery() {
     if (!groupRef.current) return;
     const v = visibility();
     groupRef.current.visible = v > 0.02;
+
+    // Gate ContactShadows mount on proximity (avoids shadow-map
+    // rendering when gallery is off-screen).
+    const near = v > 0.05;
+    if (near !== prevNear.current) {
+      prevNear.current = near;
+      setShadowsActive(near);
+    }
+
     if (v < 0.02) return;
 
     // Apply pending drag delta. Only 35 % of the accumulated value
@@ -361,7 +376,7 @@ export function Gallery() {
           Placed OUTSIDE stageRef so pointer-driven tilt/pan doesn't
           move the shadow plane. Positioned in groupRef space at
           y=-1.3 (stageRef y=-0.5 plus 0.8 units below its floor). */}
-      {wb && (
+      {wb && shadowsActive && (
         <>
           <ContactShadows
             position={[0, -1.3, -2]}
