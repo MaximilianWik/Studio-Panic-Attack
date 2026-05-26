@@ -2,6 +2,11 @@
 
 All notable changes to Studio Panic Attack are tracked here.
 
+## [1.2.12] -- homepage grid: larger cells (NUM_COLS 11→6, NUM_ROWS 28→14)
+
+- Halved column count and row count so each cell is ~2× bigger in each dimension.
+- `MAX_COLS` reduced from 38 → 22 to match the sparser grid.
+
 ## [1.2.11] -- homepage grid: square cells at bottom (ROW_EXPO 0.68 → 1.60)
 
 - `ROW_EXPO` raised from `0.68` to `1.60`. Values below 1 compress rows toward the bottom (derivative < 1 near t=1), making grid cells flat wide rectangles. Values above 1 spread rows further apart near the viewer so the cell aspect ratio is approximately 1:1 on a 16:9 screen.

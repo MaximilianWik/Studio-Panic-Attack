@@ -23,9 +23,9 @@ import { useEffect, useRef } from 'react';
 
 const VP_Y_FRAC  = 0.18;  // vanishing point as fraction of screen height
 const SCROLL_RPS = 0.55;  // rows that scroll past per second
-const NUM_ROWS   = 28;    // horizontal lines visible at once (raised to fill the wider spacing)
-const NUM_COLS   = 11;    // base columns each side (determines cell spacing)
-const MAX_COLS   = 38;    // hard cap — near-horizon rows get more columns dynamically
+const NUM_ROWS   = 14;    // horizontal lines visible at once
+const NUM_COLS   = 6;     // base columns each side (determines cell spacing)
+const MAX_COLS   = 22;    // hard cap — near-horizon rows get more columns dynamically
 const ROW_EXPO   = 1.60;  // perspective curvature: >1 = rows spread near bottom (square cells)
 
 // ── Colours ─────────────────────────────────────────────────────────────────
