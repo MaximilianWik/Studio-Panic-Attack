@@ -313,23 +313,31 @@ function Board({ project, index, total, onPrev, onNext, onJumpTo, active, hydrat
       {hydrated ? (
         <>
           {/* Mini-grid of all 16 categories — folder tiles, click to jump.
-              Cover thumbnails removed for perf; tiles are pure SVG. */}
+              Cover thumbnails mount inside FolderTile only on hover/active
+              so the 16-tile grid stays free at idle. */}
           <div className="spa-pb__mini" aria-label="All projects">
-            {PROJECTS.map((p, i) => (
-              <button
-                type="button"
-                key={p.slug}
-                className="spa-pb__mini-btn"
-                onClick={() => onJumpTo(i)}
-                aria-label={'Open ' + p.title}
-              >
-                <FolderTile
-                  num={String(p.num).padStart(2, '0')}
-                  title={p.title}
-                  active={p.slug === project.slug}
-                />
-              </button>
-            ))}
+            {PROJECTS.map((p, i) => {
+              const cover = p.assets.find((a) => a.type === 'image');
+              const coverUrl =
+                cover?.webpSrcset?.split(',')[0]?.trim().split(' ')[0] ||
+                cover?.url;
+              return (
+                <button
+                  type="button"
+                  key={p.slug}
+                  className="spa-pb__mini-btn"
+                  onClick={() => onJumpTo(i)}
+                  aria-label={'Open ' + p.title}
+                >
+                  <FolderTile
+                    num={String(p.num).padStart(2, '0')}
+                    title={p.title}
+                    active={p.slug === project.slug}
+                    coverUrl={coverUrl}
+                  />
+                </button>
+              );
+            })}
           </div>
 
           {/* Decorative stickers */}

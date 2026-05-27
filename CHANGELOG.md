@@ -2,6 +2,11 @@
 
 All notable changes to Studio Panic Attack are tracked here.
 
+## [1.2.20] -- folder tiles: thumbnail of project's first image on hover/active
+
+- `src/components/PageShell/FolderTile.tsx`: new optional `coverUrl` prop. On hover or when the tile represents the active board, an SVG `<image>` with `preserveAspectRatio="xMidYMid slice"` mounts inside the `pageA` group so the thumbnail inherits the existing pop-out / rotate animation. Mounted only while `active || hovered` so the 16-tile grid still costs zero image bytes at idle (matches the original "removed for perf" intent — covers fetch on demand, max one in flight at a time).
+- `src/pages/ProjectsBoard.tsx`: pick the first `image` asset of each project and hand its smallest WebP variant (480w from `webpSrcset`, falling back to `url`) to `FolderTile`.
+
 ## [1.2.19] -- mobile: stop projects-board overlap, fix events polaroid stretch
 
 - `src/styles/whiteboard-pages.css`: on `max-width: 900px` hide `.spa-pb__mini` (folder grid, 4×4 absolute top-right) and `.spa-pb__arrow` (prev/next floating pills at ~50vh). Both were overlapping the head title, project metadata, and body paragraphs on phone-width viewports — the top breadcrumb pill is already a complete 1–16 navigation so the duplicates were doing nothing but obstructing text. Removed the now-dead `.spa-pb__mini` / `.spa-folder-tile` mobile sizing overrides.
