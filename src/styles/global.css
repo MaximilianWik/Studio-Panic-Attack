@@ -3,6 +3,23 @@
    All CSS lives here. NEVER inside an R3F <Canvas> subtree.
    ============================================================ */
 
+/* ── Custom fonts ──────────────────────────────────────────────────── */
+@font-face {
+  font-family: "Alagard";
+  src: url("/font/alagard.ttf") format("truetype");
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "Quiet-Attempt";
+  src: url("/font/Quiet-Attempt.otf") format("opentype");
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
 :root {
   --ink: #0a0a0a;
   --paper: #f6f3ee;
@@ -586,11 +603,11 @@ video {
 }
 
 .spa-cat-elegant__number {
-  font-family: var(--font-display);
-  font-style: italic;
+  font-family: "Alagard", monospace;
+  font-style: normal;
   font-size: clamp(240px, 36vw, 560px);
   line-height: 0.7;
-  letter-spacing: -0.07em;
+  letter-spacing: 0.03em;
   color: transparent;
   -webkit-text-stroke: 2px var(--blood);
   display: block;
@@ -600,12 +617,12 @@ video {
 }
 
 .spa-cat-elegant__title {
-  font-family: var(--font-display);
-  font-style: italic;
+  font-family: "Quiet-Attempt", serif;
+  font-style: normal;
   font-weight: 400;
   font-size: clamp(42px, 6vw, 84px);
   line-height: 0.95;
-  letter-spacing: -0.02em;
+  letter-spacing: 0.02em;
   color: var(--paper);
   margin: 0 0 20px 0;
   /* Stays readable when scattered images / backdrops sit behind. */

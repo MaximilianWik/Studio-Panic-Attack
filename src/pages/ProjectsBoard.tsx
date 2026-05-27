@@ -209,9 +209,41 @@ function Board({ project, index, total, onPrev, onNext, onJumpTo, active, hydrat
       <header className="spa-pb__head">
         <div className="spa-pb__head-num">{String(project.num).padStart(2, '0')}</div>
         <h1 className="spa-pb__head-title">{project.kind === 'events' ? EVENTS_TITLE : project.title}</h1>
-        <p className="spa-pb__head-desc">
-          {project.kind === 'events' ? EVENTS_INTRO : project.description}
-        </p>
+        {project.kind === 'events' ? (
+          <p className="spa-pb__head-desc">{EVENTS_INTRO}</p>
+        ) : project.body && project.body.length > 0 ? (
+          <div className="spa-pb__head-rich">
+            {(project.projectType || project.date || project.location) && (
+              <dl className="spa-pb__head-meta">
+                {project.projectType && (
+                  <>
+                    <dt>Project type</dt>
+                    <dd>{project.projectType}</dd>
+                  </>
+                )}
+                {project.date && (
+                  <>
+                    <dt>Date</dt>
+                    <dd>{project.date}</dd>
+                  </>
+                )}
+                {project.location && (
+                  <>
+                    <dt>Location</dt>
+                    <dd>{project.location}</dd>
+                  </>
+                )}
+              </dl>
+            )}
+            <div className="spa-pb__head-body">
+              {project.body.map((para, i) => (
+                <p key={i}>{para}</p>
+              ))}
+            </div>
+          </div>
+        ) : (
+          <p className="spa-pb__head-desc">{project.description}</p>
+        )}
       </header>
 
       {hydrated ? (

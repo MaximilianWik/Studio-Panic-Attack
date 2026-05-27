@@ -2,6 +2,19 @@
 
 All notable changes to Studio Panic Attack are tracked here.
 
+## [1.2.17] -- projects: structured editorial content per board (project type, date, location, body paragraphs)
+
+- `src/config/projects.ts`: extended `ProjectMeta` with optional `projectType`, `date`, `location`, `body: string[]` fields. The existing `description` is preserved as a fallback (still used for Events).
+- Filled body content for 15 projects (everything except Events): graphic-design, 3d, imt, product-and-brand, typography, ai, digital-art, marketing-campaigns, motion, ux-ui, holistic-art-magazine, photography, sims-cc, projection-vj-lights, experimental. `imt`, `holistic-art-magazine`, `projection-vj-lights` also carry `date` + `location`.
+- `src/pages/ProjectsBoard.tsx` header: when a project has a `body` array, render a structured block (`<dl>` with Project type / Date / Location rows + stacked `<p>` paragraphs) instead of the single-line description. Events still render `EVENTS_INTRO`.
+- `src/styles/whiteboard-pages.css`: new `.spa-pb__head-rich`, `.spa-pb__head-meta` (mono caps labels), `.spa-pb__head-body` styles. Sits in column 2 of the head grid, max-width `60ch`.
+
+## [1.2.16] -- category sections: Alagard for numbers, Quiet-Attempt for titles
+
+- `src/styles/global.css`: added `@font-face` declarations for `Alagard` (`/font/alagard.ttf`) and `Quiet-Attempt` (`/font/Quiet-Attempt.otf`).
+- `.spa-cat-elegant__number`: switched from `var(--font-display)` italic to `"Alagard"`. Removed `font-style: italic` (no italic variant). `letter-spacing` changed from `-0.07em` → `0.03em` (pixel fonts need positive/neutral tracking).
+- `.spa-cat-elegant__title`: switched from `var(--font-display)` italic to `"Quiet-Attempt"`. Removed `font-style: italic`. `letter-spacing` changed from `-0.02em` → `0.02em`.
+
 ## [1.2.15] -- homepage whiteboard: swiss-knife SVG 50% larger, shifted up
 
 - `HeroOverlay.tsx`: SwissKnifeTextPath width changed from `clamp(320px,78vw,940px)` → `clamp(480px,90vmin,1410px)` (×1.5 across the board; `vmin` used as the fluid unit since the SVG is nearly square, so it scales sensibly on both landscape and portrait viewports). `maxWidth` eased to `97vw`.

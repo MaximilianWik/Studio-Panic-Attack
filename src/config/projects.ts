@@ -21,12 +21,21 @@ export interface ProjectMeta {
   title: string;
   /** 'events' = renders EventText HTML; everything else = scatter board. */
   kind: 'normal' | 'events';
-  /** Short copy under the title until the user provides real text. */
+  /** Short copy under the title. Used when `body` is not provided. */
   description: string;
   /** Sticker accent for the board (one of three SVG icons). */
   sticker: 'printer' | 'folder' | 'paperclip';
   /** Optional pinned notes (post-it style). */
   notes?: { x: number; y: number; text: string; color: 'yellow' | 'blue' | 'pink' }[];
+  /* ── Optional structured editorial metadata ── */
+  /** Comma-separated list of formats / disciplines. */
+  projectType?: string;
+  /** Free-form date string ("2025", "August 2022", "2021 - present"). */
+  date?: string;
+  /** Free-form location string. */
+  location?: string;
+  /** Body paragraphs. When present, replaces `description` in the header. */
+  body?: string[];
 }
 
 const META: Record<string, Omit<ProjectMeta, 'folder' | 'num'>> = {
@@ -43,6 +52,12 @@ const META: Record<string, Omit<ProjectMeta, 'folder' | 'num'>> = {
     kind: 'normal',
     description: 'Editorial, posters, brand systems and the occasional weird experiment with type and image.',
     sticker: 'folder',
+    projectType:
+      'Posters, Typographie, Logotype, Typology, Magazine, Mock-Ups, Social Media Posts, Interactive Designs',
+    body: [
+      'Explore a diverse collection of graphic design projects crafted with powerful tools like Adobe Creative Cloud (Photoshop, Illustrator, InDesign, Dimension, After Effects, and Firefly), Procreate, Figma, ASCII, Gradientor, and Nomad Sculpt. Each piece showcases a unique blend of renowned and niche styles, reflecting my experimentation and versatility in graphic design.',
+      'In my projects, I apply a range of skills including fine art, sketching, and 3D modeling. My unique approaches often combine fine art with digital techniques, mixed media, and integrated 3D models, resulting in innovative and dynamic creations.',
+    ],
   },
   '3. 3D': {
     slug: '3d',
@@ -50,6 +65,14 @@ const META: Record<string, Omit<ProjectMeta, 'folder' | 'num'>> = {
     kind: 'normal',
     description: 'Modelling, lighting, look-dev — environments, props and short cinematic scenes.',
     sticker: 'printer',
+    projectType:
+      'Environments, Characters, Organic & Inanimate Objects, Lighting & Shading, Animation, VFX',
+    body: [
+      "Explore a diverse collection of 3D models crafted using Autodesk Maya, Blender, Unreal Engine 5, ZBrush, Daz, Unity, Cinema 4D, After Effects, and Nomad Sculpt. This portfolio features everything from high-poly nature environments with foliage so realistic you'd think it's a photo, to charming low-poly scenes.",
+      "I love crafting environments I'd like to visit in real life or see in The Sims. Who needs a camera when you have Blender?",
+      'Creating characters and bringing them to life with unique looks and personalities is one of my passions. Whether organic or inorganic, I enjoy the challenge and creativity involved in bringing each object to life.',
+      '3D modeling allows me to bring my ideas to life like nothing else. I relish in creating my own worlds and sharing them with others.',
+    ],
   },
   '4. Interactive Media Technology': {
     slug: 'imt',
@@ -57,6 +80,12 @@ const META: Record<string, Omit<ProjectMeta, 'folder' | 'num'>> = {
     kind: 'normal',
     description: 'Sensor-driven prototypes, code-as-canvas, and small physical-digital crossovers.',
     sticker: 'folder',
+    projectType: 'Interactive media technology',
+    date: '2025',
+    location: 'Stockholm',
+    body: [
+      'Creating engagement through interactive technology projects that push towards unconventional methods of connection; explore my latest work showcasing dynamic experiences designed to captivate and inspire.',
+    ],
   },
   '5. Product Design & Brand Identity': {
     slug: 'product-and-brand',
@@ -64,6 +93,10 @@ const META: Record<string, Omit<ProjectMeta, 'folder' | 'num'>> = {
     kind: 'normal',
     description: 'From early sketch to held object — and the system of marks that lives around it.',
     sticker: 'folder',
+    projectType: '3D mockups, sketches, product design, interor design',
+    body: [
+      'Anything from 3D concept design mockups, to store interior design.',
+    ],
   },
   '6. Typography': {
     slug: 'typography',
@@ -71,6 +104,11 @@ const META: Record<string, Omit<ProjectMeta, 'folder' | 'num'>> = {
     kind: 'normal',
     description: 'Letterforms as image. Hand-drawn, vectorised, distorted, occasionally legible.',
     sticker: 'paperclip',
+    projectType: 'Typography',
+    body: [
+      'Expressive typography, spanning both 3D and 2D dimensions. Each piece is meticulously crafted using advances tools, including Adobe Photoshop, Illustrator, InDesign, and Procreate, Midjourney, DALL-E, as well as Autodesk Maya, Blender, and Nomad Sculpt.',
+      "From graphic and sophisticated letterforms, to dynamic three-dimensional compositions, my typography explores the intersection of art and design. Whether it's conveying a brand's identity, enhancing visual storytelling, or simply making a statement, each typographic creation is infused with creativity and purpose.",
+    ],
   },
   '7. AI': {
     slug: 'ai',
@@ -78,6 +116,13 @@ const META: Record<string, Omit<ProjectMeta, 'folder' | 'num'>> = {
     kind: 'normal',
     description: 'Generative tools as a sketchbook — directing models, curating outputs, breaking the prompt.',
     sticker: 'printer',
+    projectType:
+      'AI projects including graphic design, illustrations, photorealistic mockups, typography, 3D objects, and more',
+    body: [
+      'Dive into my experimental AI art projects, created using advanced AI tools like Krea, Adobe Firefly, DALL-E, Midjourney, DaVinci, Gemini, ChatGPT, Pika, Magnific, 3D AI Studio, and more. This portfolio showcases a wide array of works, including illustrations, creative 3D typography, photorealistic images, logos, and sketches for 3D models.',
+      "I\u2019ve explored unique techniques like claymation and puppeteering with Krea AI, and experimented with video AI using Pika. By blending my graphic design expertise with these AI tools, I\u2019ve crafted innovative and experimental projects that offer a fresh look on design.",
+      'My journey in AI art is marked by vigorous collaboration with fellow AI artists, continuous learning through courses, and active participation in AI artist communities on social media, which have helped me master AI prompting. This experience has honed my skills in AI prompting, enabling me to push the boundaries of creative expression.',
+    ],
   },
   '8. Digital Art': {
     slug: 'digital-art',
@@ -85,6 +130,10 @@ const META: Record<string, Omit<ProjectMeta, 'folder' | 'num'>> = {
     kind: 'normal',
     description: 'Personal pieces — illustration, collage, painted-over 3D, anything that ends up on a screen.',
     sticker: 'folder',
+    body: [
+      'Explore a diverse collection of experimental media crafted with powerful tools such as Adobe Creative Cloud (Photoshop, Illustrator, InDesign, Dimension, After Effects, and Firefly), Procreate, Figma, ASCII, Gradientor, and Nomad Sculpt. Each piece showcases a unique blend of renowned and niche styles, reflecting my experimentation and versatility in digital art.',
+      'In my projects, I apply a range of skills including fine art, sketching, photography, graffiti, and even 3D modeling. My creative process often involves combining traditional art techniques with digital tools, integrating mixed media elements, and experimenting with 3D models to produce innovative and dynamic creations.',
+    ],
   },
   '9. Marketing Campaigns': {
     slug: 'marketing-campaigns',
@@ -92,6 +141,9 @@ const META: Record<string, Omit<ProjectMeta, 'folder' | 'num'>> = {
     kind: 'normal',
     description: 'Concepts, key visuals, and the connective glue that turns a moodboard into a launch.',
     sticker: 'paperclip',
+    body: [
+      "Companies I'd love to work with, and companies I've worked with.",
+    ],
   },
   '10. mp4': {
     slug: 'motion',
@@ -99,6 +151,10 @@ const META: Record<string, Omit<ProjectMeta, 'folder' | 'num'>> = {
     kind: 'normal',
     description: 'Loops, fragments, music videos and short-form motion experiments.',
     sticker: 'printer',
+    projectType: 'mp4 videos, animation, motion graphics',
+    body: [
+      "Captivating motion graphics, 2D and 3D animations, and engaging videos I've created or captured.",
+    ],
   },
   '11. UX`UI': {
     slug: 'ux-ui',
@@ -106,6 +162,12 @@ const META: Record<string, Omit<ProjectMeta, 'folder' | 'num'>> = {
     kind: 'normal',
     description: 'Flows, screens, micro-interactions — interfaces that try not to get in the way.',
     sticker: 'folder',
+    projectType: 'Web designs',
+    body: [
+      'A collection of dynamic website prototypes crafted using platforms like Figma, Wix, WordPress, Elementor, and Adobe Dreamweaver. Each project is meticulously designed to deliver intuitive user experiences and visually stunning interfaces.',
+      'I specialise in creating websites with interactive elements, leveraging visual coding techniques to incorporate motion graphics seamlessly. From subtle animations to bold transitions, every interaction is carefully crafted to enhance user engagement and elevate the browsing experience.',
+      'Innovative approaches like integrating 3D models into websites add depth and immersion, pushing the boundaries of traditional web design. With a focus on usability and aesthetics, I strive to create digital experiences that leave a lasting impression.',
+    ],
   },
   '12. Holistic Art Magazine': {
     slug: 'holistic-art-magazine',
@@ -113,6 +175,14 @@ const META: Record<string, Omit<ProjectMeta, 'folder' | 'num'>> = {
     kind: 'normal',
     description: 'Art-direction and editorial design across the issues of Holistic Art Magazine.',
     sticker: 'folder',
+    projectType: 'Magazine, Art',
+    date: 'August 2022',
+    location: 'Burgas, Bulgaria x Bergen, Norway',
+    body: [
+      'Holistic comes to provide you with knowledge and visual understanding of how art is an inseparable part of the many processes of human development and evolution.',
+      "Covering topics surrounding the art world, we\u2019ll be showing correlations between the ever changing trends in our lifestyles and society, and how they reflected upon the art scene. Each volume is dedicated to a new topic that explains trends and movements, their roots and contributions.",
+      'Holistic serves as a magazine with a unique purpose \u2014 a journal of time.',
+    ],
   },
   '13. Photography': {
     slug: 'photography',
@@ -120,6 +190,12 @@ const META: Record<string, Omit<ProjectMeta, 'folder' | 'num'>> = {
     kind: 'normal',
     description: 'Film and digital — places, people and the in-between bits.',
     sticker: 'paperclip',
+    projectType: 'Photographs, Digital and Film',
+    body: [
+      "A world captured through the lens of an Olympus film camera and a Nikon D3000. Each photograph is capturing life\u2019s moments in all their beauty and authenticity.",
+      "From candid snapshots to carefully composed scenes, my photography seeks to encapsulate the essence of the world around us. Whether it's the play of light and shadow, the intimacy of human connections, or the majesty of nature's landscapes, each image tells a unique story.",
+      "With every click of the shutter, I strive to freeze moments in time, preserving memories and emotions that transcend words. Join me on a visual journey through life's moments, one frame at a time.",
+    ],
   },
   '14. Sims Custom Content': {
     slug: 'sims-cc',
@@ -127,6 +203,11 @@ const META: Record<string, Omit<ProjectMeta, 'folder' | 'num'>> = {
     kind: 'normal',
     description: 'Custom assets for The Sims — meshes, textures, tiny worlds.',
     sticker: 'folder',
+    projectType: '3D Custom Content for Sims',
+    body: [
+      "As the world's biggest fan of Sims, I've dedicated myself to crafting custom content for Sims 2, 3, and 4, breathing new life into virtual worlds and enriching gameplay experiences for fellow enthusiasts.",
+      "From clothing and accessories to furniture and architectural elements, each piece of custom content is infused with love, care, and an intimate understanding of the game's community and culture.",
+    ],
   },
   '15. Projection Mapping + VJ + Lights': {
     slug: 'projection-vj-lights',
@@ -134,6 +215,12 @@ const META: Record<string, Omit<ProjectMeta, 'folder' | 'num'>> = {
     kind: 'normal',
     description: 'Live visuals, multi-projector setups, and lights as a co-performer.',
     sticker: 'printer',
+    projectType: 'Projection Mapping, VJing',
+    date: '2021 - present',
+    location: 'London, Stockholm, Berlin, Burgas, and more.',
+    body: [
+      'Bringing visions to life by projecting them into reality. Projection mapping allows me to convert a space into a magical landscape where everything is possible - a dragon coming out the wall, a waterfall, nothing is beyond limits. Makes it possible to convert a 3D environment into a staged scene in real life.',
+    ],
   },
   '16. Experimental': {
     slug: 'experimental',
@@ -141,6 +228,10 @@ const META: Record<string, Omit<ProjectMeta, 'folder' | 'num'>> = {
     kind: 'normal',
     description: 'The shelf of half-done weird things that don\u2019t fit anywhere else (yet).',
     sticker: 'paperclip',
+    projectType: 'art.',
+    body: [
+      "Trying different mediums, whether it's crayons, a camera, a printer, or a bottle of ketchup.",
+    ],
   },
 };
 

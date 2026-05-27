@@ -965,6 +965,52 @@ img[data-failed="1"] {
   grid-column: 2;
 }
 
+/* Rich head: structured metadata + body paragraphs.
+   Sits in column 2 below the title; replaces __head-desc when the
+   project has a `body` array. */
+.spa-pb__head-rich {
+  grid-column: 2;
+  margin-top: 10px;
+  max-width: 60ch;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.spa-pb__head-meta {
+  display: grid;
+  grid-template-columns: max-content 1fr;
+  column-gap: 14px;
+  row-gap: 4px;
+  margin: 0;
+  padding: 0;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  line-height: 1.4;
+  color: rgba(10, 10, 10, 0.55);
+}
+.spa-pb__head-meta dt {
+  text-transform: uppercase;
+  letter-spacing: 0.18em;
+  color: rgba(10, 10, 10, 0.45);
+  font-weight: 500;
+}
+.spa-pb__head-meta dd {
+  margin: 0;
+  color: rgba(10, 10, 10, 0.78);
+}
+.spa-pb__head-body {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  font-size: 14px;
+  line-height: 1.55;
+  color: rgba(10, 10, 10, 0.78);
+  margin-top: 4px;
+}
+.spa-pb__head-body p {
+  margin: 0;
+}
+
 /* Mini-grid of folders, top-right corner of every board */
 .spa-pb__mini {
   position: absolute;
