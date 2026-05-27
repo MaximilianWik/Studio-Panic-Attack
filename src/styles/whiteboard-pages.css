@@ -1367,7 +1367,10 @@ img[data-failed="1"] {
 .spa-pb__events-photos {
   position: relative;
   display: grid;
-  grid-auto-rows: 1fr;
+  /* auto, not 1fr — 1fr stretches each row to fill column height when the
+     doc on the left is long, ballooning polaroids into elongated white
+     frames on narrow-but-not-mobile viewports (~900–1200px). */
+  grid-auto-rows: auto;
   gap: 14px;
   align-content: start;
 }
@@ -1382,8 +1385,11 @@ img[data-failed="1"] {
   .spa-pb__breadcrumb { top: 66px; }
   .spa-pb__board { padding: 130px 24px 60px; }
   .spa-pb__head-title { font-size: clamp(40px, 9vw, 64px); }
-  .spa-pb__mini { right: 16px; top: 124px; grid-template-columns: repeat(4, 44px); grid-auto-rows: 36px; }
-  .spa-folder-tile { width: 44px; height: 36px; }
+  /* Mini-grid + arrow pills are absolutely positioned and overlap the
+     head text / body on narrow viewports. The top breadcrumb pill is a
+     complete navigation, so hide the duplicates on mobile. */
+  .spa-pb__mini { display: none; }
+  .spa-pb__arrow { display: none; }
   .spa-pb__events { grid-template-columns: 1fr; }
   .spa-pb__events-photos { display: none; }
   .spa-pb__sticker { display: none; }

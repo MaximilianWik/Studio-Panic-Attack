@@ -2,6 +2,11 @@
 
 All notable changes to Studio Panic Attack are tracked here.
 
+## [1.2.19] -- mobile: stop projects-board overlap, fix events polaroid stretch
+
+- `src/styles/whiteboard-pages.css`: on `max-width: 900px` hide `.spa-pb__mini` (folder grid, 4×4 absolute top-right) and `.spa-pb__arrow` (prev/next floating pills at ~50vh). Both were overlapping the head title, project metadata, and body paragraphs on phone-width viewports — the top breadcrumb pill is already a complete 1–16 navigation so the duplicates were doing nothing but obstructing text. Removed the now-dead `.spa-pb__mini` / `.spa-folder-tile` mobile sizing overrides.
+- `src/styles/whiteboard-pages.css`: `.spa-pb__events-photos` `grid-auto-rows: 1fr` → `auto`. With `1fr`, each row stretched to fill the column height, which is driven by the long left-column text → polaroids ballooned into elongated white frames on narrow-but-not-mobile widths (~900–1200px). `auto` lets each polaroid size to its 4/3 inner.
+
 ## [1.2.18] -- projects: full media pipeline overhaul (responsive WebP/AVIF, LQIP, IO-gated lazy)
 
 - `package.json`: added `sharp@^0.33.5` as devDependency. Vercel's CI no longer needs sharp because the optimized siblings are committed.
