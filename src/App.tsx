@@ -1,6 +1,6 @@
 import { Canvas } from '@react-three/fiber';
 import { ScrollControls, AdaptiveDpr, AdaptiveEvents } from '@react-three/drei';
-import { Suspense, useEffect, useMemo, useState } from 'react';
+import { Suspense, useEffect, useState } from 'react';
 
 import { TOTAL_PAGES } from './config/sections';
 import Layout from './components/Layout';
@@ -8,13 +8,10 @@ import PostFx from './components/PostFx';
 import Cursor from './components/Cursor';
 import ErrorBoundary from './components/ErrorBoundary';
 import HeroOverlay from './components/Hero/HeroOverlay';
-import LoadingScreen from './components/Loading/LoadingScreen';
 import NavHeader from './components/NavHeader';
 import ScrollBridge from './components/ScrollBridge';
 import Lightbox from './components/Lightbox';
 import { useDeviceProfile } from './helpers/useDeviceProfile';
-import { assets } from './helpers/useImageAssets';
-import { usePreloadGate } from './helpers/usePreloadGate';
 import { useIsWhiteboard } from './helpers/paletteStore';
 
 /**
@@ -57,42 +54,9 @@ export function App() {
   // Pre-warm the first batch of gallery textures so the carousel is
   // populated by the time the user scrolls past the hero. Limited to the
   // first 8 gallery URLs — enough to cover what's visible on entry.
-  const preloadUrls = useMemo(
-    () =>
-      assets
-        .filter((a) => a.affinity === 'gallery' && a.kind === 'image')
-        .slice(0, 8)
-        .map((a) => a.url),
-    [],
-  );
-  const { ready: gateReady, progress: gateProgress } = usePreloadGate(preloadUrls);
-
-  // Loader runs for a deliberate minimum of 2.5 s regardless of how
-  // fast the network finishes — the entry experience is part of the
-  // brand, not just a stall while we wait for bytes. `timeProgress`
-  // is the share of that 2.5 s elapsed; combined with `gateProgress`
-  // it drives the percentage counter so the bar fills smoothly even
-  // when the cache hits instantly.
-  const MIN_LOADER_MS = 2500;
-  const [timeProgress, setTimeProgress] = useState(0);
-  useEffect(() => {
-    const start = performance.now();
-    let raf = 0;
-    const tick = () => {
-      const elapsed = performance.now() - start;
-      const t = Math.min(1, elapsed / MIN_LOADER_MS);
-      setTimeProgress(t);
-      if (t < 1) raf = requestAnimationFrame(tick);
-    };
-    raf = requestAnimationFrame(tick);
-    return () => cancelAnimationFrame(raf);
-  }, []);
-
-  const ready = gateReady && timeProgress >= 1;
-  // Average the two signals so the bar tracks the slower of the
-  // network or the minimum-display clock — neither alone can race
-  // the counter to 100 %.
-  const progress = (gateProgress + timeProgress) / 2;
+  // Loading screen removed: hero is shown immediately, no preload gate
+  // and no minimum-display timer.
+  const ready = true;
 
   return (
     <ErrorBoundary>
@@ -117,7 +81,6 @@ export function App() {
       <NavHeader />
       <Cursor />
       <Lightbox />
-      <LoadingScreen progress={progress} ready={ready} />
     </ErrorBoundary>
   );
 }

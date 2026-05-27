@@ -2,6 +2,16 @@
 
 All notable changes to Studio Panic Attack are tracked here.
 
+## [1.2.25] -- remove loading screen
+
+The intro loader is gone — the site now renders the hero immediately on first paint, no preload gate, no minimum-display timer.
+
+- `src/App.tsx`: dropped `LoadingScreen` mount, the `usePreloadGate` call, the 2.5 s `MIN_LOADER_MS` timer, the averaged `progress` signal, and the gallery-preload `assets`/`useMemo` block. `ready` is now hardcoded `true` so `HeroOverlay` fades in on first paint instead of waiting on a gate. Imports of `useMemo`, `LoadingScreen`, `assets`, and `usePreloadGate` removed.
+- `src/components/Loading/LoadingScreen.tsx`: deleted (the empty `Loading/` folder removed alongside it).
+- `src/helpers/usePreloadGate.ts`: deleted (no remaining callers after `App.tsx` was simplified).
+- `src/components/Hero/HeroOverlay.tsx`: rewrote the `ready` prop docstring and the fade-in comment so they no longer reference the deleted loader. Kept the prop itself so the 0 → 1 opacity transition still plays on mount.
+- `src/components/Hero/SwissKnifeTextPath.tsx`: corrected the `FONT_FACE_CSS` comment — italic-500 used to be loaded by `LoadingScreen`'s inline `<style>`, but the SwissKnife textpath only ever needed the upright weight, so the deletion has no functional impact on the hero. Gallery loads italic-500 directly via troika-three-text and is unaffected.
+
 ## [1.2.24] -- category numbers: 3x stroke, italic, no red glow
 
 - `src/styles/global.css`: `.spa-cat-elegant__number` (the giant 01/02/03/04 outline numerals on each category section) — `-webkit-text-stroke` bumped 2px → 6px, portrait breakpoint stroke 1.4px → 4.2px (3× across the board), `font-style` switched from `normal` to `italic`, and the red bloom (`text-shadow: 0 0 80px rgba(211,0,0,0.2)`) removed.

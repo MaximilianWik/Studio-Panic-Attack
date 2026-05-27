@@ -50,10 +50,9 @@ const LOGO = {
 
 const LOGO_HREF = '/logo/SwissKnifeLogoText.png';
 
-// Cormorant Garamond is already loaded as italic-500 via the
-// LoadingScreen <style> tag (jsDelivr @fontsource CDN). We add the
-// upright 500 weight here from the same CDN so the textpath has the
-// face it expects on first paint.
+// Cormorant Garamond italic-500 was previously loaded by LoadingScreen
+// (now removed). The textpath uses upright 500, so we add that face
+// here from the same CDN — no italic dependency remains on this hero.
 const FONT_FACE_CSS =
   '@font-face{font-family:"Cormorant Garamond";font-style:normal;' +
   'font-weight:500;font-display:swap;' +

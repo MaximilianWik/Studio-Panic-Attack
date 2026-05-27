@@ -5,9 +5,9 @@ import { SwissKnifeTextPath } from './SwissKnifeTextPath';
 import { WhiteboardBackground } from './WhiteboardBackground';
 
 interface HeroOverlayProps {
-  /** True once the first-batch gallery textures are preloaded.
-      LoadingScreen renders on top while false; logo + scroll prompt
-      fade in once true. */
+  /** Hero content fade-in gate. Now always true (loading screen
+      removed) — kept as a prop so the fade transition still runs
+      on first paint and the API stays stable for future gating. */
   ready: boolean;
 }
 
@@ -53,8 +53,7 @@ export function HeroOverlay({ ready }: HeroOverlayProps) {
       </div>
 
       {/* Hero content — logo + scroll prompt, fades out as you scroll.
-          Hidden until preload completes; LoadingScreen renders on top
-          while !ready and fades out to reveal these. */}
+          Fades in on first paint via the `ready` prop. */}
       <div
         aria-hidden
         style={{
