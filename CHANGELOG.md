@@ -2,6 +2,11 @@
 
 All notable changes to Studio Panic Attack are tracked here.
 
+## [1.2.22] -- folder tiles: pageA and pageB show different artworks
+
+- `src/components/PageShell/FolderTile.tsx`: prop renamed/split — `coverUrl` → `coverUrlA` (back sheet) + `coverUrlB` (front sheet). Each `<image>` references its own URL so the open folder reveals two distinct images.
+- `src/pages/ProjectsBoard.tsx`: pick the first two image assets per project; if only one exists, fall back to it for both sheets so the front never goes blank.
+
 ## [1.2.21] -- folder tiles: cover on both peek-out sheets
 
 - `src/components/PageShell/FolderTile.tsx`: pageB (the front-most sheet, renders on top of pageA in SVG paint order) now also carries the same `<image>` overlay. Previously only pageA had the cover, so the white front sheet stayed blank when the folder opened. Same `showCover` gate, same single `coverUrl` — still at most one image fetched per interaction.

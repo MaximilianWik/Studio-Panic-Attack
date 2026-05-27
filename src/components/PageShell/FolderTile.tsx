@@ -24,18 +24,24 @@ interface FolderTileProps {
   /** Whether the tile is the currently selected board. */
   active?: boolean;
   /**
-   * Thumbnail URL — typically the smallest WebP variant of the project's
-   * first image. Only fetched when the tile is hovered or active so the
-   * 16-tile grid still costs nothing on initial render.
+   * Thumbnail URLs — typically the smallest WebP variants of two distinct
+   * project images. `coverUrlA` shows on pageA (back sheet), `coverUrlB`
+   * on pageB (front sheet) so the open folder reveals two different
+   * artworks. Only fetched when the tile is hovered or active so the
+   * 16-tile grid still costs nothing on initial render. If only one image
+   * is available, pass the same URL for both.
    */
-  coverUrl?: string;
+  coverUrlA?: string;
+  coverUrlB?: string;
 }
 
-export function FolderTile({ num, title, className, active, coverUrl }: FolderTileProps) {
+export function FolderTile({ num, title, className, active, coverUrlA, coverUrlB }: FolderTileProps) {
   const [hovered, setHovered] = useState(false);
   // Lid is only open when hovered or active — outside that window the cover
   // would be invisible behind the closed lid, so don't bother fetching it.
-  const showCover = (active || hovered) && !!coverUrl;
+  const open = active || hovered;
+  const showA = open && !!coverUrlA;
+  const showB = open && !!coverUrlB;
 
   return (
     <div
@@ -49,14 +55,13 @@ export function FolderTile({ num, title, className, active, coverUrl }: FolderTi
         {/* Tab number */}
         <text className="spa-folder-tile__num" x="64" y="33" textAnchor="middle">{num}</text>
         {/* Page peeking out — pageA is the back sheet, pageB is the front
-            sheet (renders on top). Both get the same cover so the view
-            shows artwork no matter how the pages overlap during the
-            pop-out animation. */}
+            sheet (renders on top). Each gets a different cover so the
+            opened folder reveals two artworks. */}
         <g className="spa-folder-tile__pageA">
           <rect x="20" y="30" width="80" height="50" rx="1" />
-          {showCover ? (
+          {showA ? (
             <image
-              href={coverUrl}
+              href={coverUrlA}
               x="20"
               y="30"
               width="80"
@@ -69,9 +74,9 @@ export function FolderTile({ num, title, className, active, coverUrl }: FolderTi
         </g>
         <g className="spa-folder-tile__pageB">
           <rect x="14" y="36" width="80" height="46" rx="1" />
-          {showCover ? (
+          {showB ? (
             <image
-              href={coverUrl}
+              href={coverUrlB}
               x="14"
               y="36"
               width="80"

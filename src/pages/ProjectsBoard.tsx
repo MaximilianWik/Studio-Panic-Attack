@@ -317,10 +317,14 @@ function Board({ project, index, total, onPrev, onNext, onJumpTo, active, hydrat
               so the 16-tile grid stays free at idle. */}
           <div className="spa-pb__mini" aria-label="All projects">
             {PROJECTS.map((p, i) => {
-              const cover = p.assets.find((a) => a.type === 'image');
-              const coverUrl =
-                cover?.webpSrcset?.split(',')[0]?.trim().split(' ')[0] ||
-                cover?.url;
+              const images = p.assets.filter((a) => a.type === 'image');
+              const pickSmallest = (a: typeof images[number] | undefined) =>
+                a?.webpSrcset?.split(',')[0]?.trim().split(' ')[0] || a?.url;
+              const coverUrlA = pickSmallest(images[0]);
+              // Pick the second image for pageB; fall back to the first if
+              // the project only has one image so the front sheet is never
+              // blank.
+              const coverUrlB = pickSmallest(images[1]) ?? coverUrlA;
               return (
                 <button
                   type="button"
@@ -333,7 +337,8 @@ function Board({ project, index, total, onPrev, onNext, onJumpTo, active, hydrat
                     num={String(p.num).padStart(2, '0')}
                     title={p.title}
                     active={p.slug === project.slug}
-                    coverUrl={coverUrl}
+                    coverUrlA={coverUrlA}
+                    coverUrlB={coverUrlB}
                   />
                 </button>
               );
