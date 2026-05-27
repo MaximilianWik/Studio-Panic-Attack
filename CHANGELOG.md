@@ -2,6 +2,10 @@
 
 All notable changes to Studio Panic Attack are tracked here.
 
+## [1.2.24] -- category numbers: 3x stroke, italic, no red glow
+
+- `src/styles/global.css`: `.spa-cat-elegant__number` (the giant 01/02/03/04 outline numerals on each category section) — `-webkit-text-stroke` bumped 2px → 6px, portrait breakpoint stroke 1.4px → 4.2px (3× across the board), `font-style` switched from `normal` to `italic`, and the red bloom (`text-shadow: 0 0 80px rgba(211,0,0,0.2)`) removed.
+
 ## [1.2.23] -- homepage: full optimization pass + Gallery shows ALL projects randomized + lightbox "View project" pill
 
 This is the second half of the media pipeline overhaul (the first half landed in [1.2.18] for the Projects whiteboard). Every image fetched anywhere on the site now goes through the local WebP/AVIF/LQIP pipeline; the home-page Gallery rotates the entire portfolio rather than a curated subset; and clicking any image (Gallery or ScatteredImages) surfaces a "View project →" pill that jumps directly to the matching board.
