@@ -7,42 +7,64 @@ import { getSectionWorldY, type SectionId, VIEWPORT_HEIGHT_UNITS } from '../../c
 import { useDeviceProfile } from '../../helpers/useDeviceProfile';
 import { shaderIds, type ShaderId } from '../../shaders/imageShaders';
 import { openLightbox } from '../../helpers/lightbox';
-import { assetUrl } from '../../helpers/assetUrl';
+import { pickOptimized } from '../../helpers/optimizedSrc';
 import { DebugLabel } from '../Debug/DebugOverlay';
 import { ImageEffect } from './ImageEffects';
 
-// All scattered images live alongside the gallery pool in /landing/.
-// Reusing the same URLs lets the browser share a single cached texture
-// across Gallery and ScatteredImages — no duplicate network fetches,
-// no duplicate GPU textures. URLs are routed through assetUrl() so
-// production fetches the resized WebP via weserv.
-const SCATTER_IMAGES = [
-  '/landing/000008390034_33a-copy-2.jpg',
-  '/landing/add-more-chaos.png',
-  '/landing/blob-ogzeet.png',
-  '/landing/cemetery-scene1.png',
-  '/landing/glasserrorscrnshot.png',
-  '/landing/holistic-letter-from-the-editor-and-3d-article.png',
-  '/landing/img_1027-2.png',
-  '/landing/img_1034.png',
-  '/landing/img_2832.png',
-  '/landing/img_3370.png',
-  '/landing/img_3375.png',
-  '/landing/img_4253-1.jpg',
-  '/landing/img_4256.jpg',
-  '/landing/img_4258.jpg',
-  '/landing/img_4297.jpg',
-  '/landing/img_9089.png',
-  '/landing/img_9247.png',
-  '/landing/img_9258.jpeg',
-  '/landing/img_9790-min.png',
-  '/landing/img_9791-min.png',
-  '/landing/img_9793-min.png',
-  '/landing/levelsequence-1.0011.png',
-].map((p) => assetUrl(p));
+// Section affinity → matching project (slug + display title). Used to wire
+// the lightbox "View project →" pill to the correct board when the user
+// clicks one of the legacy /landing/ scatter images.
+const AFFINITY_TO_PROJECT: Record<SectionId, { slug: string; title: string } | null> = {
+  graphic: { slug: 'graphic-design', title: 'Graphic Design' },
+  threeD:  { slug: '3d', title: '3D' },
+  ai:      { slug: 'ai', title: 'AI Art' },
+  ux:      { slug: 'ux-ui', title: 'UX / UI' },
+  // Sections that don't have a 1:1 project mapping fall back to no link.
+  hero:       null,
+  highlights: null,
+  vocabulary: null,
+  gallery:    null,
+};
+
+// Per-image scatter pool. Each entry pairs a /landing/ source with the
+// section it visually belongs to — `affinity` drives both the section it
+// orbits in worldspace and the project the lightbox "View project" pill
+// links to. Originals (no .webp suffix) are kept here so we can load the
+// 1080 WebP for the texture (cheap decode) and the 1920 WebP for the
+// lightbox click (still WebP, ample fidelity for fullscreen).
+interface ScatterSource { url: string; affinity: SectionId; }
+const SCATTER_SOURCES: ScatterSource[] = [
+  { url: '/landing/000008390034_33a-copy-2.jpg', affinity: 'graphic' },
+  { url: '/landing/add-more-chaos.png',          affinity: 'ai' },
+  { url: '/landing/blob-ogzeet.png',             affinity: 'threeD' },
+  { url: '/landing/cemetery-scene1.png',         affinity: 'threeD' },
+  { url: '/landing/glasserrorscrnshot.png',      affinity: 'ux' },
+  { url: '/landing/holistic-letter-from-the-editor-and-3d-article.png', affinity: 'ux' },
+  { url: '/landing/img_1027-2.png',              affinity: 'graphic' },
+  { url: '/landing/img_1034.png',                affinity: 'graphic' },
+  { url: '/landing/img_2832.png',                affinity: 'ai' },
+  { url: '/landing/img_3370.png',                affinity: 'ai' },
+  { url: '/landing/img_3375.png',                affinity: 'ai' },
+  { url: '/landing/img_4253-1.jpg',              affinity: 'graphic' },
+  { url: '/landing/img_4256.jpg',                affinity: 'graphic' },
+  { url: '/landing/img_4258.jpg',                affinity: 'graphic' },
+  { url: '/landing/img_4297.jpg',                affinity: 'graphic' },
+  { url: '/landing/img_9089.png',                affinity: 'graphic' },
+  { url: '/landing/img_9247.png',                affinity: 'graphic' },
+  { url: '/landing/img_9258.jpeg',               affinity: 'graphic' },
+  { url: '/landing/img_9790-min.png',            affinity: 'graphic' },
+  { url: '/landing/img_9791-min.png',            affinity: 'graphic' },
+  { url: '/landing/img_9793-min.png',            affinity: 'graphic' },
+  { url: '/landing/levelsequence-1.0011.png',    affinity: 'threeD' },
+];
 
 interface ScatteredItem {
-  url: string;
+  /** WebP variant URL for the THREE texture (cheap decode). */
+  texUrl: string;
+  /** Higher-res variant URL for the lightbox click (still WebP). */
+  fullUrl: string;
+  /** Project hint passed to the lightbox so the View-project pill renders. */
+  project: { slug: string; title: string } | null;
   worldY: number;
   affinity: SectionId;
   offsetX: number;
@@ -71,7 +93,7 @@ function buildLayout(lowPower: boolean): ScatteredItem[] {
   // counts. More density flanking the text keeps the bg alive.
   const count = lowPower ? 10 : 18;
   // Randomly shuffle which images go where
-  const shuffled = [...SCATTER_IMAGES].sort(() => hash(Date.now() % 1000 + Math.random() * 100) - 0.5);
+  const shuffled = [...SCATTER_SOURCES].sort(() => hash(Date.now() % 1000 + Math.random() * 100) - 0.5);
 
   for (let i = 0; i < count; i++) {
     const r1 = hash(i + 11);
@@ -83,10 +105,11 @@ function buildLayout(lowPower: boolean): ScatteredItem[] {
     // Distribute across the 4 category sections
     const sectionIdx = i % sectionAffinities.length;
     const yCenter = getSectionWorldY(sectionAffinities[sectionIdx]);
-    const url = shuffled[i % shuffled.length];
+    const src = shuffled[i % shuffled.length];
 
     // ySpread (section-local; positive = above section centre, i.e.
     // earlier in scroll). Tightened from ±2.5 to a narrower band and
+    // biased UP so items read as "alongside / just above" the
     // biased UP so items read as "alongside / just above" the
     // category text instead of trailing far below it. Centre Y of
     // each item lands roughly between -0.6 and +2.4 of the section
@@ -109,8 +132,15 @@ function buildLayout(lowPower: boolean): ScatteredItem[] {
       ? 'plain'
       : shaderIds[i % shaderIds.length];
 
+    // Use the image's own affinity (curated per /landing/ entry above) so
+    // the View-project link points to the right board even when the item
+    // landed in a different section's worldY column.
+    const proj = AFFINITY_TO_PROJECT[src.affinity];
+
     items.push({
-      url,
+      texUrl: pickOptimized(src.url, 1080),
+      fullUrl: pickOptimized(src.url, 1920),
+      project: proj,
       worldY,
       affinity: sectionAffinities[sectionIdx],
       offsetX,
@@ -166,7 +196,16 @@ export function ScatteredImages() {
         <group key={i} ref={(g) => { itemRefs.current[i] = g; }} position={[it.offsetX, 0, it.offsetZ]} rotation={[0, 0, it.rotZ]}>
           <group position={[0, it.worldY, 0]}>
             <Suspense fallback={null}>
-              <ImageEffect url={it.url} height={it.height} effect={it.effect} intensity={lowPower ? 0 : 1} onClick={() => openLightbox(it.url)} />
+              <ImageEffect
+                url={it.texUrl}
+                height={it.height}
+                effect={it.effect}
+                intensity={lowPower ? 0 : 1}
+                onClick={() => openLightbox(
+                  it.fullUrl,
+                  it.project ? { projectSlug: it.project.slug, projectTitle: it.project.title } : {},
+                )}
+              />
             </Suspense>
             <DebugLabel
               name={'Scatter[' + i + '] (' + it.affinity + ')'}

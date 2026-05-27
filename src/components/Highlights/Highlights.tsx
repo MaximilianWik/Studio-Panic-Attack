@@ -3,13 +3,14 @@ import { LiquidMetal } from '@paper-design/shaders-react';
 import { useState } from 'react';
 
 import { getSectionWorldY } from '../../config/sections';
-import { assetUrl } from '../../helpers/assetUrl';
+import { buildPictureProps, pickOptimized, pickLqip } from '../../helpers/optimizedSrc';
 
 interface HighlightSpec {
   num: string;
   title: string;
   blurb: string;
   href: string;
+  /** Original /landing/ URL — runtime maps it to optimized variants. */
   media: string;
 }
 
@@ -34,28 +35,28 @@ const HIGHLIGHTS: HighlightSpec[] = [
     title: 'Cemetery — long sequence',
     blurb: 'Unreal Engine 5',
     href: '/highlights/cemetery-sequence',
-    media: assetUrl('/landing/cemetery-scene16.png'),
+    media: '/landing/cemetery-scene16.png',
   },
   {
     num: 'II',
     title: 'Holistic — editorial',
     blurb: 'Editorial / 3D',
     href: '/highlights/holistic-editorial',
-    media: assetUrl('/landing/holistic-letter-from-the-editor-and-3d-article.png'),
+    media: '/landing/holistic-letter-from-the-editor-and-3d-article.png',
   },
   {
     num: 'III',
     title: 'Chrome type',
     blurb: 'Type / liquid metal',
     href: '/highlights/chrome-type',
-    media: assetUrl('/landing/chrome-type-bw-4.png'),
+    media: '/landing/chrome-type-bw-4.png',
   },
   {
     num: 'IV',
     title: 'Glass error',
     blurb: 'UX / interaction',
     href: '/highlights/glass-error',
-    media: assetUrl('/landing/glasserrorscrnshot.png'),
+    media: '/landing/glasserrorscrnshot.png',
   },
 ];
 
@@ -128,6 +129,9 @@ interface CardProps {
 function HighlightCard({ h, index }: CardProps) {
   const [hover, setHover] = useState(false);
   const stagger = (['spa-card--stagger-0', 'spa-card--stagger-1', 'spa-card--stagger-2', 'spa-card--stagger-3'] as const)[index % 4];
+  const pic = buildPictureProps(h.media);
+  const fallbackSrc = pickOptimized(h.media, 1080);
+  const lqip = pickLqip(h.media);
 
   return (
     <a
@@ -137,15 +141,26 @@ function HighlightCard({ h, index }: CardProps) {
       onPointerEnter={() => setHover(true)}
       onPointerLeave={() => setHover(false)}
       onClick={(e) => e.preventDefault()}
+      // LQIP painted as background so the card never flashes empty before
+      // the WebP arrives. Once the <img> decodes it covers the wrapper.
+      style={lqip ? {
+        backgroundImage: `url("${lqip}")`,
+        backgroundSize: 'cover',
+        backgroundPosition: 'center',
+      } : undefined}
     >
-      <img
-        className="spa-card__media"
-        src={h.media}
-        alt={h.title}
-        loading="lazy"
-        decoding="async"
-        fetchPriority="low"
-      />
+      <picture>
+        {pic.avifSrcset ? <source type="image/avif" srcSet={pic.avifSrcset} /> : null}
+        {pic.webpSrcset ? <source type="image/webp" srcSet={pic.webpSrcset} sizes="(max-width: 900px) 100vw, 25vw" /> : null}
+        <img
+          className="spa-card__media"
+          src={fallbackSrc}
+          alt={h.title}
+          loading="lazy"
+          decoding="async"
+          fetchPriority="low"
+        />
+      </picture>
 
       {/* paper-design liquid metal treatment, only mounted when hovered
           to avoid running 4 simultaneous shader contexts at idle */}

@@ -2,6 +2,56 @@
 
 All notable changes to Studio Panic Attack are tracked here.
 
+## [1.2.23] -- homepage: full optimization pass + Gallery shows ALL projects randomized + lightbox "View project" pill
+
+This is the second half of the media pipeline overhaul (the first half landed in [1.2.18] for the Projects whiteboard). Every image fetched anywhere on the site now goes through the local WebP/AVIF/LQIP pipeline; the home-page Gallery rotates the entire portfolio rather than a curated subset; and clicking any image (Gallery or ScatteredImages) surfaces a "View project →" pill that jumps directly to the matching board.
+
+### Manifest pipeline
+
+- `scripts/build-media-manifest.mjs`: each raster `MediaAsset` now also carries intrinsic `width` / `height` (probed via sharp metadata) so consumers can size their layout boxes correctly before the texture decodes. New top-level export `OPTIMIZED_INDEX: Record<string, OptimizedSiblings>` keyed by ORIGINAL asset URL — provides a flat lookup of `webp480 / webp1080 / webp1920 / avif1080 / lqip` URLs for every optimized asset, used by THREE textures and any raw `<img>` tag that doesn't have a `MediaAsset` in scope.
+- `src/generated/mediaManifest.ts`: regenerated. 220 entries in `OPTIMIZED_INDEX`. Bundle size grew from 207 KB → 328 KB gzipped (≈ +20 KB after gzip) — acceptable trade-off for the decode wins, with most of the growth coming from the inline LQIP base64 strings.
+
+### New helper: `helpers/optimizedSrc.ts`
+
+- `pickOptimized(url, width)` — single source of truth for "give me the best WebP variant of this URL at the given width". Snaps UP to nearest available variant so callers never get a fuzzy upscale; returns the original URL unchanged when no siblings exist.
+- `pickLqip(url)`, `getOptimized(url)`, `buildPictureProps(url)` — convenience accessors.
+
+### `assetUrl` rewritten — no more weserv proxy
+
+- `src/helpers/assetUrl.ts`: dropped the `images.weserv.nl` runtime proxy entirely. In its place: a thin wrapper around `pickOptimized()` that snaps the requested width to one of `480 / 1080 / 1920` and returns the local WebP URL. **Identical behaviour in dev and prod** (the WebP siblings are committed and Vite serves them straight from `public/`). No more first-hit slow path, no third-party dependency, no CORS edge cases. The `quality` opts field is preserved as a deprecated no-op for backward-compatibility.
+
+### Home-page Gallery: ALL projects, randomized, WebP textures
+
+- `src/helpers/useImageAssets.ts`: new `getAllPortfolioImages(seed)` builds the complete cross-project gallery pool — every image asset across every project folder, plus the legacy `/landing/` gallery shots — deduped by URL, with intrinsic aspect taken from manifest `width`/`height`. Order is shuffled deterministically via Mulberry32 PRNG (default seed `0xC0FFEE` so reloads are stable; pass a different seed to vary). Returns `PortfolioImage` records that pair the original URL (lightbox source) with the originating project folder.
+- `src/components/Gallery/Gallery.tsx`: the carousel now rotates this full pool instead of `affinity === 'gallery'` (~30 → ~232 unique images). Each slot stores both `texUrl` (`.1080.webp`, used for the THREE texture, ~5–10× cheaper decode than the original PNG) and a 1920-WebP `clickUrl` for the lightbox. `CarouselSlot` reads the texture's natural dimensions after load and re-derives the slot box aspect from them, so cross-project images with unknown intrinsic aspect (e.g. tall photos) don't get squashed into the default 4:3 box. `useTexture.preload` now warms the WebP variant.
+
+### ScatteredImages: project-aware lightbox
+
+- `src/components/ScatteredImages/ScatteredImages.tsx`: refactored `SCATTER_IMAGES` (raw URL list with module-level `assetUrl()` calls) into typed `SCATTER_SOURCES` (per-image `{ url, affinity }` records). New `AFFINITY_TO_PROJECT` map: `graphic→graphic-design`, `threeD→3d`, `ai→ai`, `ux→ux-ui`. Each scatter item now resolves to a `texUrl` (1080.webp for the texture) and `fullUrl` (1920.webp for the lightbox click), and carries explicit `project: { slug, title }` metadata. Click handler passes that to `openLightbox` so the legacy /landing/ images surface the same "View project" pill as the Gallery does.
+
+### Lightbox: "View project →" pill + meta API
+
+- `src/helpers/lightbox.ts`: extended `openLightbox(url, meta?)` to accept optional `{ projectSlug?, projectTitle? }`. The pubsub now broadcasts a `LightboxState` (`{ url, meta }`) instead of a bare URL.
+- `src/helpers/projectFromUrl.ts`: new helper. Decodes the second path segment of an asset URL (`/2.%20Projects/<folder>/...`) and looks up the matching project via `PROJECTS`. Returns `{ slug, title, href }` or null.
+- `src/components/Lightbox.tsx`: when the open URL maps to a known project (either via explicit `meta.projectSlug` from the caller or via `projectFromUrl()` URL fallback), renders a "View project →" pill anchored next to the caption. Pill is suppressed when already on the matching `/projects/<slug>` page (avoids no-op nav). Plain `<a href>` triggers a full-page navigation to the projects board, which is correct given the path-based router in `main.tsx`.
+- `src/styles/global.css`: added `.spa-lightbox__project` pill styles (red background, paper border, hover lift) plus `.spa-lightbox__caption` flex-row layout to host caption text + pill side-by-side. Mobile breakpoint stacks them vertically.
+
+### Highlights cards
+
+- `src/components/Highlights/Highlights.tsx`: cards now render `<picture>` with AVIF + WebP sources via `buildPictureProps()`, with the LQIP painted as the card's CSS `background-image` so the tile never flashes empty. `media` field on each spec stores the ORIGINAL URL (not pre-routed through `assetUrl`) so the helper can pick the right variant + LQIP at render time.
+- `src/styles/global.css`: `.spa-card picture { position: absolute; inset: 0; display: block; }` so the new `<picture>` element fills the card the same way the old plain `<img>` did.
+
+### Net effect
+
+- **Home-page texture payload** drops dramatically: every THREE.js plane that previously decoded a 5–17 MB PNG now decodes a 100–400 KB WebP. Decode work is the main contributor to scroll jank, and it's down ~5–10× per image.
+- **Gallery breadth**: 18 visible slots × 232-image pool means the carousel can spin for several minutes without repeating, and every project gets airtime.
+- **Linkability**: every image surface on the homepage is now a one-click jump to the matching project board. Closes the loop between "look at this cool image" and "what project is this from".
+
+### Verification
+
+- `tsc -b --force` clean.
+- `vite build` clean (32.3 s, no warnings; main bundle 328.78 KB → gzip 80.81 KB).
+
 ## [1.2.22] -- folder tiles: pageA and pageB show different artworks
 
 - `src/components/PageShell/FolderTile.tsx`: prop renamed/split — `coverUrl` → `coverUrlA` (back sheet) + `coverUrlB` (front sheet). Each `<image>` references its own URL so the open folder reveals two distinct images.

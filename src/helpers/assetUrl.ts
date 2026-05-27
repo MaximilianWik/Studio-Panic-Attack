@@ -1,64 +1,55 @@
 /**
- * assetUrl — route image fetches through images.weserv.nl in production
- * so they're served as resized WebP, not as the original 5–17 MB PNGs.
+ * assetUrl — return the best on-disk WebP variant for a public-folder image.
  *
- * Why a runtime CDN proxy?
- *   The /landing/ source images are committed at full resolution. We can't
- *   install image-processing tooling locally (corp laptop), so we let the
- *   weserv.nl free image CDN do the resize + WebP transcode on demand and
- *   cache it at their edge. First request is slow, every subsequent
- *   request is hot from their CDN.
+ * Background
+ *   The original implementation routed `/landing/*` through
+ *   `images.weserv.nl` to transcode and resize on the fly. That worked but
+ *   added third-party latency on first hit, depended on weserv staying up,
+ *   and produced no benefit for assets outside `/landing/`.
  *
- * Dev vs prod:
- *   - In dev (`vite`) the local origin is localhost — weserv can't reach it,
- *     so we return the local path unchanged. Devtools network tab shows
- *     full-size originals; that's fine in dev.
- *   - In prod, source URL is rooted at the *current* deploy origin
- *     (window.location.host). That makes the proxy work on the canonical
- *     Vercel URL, on Vercel preview deploys, and on any future custom
- *     domain — no hardcoded host to keep in sync.
+ *   We now run a local optimize pass (scripts/optimize-public-assets.mjs)
+ *   that emits `.480.webp / .1080.webp / .1920.webp / .lqip.txt` siblings
+ *   for every raster ≥ 200 KB across the entire `public/` tree. This helper
+ *   simply looks up the best sibling for the requested target width and
+ *   returns its URL. No network round-trips, no proxy.
  *
- * CORS:
- *   weserv responds with `Access-Control-Allow-Origin: *`, and three.js'
- *   TextureLoader sets `crossOrigin = 'anonymous'` by default, so r3f's
- *   `useTexture` works with these URLs without extra config.
+ * Behaviour
+ *   - When an optimized sibling exists for `path`, returns the WebP URL at
+ *     a width ≥ `opts.width` (snaps UP — never serves a blurry upscale).
+ *   - When no sibling exists (asset below the 200 KB threshold, or
+ *     pre-optimize), returns `path` unchanged. Layout still works.
+ *   - Identical behaviour in dev and prod — the WebP siblings are committed
+ *     and Vite serves them straight from `public/`.
+ *
+ * Quality is no longer a runtime knob — it's baked into the optimize step
+ * (q=78 for WebP, q=50 for AVIF). The `quality` field is accepted but
+ * ignored, kept for backward compatibility with existing call sites.
  */
-
-const PROXY = 'https://images.weserv.nl/';
+import { pickOptimized, type OptimizedWidth } from './optimizedSrc';
 
 export interface AssetUrlOpts {
-  /** target longest edge (px). Defaults to 2000. */
+  /**
+   * Target longest edge (px). Snaps UP to one of 480 / 1080 / 1920 — the
+   * three sizes the optimizer emits. Defaults to 1080 (good for desktop
+   * viewport-scale images; pick 1920 only when you really need full-bleed
+   * detail like a hero or lightbox source).
+   */
   width?: number;
-  /** WebP quality 1–100. Defaults to 82. */
+  /** @deprecated quality is baked into the optimize pass, this is ignored. */
   quality?: number;
 }
 
-function currentHost(): string {
-  if (typeof window === 'undefined') return '';
-  return window.location.host;
+function snapWidth(w: number): OptimizedWidth {
+  if (w <= 480) return 480;
+  if (w <= 1080) return 1080;
+  return 1920;
 }
 
 /**
- * Convert a `/landing/foo.png` path into a weserv-proxied WebP URL in prod,
- * or return it unchanged in dev. Pass through anything that's not an
- * /landing/ path (e.g. /logo/*) — the logo already loads fine at its native
- * size.
+ * Convert a public-folder path into the URL that should actually be fetched.
+ * Pass-through for unknown paths (logos, fonts, anything not optimized).
  */
 export function assetUrl(path: string, opts: AssetUrlOpts = {}): string {
-  if (import.meta.env.DEV) return path;
-  if (!path.startsWith('/landing/')) return path;
-
-  const host = currentHost();
-  // Defensive: if for any reason we can't get a host (SSR / edge cases),
-  // skip the proxy and serve the original. Better a slow image than a 404.
-  if (!host) return path;
-
-  const w = opts.width ?? 2000;
-  const q = opts.quality ?? 82;
-
-  // Build the query string by hand (rather than URLSearchParams) so we
-  // keep `/` characters un-encoded in the source URL — weserv accepts
-  // both but consistent encoding makes the URL easier to read and debug.
-  const src = host + path;
-  return PROXY + '?url=' + src + '&w=' + w + '&output=webp&q=' + q + '&we=1';
+  const target = snapWidth(opts.width ?? 1080);
+  return pickOptimized(path, target);
 }

@@ -5,7 +5,8 @@ import * as THREE from 'three';
 
 import { getSectionWorldY } from '../../config/sections';
 import { useSectionVisibility } from '../../helpers/useScrollSection';
-import { assets, type AssetEntry } from '../../helpers/useImageAssets';
+import { getAllPortfolioImages, type PortfolioImage } from '../../helpers/useImageAssets';
+import { pickOptimized } from '../../helpers/optimizedSrc';
 import { useDeviceProfile } from '../../helpers/useDeviceProfile';
 import { openLightbox } from '../../helpers/lightbox';
 import { useIsWhiteboard } from '../../helpers/paletteStore';
@@ -45,8 +46,10 @@ const SLOT_Z_BACK = -20;
 const STAGE_TO_CAMERA = 8;
 
 interface SlotState {
-  /** current image asset for this slot */
-  asset: AssetEntry;
+  /** current image asset for this slot (origin URL = lightbox source) */
+  asset: PortfolioImage;
+  /** WebP variant URL used as the THREE texture (cheap decode). */
+  texUrl: string;
   /** current X offset along the carousel belt */
   offset: number;
   /** stable Z depth for this slot (stage local; SLOT_Z_BACK..SLOT_Z_FRONT) */
@@ -62,10 +65,17 @@ interface SlotState {
 /**
  * Gallery — infinite horizontal carousel with rotating image pool.
  *
- * 12 visible slots cycle through 37+ unique images. As a slot wraps around
- * (exits left → re-enters right), it picks the next image from the pool that
- * is NOT currently assigned to any other visible slot. This guarantees no
- * duplicate images on screen at any moment.
+ * 18 visible slots cycle through the entire portfolio (every image from
+ * every project folder, plus the legacy /landing/ gallery shots), shuffled
+ * deterministically. As a slot wraps around (exits left → re-enters right),
+ * it picks the next image from the pool that is NOT currently assigned to
+ * any other visible slot. This guarantees no duplicate images on screen at
+ * any moment.
+ *
+ * Textures load as `.1080.webp` siblings (~80–300 KB) instead of the raw
+ * multi-MB originals — 5–10× cheaper to decode for the same on-screen
+ * resolution. Click still opens the original at full fidelity in the
+ * lightbox, where a "View project" pill links to the matching board.
  */
 export function Gallery() {
   const yPos = getSectionWorldY('gallery');
@@ -200,25 +210,17 @@ export function Gallery() {
     };
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
-  // De-duplicated pool of gallery images
-  const pool = useMemo(() => {
-    const seen = new Set<string>();
-    const out: AssetEntry[] = [];
-    for (const a of assets) {
-      if (a.affinity !== 'gallery' || a.kind !== 'image') continue;
-      if (seen.has(a.url)) continue;
-      seen.add(a.url);
-      out.push(a);
-    }
-    return out;
-  }, []);
+  // De-duplicated, shuffled pool spanning every project + the legacy
+  // /landing/ gallery shots. Image-only — videos render as <Vid> elsewhere.
+  const pool = useMemo<PortfolioImage[]>(() => getAllPortfolioImages(), []);
 
-  // Preload every gallery texture once on mount. drei's <Image>/useTexture
-  // pulls from the same THREE.Cache, so by the time a slot wraps to a new
-  // url the texture is already resident and useTexture resolves synchronously
-  // — no Suspense fallback, no scene blank.
+  // Preload every gallery texture once on mount, picking the 1080-wide
+  // WebP variant (cheap decode) — drei's <Image>/useTexture pulls from
+  // the same THREE.Cache, so by the time a slot wraps to a new url the
+  // texture is already resident and useTexture resolves synchronously —
+  // no Suspense fallback, no scene blank.
   useEffect(() => {
-    for (const a of pool) useTexture.preload(a.url);
+    for (const a of pool) useTexture.preload(pickOptimized(a.url, 1080));
   }, [pool]);
 
   // Pool cursor — advances when a slot needs a fresh image
@@ -243,8 +245,10 @@ export function Gallery() {
       const minDist = STAGE_TO_CAMERA - SLOT_Z_FRONT; // front-row distance
       const baseSpeed = Math.pow(minDist / dist, 0.70); // ~1.0 front, ~0.45 back
       const jitter = 0.65 + ((i * 6151) % 100) / 100 * 0.70; // 0.65..1.35
+      const asset = pool[i % pool.length];
       return {
-        asset: pool[i % pool.length],
+        asset,
+        texUrl: pickOptimized(asset.url, 1080),
         offset: i * spacing - CAROUSEL_WIDTH / 2,
         depth,
         speedFactor: baseSpeed * jitter,
@@ -257,7 +261,7 @@ export function Gallery() {
   if (poolCursor.current === 0) poolCursor.current = SLOT_COUNT;
 
   /** Pick the next image from the pool that is NOT in any visible slot. */
-  const pickNextAsset = (excludeUrl?: string): AssetEntry => {
+  const pickNextAsset = (excludeUrl?: string): PortfolioImage => {
     const inUse = new Set<string>();
     for (const s of slots.current) inUse.add(s.asset.url);
     if (excludeUrl) inUse.add(excludeUrl);
@@ -327,6 +331,7 @@ export function Gallery() {
       if (s.offset < -CAROUSEL_WIDTH / 2 - 2) {
         s.offset += CAROUSEL_WIDTH + spacing;
         s.asset = pickNextAsset(s.asset.url);
+        s.texUrl = pickOptimized(s.asset.url, 1080);
         s.seed = Math.random();
 
         // Spawn-gap safeguard: cascade the offset right until it is
@@ -533,10 +538,26 @@ function CarouselSlot({ slotIndex, slots }: CarouselSlotProps) {
   const hoverScale = useRef(1);
 
   const slot = slots.current[slotIndex];
-  const [currentUrl, setCurrentUrl] = useState(slot.asset.url);
-  const texture = useTexture(currentUrl);
+  // The texUrl points at the .1080.webp variant. clickUrl points at the
+  // .1920.webp variant — still WebP (cheap to decode in the lightbox) but
+  // ample fidelity for fullscreen viewing. The lightbox's projectFromUrl
+  // helper resolves the project from the folder segment of either, so the
+  // "View project" pill works regardless of suffix.
+  const [currentTexUrl, setCurrentTexUrl] = useState(slot.texUrl);
+  const [clickUrl, setClickUrl] = useState(() => pickOptimized(slot.asset.url, 1920));
+  const texture = useTexture(currentTexUrl);
 
-  const aspect = slot.asset.aspect;
+  // Initial aspect from manifest metadata; corrected to the texture's
+  // intrinsic dimensions once it has loaded.
+  const [aspect, setAspect] = useState(() => slot.asset.aspect);
+  useEffect(() => {
+    const img = texture?.image as HTMLImageElement | undefined;
+    if (!img) return;
+    const w = img.naturalWidth ?? img.width ?? 0;
+    const h = img.naturalHeight ?? img.height ?? 0;
+    if (w > 0 && h > 0) setAspect(w / h);
+  }, [texture]);
+
   const sizeMultiplier = useMemo(() => 0.55 + Math.random() * 1.1, []);
 
   const depth = slot.depth;
@@ -555,8 +576,9 @@ function CarouselSlot({ slotIndex, slots }: CarouselSlotProps) {
     const s = slots.current[slotIndex];
     if (!groupRef.current || !boxRef.current) return;
 
-    if (s.asset.url !== currentUrl) {
-      setCurrentUrl(s.asset.url);
+    if (s.texUrl !== currentTexUrl) {
+      setCurrentTexUrl(s.texUrl);
+      setClickUrl(pickOptimized(s.asset.url, 1920));
     }
 
     // Curved arc positioning
@@ -597,7 +619,7 @@ function CarouselSlot({ slotIndex, slots }: CarouselSlotProps) {
         ref={boxRef}
         onPointerOver={(e) => { e.stopPropagation(); setHover(true); }}
         onPointerOut={() => setHover(false)}
-        onClick={(e) => { e.stopPropagation(); openLightbox(currentUrl); }}
+        onClick={(e) => { e.stopPropagation(); openLightbox(clickUrl); }}
         scale={[clampedW, clampedH, boxDepth]}
         position={[0, clampedH / 2, 0]}
       >

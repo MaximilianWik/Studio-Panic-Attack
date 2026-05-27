@@ -283,6 +283,11 @@ video {
   transition: transform 0.8s cubic-bezier(0.2, 0.8, 0.2, 1),
     filter 0.4s ease;
 }
+.spa-card picture {
+  position: absolute;
+  inset: 0;
+  display: block;
+}
 
 .spa-card:hover .spa-card__media {
   transform: scale(1.04);
@@ -567,7 +572,34 @@ video {
 @keyframes spa-lb-img { from { opacity: 0; transform: scale(0.94); } to { opacity: 1; transform: scale(1); } }
 .spa-lightbox__close { position: fixed; top: 20px; right: 24px; width: 36px; height: 36px; border-radius: 50%; background: var(--blood); color: var(--paper); border: none; cursor: none; font-size: 18px; display: grid; place-items: center; z-index: 201; transition: transform 0.2s; }
 .spa-lightbox__close:hover { transform: rotate(90deg); }
-.spa-lightbox__caption { position: fixed; bottom: 22px; left: 50%; transform: translateX(-50%); font-family: var(--font-mono); font-size: 10px; letter-spacing: 0.3em; text-transform: uppercase; color: rgba(246,243,238,0.6); }
+.spa-lightbox__caption { position: fixed; bottom: 22px; left: 50%; transform: translateX(-50%); font-family: var(--font-mono); font-size: 10px; letter-spacing: 0.3em; text-transform: uppercase; color: rgba(246,243,238,0.6); display: flex; align-items: center; gap: 18px; max-width: 92vw; }
+.spa-lightbox__caption-text { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.spa-lightbox__project {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 14px;
+  border: 1px solid rgba(246, 243, 238, 0.35);
+  border-radius: 999px;
+  background: rgba(211, 0, 0, 0.85);
+  color: var(--paper);
+  text-decoration: none;
+  font-family: var(--font-mono);
+  font-size: 10px;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  transition: background 0.18s ease-out, transform 0.18s ease-out, border-color 0.18s ease-out;
+  cursor: none;
+  flex-shrink: 0;
+}
+.spa-lightbox__project:hover {
+  background: var(--blood);
+  border-color: var(--paper);
+  transform: translateY(-1px);
+}
+.spa-lightbox__project-label { opacity: 0.75; }
+.spa-lightbox__project-title { font-weight: 600; letter-spacing: 0.14em; }
+.spa-lightbox__project-arrow { font-size: 14px; line-height: 1; transform: translateY(-1px); }
 
 /* ----- Vocabulary section ----- */
 .spa-vocab { width: min(1000px, 92vw); display: grid; grid-template-columns: 1fr 1fr; align-items: center; gap: 28px; }
@@ -966,7 +998,8 @@ video {
 /* ----- Lightbox close on touch ----- */
 @media (max-width: 600px) {
   .spa-lightbox__close { top: 14px; right: 14px; width: 32px; height: 32px; font-size: 16px; }
-  .spa-lightbox__caption { font-size: 9px; bottom: 14px; }
+  .spa-lightbox__caption { font-size: 9px; bottom: 14px; flex-direction: column; gap: 10px; }
+  .spa-lightbox__project { padding: 6px 11px; font-size: 9px; }
 }
 
 

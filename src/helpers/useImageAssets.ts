@@ -6,10 +6,18 @@
  *
  * Filenames mirror the on-disk names in `public/landing/` (already
  * sanitized to ASCII-safe lowercase kebab-case during the previous pass).
+ *
+ * For the home-page Gallery, the pool no longer pulls only `/landing/*`
+ * gallery images — it now mixes EVERY image from EVERY project folder
+ * (via `getAllPortfolioImages()`) shuffled deterministically. Aspect and
+ * dimensions come from the manifest's intrinsic width/height fields when
+ * available (sharp metadata baked in at gen:manifest time), so each slot
+ * sizes correctly even before its texture has finished decoding.
  */
 
 import type { SectionId } from '../config/sections';
 import { assetUrl } from './assetUrl';
+import { PROJECT_FOLDERS, LANDING_ASSETS, type MediaAsset } from '../generated/mediaManifest';
 
 export interface AssetEntry {
   /** root-relative URL, e.g. /landing/img_4145-1.jpg */
@@ -104,4 +112,96 @@ export function pickByAffinity(
   const matched = assets.filter((a) => a.affinity === affinity);
   if (matched.length || !fallbackToAll) return matched;
   return assets;
+}
+
+/**
+ * Build the complete cross-project gallery pool: every image asset across
+ * every project folder, plus the legacy /landing/ gallery images, deduped
+ * by URL. Used by the home-page <Gallery /> so the carousel rotates the
+ * full body of work rather than a hand-curated subset.
+ *
+ * Aspect ratio is taken from the manifest's intrinsic width/height fields
+ * (sharp metadata) when present; falls back to 1.0 (square) so the slot
+ * has a sensible bounding box before the texture finishes decoding. The
+ * box dimensions are corrected post-load by the slot itself.
+ *
+ * The returned `url` is the ORIGINAL (raw `.png`/`.jpg`) — callers should
+ * route it through `pickOptimized()` (or use it as-is for the lightbox
+ * source). We intentionally don't pre-resolve the WebP here so the same
+ * AssetEntry can drive both the texture (via `.1080.webp`) and the
+ * lightbox (full-res original).
+ *
+ * Order is randomised deterministically (a Mulberry32 PRNG seeded from a
+ * stable constant) so reloads see the same shuffle but the carousel
+ * doesn't always start with `1. Events`. Pass a different seed at the
+ * call site to vary it.
+ */
+export interface PortfolioImage {
+  url: string;
+  aspect: number;
+  /** Originating project folder ("3. 3D", etc.) or "landing" for the legacy pool. */
+  source: string;
+  /** Optional manifest-derived metadata (used by callers for srcset/lqip). */
+  asset: MediaAsset;
+}
+
+function mulberry32(seed: number): () => number {
+  let s = seed >>> 0;
+  return () => {
+    s = (s + 0x6D2B79F5) >>> 0;
+    let t = s;
+    t = Math.imul(t ^ (t >>> 15), t | 1);
+    t ^= t + Math.imul(t ^ (t >>> 7), t | 61);
+    return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+  };
+}
+
+function aspectFromAsset(a: MediaAsset, fallback: number): number {
+  if (a.width && a.height && a.height > 0) return a.width / a.height;
+  return fallback;
+}
+
+export function getAllPortfolioImages(seed = 0xC0FFEE): PortfolioImage[] {
+  const out: PortfolioImage[] = [];
+  const seen = new Set<string>();
+
+  // 1) Every project folder, every image.
+  for (const proj of PROJECT_FOLDERS) {
+    for (const a of proj.assets) {
+      if (a.type !== 'image') continue;
+      if (seen.has(a.url)) continue;
+      seen.add(a.url);
+      out.push({
+        url: a.url,
+        aspect: aspectFromAsset(a, 1.33),
+        source: proj.folder,
+        asset: a,
+      });
+    }
+  }
+
+  // 2) Legacy /landing/* gallery shots — these don't live under a project
+  //    folder but were curated for the home-page reel. Include the image
+  //    entries; skip videos (Gallery only renders still planes).
+  for (const a of LANDING_ASSETS) {
+    if (a.type !== 'image') continue;
+    if (seen.has(a.url)) continue;
+    seen.add(a.url);
+    out.push({
+      url: a.url,
+      aspect: aspectFromAsset(a, 1.0),
+      source: 'landing',
+      asset: a,
+    });
+  }
+
+  // 3) Deterministic shuffle so the carousel mixes projects rather than
+  //    spinning through them folder-by-folder.
+  const rng = mulberry32(seed);
+  for (let i = out.length - 1; i > 0; i--) {
+    const j = Math.floor(rng() * (i + 1));
+    [out[i], out[j]] = [out[j], out[i]];
+  }
+
+  return out;
 }
