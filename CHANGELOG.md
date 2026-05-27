@@ -2,6 +2,10 @@
 
 All notable changes to Studio Panic Attack are tracked here.
 
+## [1.2.21] -- folder tiles: cover on both peek-out sheets
+
+- `src/components/PageShell/FolderTile.tsx`: pageB (the front-most sheet, renders on top of pageA in SVG paint order) now also carries the same `<image>` overlay. Previously only pageA had the cover, so the white front sheet stayed blank when the folder opened. Same `showCover` gate, same single `coverUrl` — still at most one image fetched per interaction.
+
 ## [1.2.20] -- folder tiles: thumbnail of project's first image on hover/active
 
 - `src/components/PageShell/FolderTile.tsx`: new optional `coverUrl` prop. On hover or when the tile represents the active board, an SVG `<image>` with `preserveAspectRatio="xMidYMid slice"` mounts inside the `pageA` group so the thumbnail inherits the existing pop-out / rotate animation. Mounted only while `active || hovered` so the 16-tile grid still costs zero image bytes at idle (matches the original "removed for perf" intent — covers fetch on demand, max one in flight at a time).

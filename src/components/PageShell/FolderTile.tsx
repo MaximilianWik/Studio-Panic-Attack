@@ -48,7 +48,10 @@ export function FolderTile({ num, title, className, active, coverUrl }: FolderTi
         <path className="spa-folder-tile__back" d="M6 28 L46 28 L52 22 L114 22 L114 84 L6 84 Z" />
         {/* Tab number */}
         <text className="spa-folder-tile__num" x="64" y="33" textAnchor="middle">{num}</text>
-        {/* Page peeking out — pageA is the front sheet, gets the thumbnail */}
+        {/* Page peeking out — pageA is the back sheet, pageB is the front
+            sheet (renders on top). Both get the same cover so the view
+            shows artwork no matter how the pages overlap during the
+            pop-out animation. */}
         <g className="spa-folder-tile__pageA">
           <rect x="20" y="30" width="80" height="50" rx="1" />
           {showCover ? (
@@ -66,6 +69,16 @@ export function FolderTile({ num, title, className, active, coverUrl }: FolderTi
         </g>
         <g className="spa-folder-tile__pageB">
           <rect x="14" y="36" width="80" height="46" rx="1" />
+          {showCover ? (
+            <image
+              href={coverUrl}
+              x="14"
+              y="36"
+              width="80"
+              height="46"
+              preserveAspectRatio="xMidYMid slice"
+            />
+          ) : null}
         </g>
         {/* Front lid — animates open on hover */}
         <g className="spa-folder-tile__lid">
