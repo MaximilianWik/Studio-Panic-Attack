@@ -207,11 +207,35 @@ img[data-failed="1"] {
 .spa-polaroid__inner picture,
 .spa-polaroid__inner img,
 .spa-polaroid__inner video,
-.spa-polaroid__inner .spa-vid-wrap {
+.spa-polaroid__inner .spa-vid-wrap,
+.spa-polaroid__inner .spa-img {
   width: 100%;
   height: 100%;
   object-fit: cover;
   display: block;
+}
+
+/* ── Responsive lazy image wrapper (helpers/media.tsx <Img>) ──────────
+   The wrapper paints the LQIP as a blurred background (set inline as
+   `background-image: url(<base64>)`); once the real image has loaded,
+   the inner <img> fades in over it. The 8×12 LQIP is intrinsically blurry
+   so we don't need a CSS filter — but we scale it up via background-size
+   to fill the polaroid. */
+.spa-img {
+  position: relative;
+  overflow: hidden;
+  background-color: #1a1a1a;
+}
+.spa-img__el {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+  opacity: 0;
+  transition: opacity 220ms ease-out;
+}
+.spa-img__el.is-loaded {
+  opacity: 1;
 }
 .spa-polaroid__cap {
   display: block;

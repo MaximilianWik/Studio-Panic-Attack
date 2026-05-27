@@ -3,16 +3,13 @@ import { useEffect, useRef, useState } from 'react';
 /**
  * Tiny media helpers shared by the whiteboard pages.
  *
- * <Img>  — lazy <img> wrapper with sensible defaults (decoding=async,
- *          loading=lazy, draggable=false). Adds eager preload for
- *          above-the-fold use via the `eager` prop.
- *
- *          NOTE: an earlier version emitted <picture><source srcSet=*.webp>
- *          but browsers do NOT fall back to the <img> child if the picked
- *          <source> 404s — they just show the broken-image icon. Until the
- *          asset-optimization pass actually produces sibling .webp files,
- *          we ship a plain <img>. Reintroduce <picture> later by reading
- *          a manifest of known-optimized URLs.
+ * <Img>  — responsive lazy image. Accepts manifest-derived `webpSrcset`,
+ *          `avifSrcset`, and `lqip` to render a real <picture> with srcset,
+ *          a tiny blurred LQIP painted as background, and an
+ *          IntersectionObserver gate that prevents the heavy decode
+ *          until the image is near the viewport. Falls through to a plain
+ *          <img> when no optimized siblings exist (e.g. before the asset
+ *          optimizer has been run).
  *
  * <Vid>   — autoplay-on-visible muted-loop video. Uses an IntersectionObserver
  *          so we only stream bytes when the user actually scrolls onto it.
@@ -21,30 +18,166 @@ import { useEffect, useRef, useState } from 'react';
  *          "video" indicator instead of a solid black box.
  */
 
+/**
+ * Hint to the runtime about how aggressive we should be about loading.
+ *  - 'active'    : on the currently-active board → load now, fetchpriority auto.
+ *  - 'neighbour' : adjacent (hydrated) board     → IO-gated, low priority,
+ *                                                  bigger margin so it's ready
+ *                                                  by the time the user snaps.
+ *  - 'idle'      : everything else → IO-gated, low priority, conservative margin.
+ */
+export type LoadPriority = 'active' | 'neighbour' | 'idle';
+
 interface ImgProps extends React.ImgHTMLAttributes<HTMLImageElement> {
   src: string;
   alt?: string;
   /** Force eager load (above-the-fold hero images). */
   eager?: boolean;
+  /** Comma-separated WebP srcset like "url 480w, url 1080w". */
+  webpSrcset?: string;
+  /** Comma-separated AVIF srcset (typically a single 1080w entry). */
+  avifSrcset?: string;
+  /** Tiny base64 data-URL placeholder shown until the real image decodes. */
+  lqip?: string;
+  /** Standard <img sizes> attribute. */
+  sizes?: string;
+  /** How aggressive to be about loading. Defaults to 'active'. */
+  priority?: LoadPriority;
 }
 
-export function Img({ src, alt = '', eager, onError, ...rest }: ImgProps) {
-  return (
+const DEFAULT_SIZES = '(max-width: 600px) 50vw, 25vw';
+
+function rootMarginFor(priority: LoadPriority): string {
+  switch (priority) {
+    case 'active':    return '600px 0px';
+    case 'neighbour': return '300px 0px';
+    case 'idle':      return '100px 0px';
+  }
+}
+
+function fetchPriorityFor(priority: LoadPriority): 'auto' | 'low' {
+  return priority === 'active' ? 'auto' : 'low';
+}
+
+export function Img({
+  src,
+  alt = '',
+  eager,
+  webpSrcset,
+  avifSrcset,
+  lqip,
+  sizes = DEFAULT_SIZES,
+  priority = 'active',
+  className,
+  style,
+  onError,
+  onLoad,
+  ...rest
+}: ImgProps) {
+  const wrapRef = useRef<HTMLSpanElement>(null);
+  // Eager bypass: skip IO entirely for above-the-fold heroes.
+  const [inView, setInView] = useState<boolean>(eager === true);
+  const [loaded, setLoaded] = useState(false);
+
+  useEffect(() => {
+    if (eager) return;
+    if (inView) return;
+    const el = wrapRef.current;
+    if (!el) return;
+    // Older Safari fallback — IO has been universal for years but cheap to guard.
+    if (typeof IntersectionObserver === 'undefined') {
+      setInView(true);
+      return;
+    }
+    const io = new IntersectionObserver(
+      (entries) => {
+        for (const e of entries) {
+          if (e.isIntersecting) {
+            setInView(true);
+            io.disconnect();
+            break;
+          }
+        }
+      },
+      { rootMargin: rootMarginFor(priority), threshold: 0.01 },
+    );
+    io.observe(el);
+    return () => io.disconnect();
+  }, [eager, priority, inView]);
+
+  const hasOptimized = Boolean(webpSrcset || avifSrcset);
+
+  // Compose wrapper style with LQIP background + crossfade.
+  const wrapStyle: React.CSSProperties = {
+    ...(style || {}),
+    ...(lqip
+      ? {
+          backgroundImage: `url("${lqip}")`,
+          backgroundSize: 'cover',
+          backgroundPosition: 'center',
+        }
+      : null),
+  };
+
+  const handleLoad = (e: React.SyntheticEvent<HTMLImageElement>) => {
+    setLoaded(true);
+    onLoad?.(e);
+  };
+
+  const handleError = (e: React.SyntheticEvent<HTMLImageElement>) => {
+    const img = e.currentTarget;
+    img.dataset.failed = '1';
+    // eslint-disable-next-line no-console
+    console.warn('[Img] failed:', src);
+    onError?.(e);
+  };
+
+  // The actual <img> markup — shared between the optimized and fallback paths.
+  // Until inView, render a 1x1 transparent gif so the browser doesn't fetch
+  // the original. The wrapper still paints the LQIP background.
+  const TRANSPARENT =
+    'data:image/gif;base64,R0lGODlhAQABAAAAACH5BAEKAAEALAAAAAABAAEAAAICTAEAOw==';
+
+  const imgEl = (
     <img
-      src={src}
+      src={inView ? src : TRANSPARENT}
       alt={alt}
       loading={eager ? 'eager' : 'lazy'}
       decoding="async"
       draggable={false}
-      onError={(e) => {
-        const img = e.currentTarget;
-        img.dataset.failed = '1';
-        // eslint-disable-next-line no-console
-        console.warn('[Img] failed:', src);
-        if (onError) onError(e);
-      }}
+      // @ts-expect-error fetchpriority is valid HTML, types lag.
+      fetchpriority={fetchPriorityFor(priority)}
+      className={
+        'spa-img__el' +
+        (loaded ? ' is-loaded' : '') +
+        (className ? ' ' + className : '')
+      }
+      onLoad={handleLoad}
+      onError={handleError}
       {...rest}
     />
+  );
+
+  return (
+    <span
+      ref={wrapRef}
+      className={'spa-img' + (loaded ? ' is-loaded' : '') + (lqip ? ' has-lqip' : '')}
+      style={wrapStyle}
+    >
+      {hasOptimized && inView ? (
+        <picture>
+          {avifSrcset ? (
+            <source type="image/avif" srcSet={avifSrcset} sizes={sizes} />
+          ) : null}
+          {webpSrcset ? (
+            <source type="image/webp" srcSet={webpSrcset} sizes={sizes} />
+          ) : null}
+          {imgEl}
+        </picture>
+      ) : (
+        imgEl
+      )}
+    </span>
   );
 }
 
@@ -54,6 +187,8 @@ interface VidProps extends React.VideoHTMLAttributes<HTMLVideoElement> {
   poster?: string;
   /** Optional .webm sibling — only emitted as <source> when explicitly passed. */
   webm?: string;
+  /** Loading priority — neighbour boards skip preload entirely. */
+  priority?: LoadPriority;
 }
 
 function derivePoster(src: string): string {
@@ -157,7 +292,7 @@ function useVideoThumbnail(src: string, enabled: boolean): { thumb: string | nul
   return { thumb, tried };
 }
 
-export function Vid({ src, poster, webm, className, style, ...rest }: VidProps) {
+export function Vid({ src, poster, webm, className, style, priority = 'active', ...rest }: VidProps) {
   const ref = useRef<HTMLVideoElement>(null);
   const wrapRef = useRef<HTMLDivElement>(null);
   const [visible, setVisible] = useState(false);
@@ -185,8 +320,12 @@ export function Vid({ src, poster, webm, className, style, ...rest }: VidProps) 
     return () => io.disconnect();
   }, []);
 
-  // Capture thumbnail when the wrapper enters viewport.
-  const { thumb, tried } = useVideoThumbnail(src, visible);
+  // Capture thumbnail when the wrapper enters viewport AND the board is
+  // active or a neighbour. Off-board (priority='idle') we skip the thumbnail
+  // altogether — the placeholder is shown instead until the user snaps to
+  // the board.
+  const thumbEnabled = visible && priority !== 'idle';
+  const { thumb, tried } = useVideoThumbnail(src, thumbEnabled);
 
   // Autoplay only for non-MOV when visible.
   useEffect(() => {
@@ -206,6 +345,14 @@ export function Vid({ src, poster, webm, className, style, ...rest }: VidProps) 
   // visible content. For MOV we trust the thumbnail or fall back to the
   // film-strip placeholder.
   const showPlaceholder = !hasData && !thumb;
+
+  // preload strategy:
+  //   active   — 'metadata' so the video is ready to play when scrolled in
+  //   neighbour— 'metadata' too: user is one snap away
+  //   idle     — 'none': don't speculatively fetch range-0 of off-screen videos
+  //   MOV      — always 'none' (auto-decode is unreliable)
+  const preloadStrategy: 'none' | 'metadata' =
+    isMov || priority === 'idle' ? 'none' : 'metadata';
 
   return (
     <div ref={wrapRef} className={'spa-vid-wrap' + (className ? ' ' + className : '')} style={style}>
@@ -240,7 +387,7 @@ export function Vid({ src, poster, webm, className, style, ...rest }: VidProps) 
         muted
         loop
         playsInline
-        preload={isMov ? 'none' : 'metadata'}
+        preload={preloadStrategy}
         onLoadedData={() => setHasData(true)}
         onCanPlay={() => setHasData(true)}
         {...rest}

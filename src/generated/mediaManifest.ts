@@ -3,11 +3,19 @@
 //
 // Each entry's `url` is properly percent-encoded so it can be used directly
 // in src/href attributes without further escaping.
+//
+// Optional fields populated when scripts/optimize-public-assets.mjs has run:
+//   webpSrcset  — responsive WebP sources, comma-separated "<url> <w>w"
+//   avifSrcset  — single-width AVIF source for modern browsers
+//   lqip        — tiny base64 data-URL blurred placeholder
 
 export interface MediaAsset {
   file: string;
   url: string;
   type: 'image' | 'video';
+  webpSrcset?: string;
+  avifSrcset?: string;
+  lqip?: string;
 }
 
 export interface ProjectFolder {
@@ -23,17 +31,26 @@ export const PROJECT_FOLDERS: ProjectFolder[] = [
       {
         "file": "IMG_2309.jpg",
         "url": "/2.%20Projects/1.%20Events/IMG_2309.jpg",
-        "type": "image"
+        "type": "image",
+        "webpSrcset": "/2.%20Projects/1.%20Events/IMG_2309.480.webp 480w, /2.%20Projects/1.%20Events/IMG_2309.1080.webp 1080w",
+        "avifSrcset": "/2.%20Projects/1.%20Events/IMG_2309.1080.avif 1080w",
+        "lqip": "data:image/webp;base64,UklGRkwAAABXRUJQVlA4IEAAAAAQAgCdASoIAAwABABoJaACdAD0mMWNLLwAAP7csv/5ixp3mkJReqeyZteQw546UMV8e7hY6gvX0IYgCmKA8AAA"
       },
       {
         "file": "IMG_3380.png",
         "url": "/2.%20Projects/1.%20Events/IMG_3380.png",
-        "type": "image"
+        "type": "image",
+        "webpSrcset": "/2.%20Projects/1.%20Events/IMG_3380.480.webp 480w, /2.%20Projects/1.%20Events/IMG_3380.1080.webp 1080w, /2.%20Projects/1.%20Events/IMG_3380.1920.webp 1920w",
+        "avifSrcset": "/2.%20Projects/1.%20Events/IMG_3380.1080.avif 1080w",
+        "lqip": "data:image/webp;base64,UklGRk4AAABXRUJQVlA4IEIAAADQAQCdASoIAAwABABoJYgCw7EUpThdQAD+NGvyQpeu6E8T8alsBoHIms4HrYRpgd6N5tyccCCa+8I7INNPxLwAAAA="
       },
       {
         "file": "treasure hunt.png",
         "url": "/2.%20Projects/1.%20Events/treasure%20hunt.png",
-        "type": "image"
+        "type": "image",
+        "webpSrcset": "/2.%20Projects/1.%20Events/treasure%20hunt.480.webp 480w, /2.%20Projects/1.%20Events/treasure%20hunt.1080.webp 1080w, /2.%20Projects/1.%20Events/treasure%20hunt.1920.webp 1920w",
+        "avifSrcset": "/2.%20Projects/1.%20Events/treasure%20hunt.1080.avif 1080w",
+        "lqip": "data:image/webp;base64,UklGRj4AAABXRUJQVlA4IDIAAACwAQCdASoIAAwABABoJQBOgCHXjlAgAP7lvfVqseUUW5yviTPutQqhTitnNXqJzQAAAA=="
       }
     ]
   },
@@ -43,102 +60,161 @@ export const PROJECT_FOLDERS: ProjectFolder[] = [
       {
         "file": "Artboard 6.png",
         "url": "/2.%20Projects/2.%20Graphic%20Design/Artboard%206.png",
-        "type": "image"
+        "type": "image",
+        "webpSrcset": "/2.%20Projects/2.%20Graphic%20Design/Artboard%206.480.webp 480w, /2.%20Projects/2.%20Graphic%20Design/Artboard%206.1080.webp 1080w, /2.%20Projects/2.%20Graphic%20Design/Artboard%206.1920.webp 1920w",
+        "avifSrcset": "/2.%20Projects/2.%20Graphic%20Design/Artboard%206.1080.avif 1080w",
+        "lqip": "data:image/webp;base64,UklGRkoAAABXRUJQVlA4ID4AAADwAQCdASoIAAwABABoJaQAD4SQyetIDEAA/ugAsoi9SB2AQRi6IWgitA9b/h1RXzAB5HPCJADj+V3N0KQAAA=="
       },
       {
         "file": "Artist Frame 1.png",
         "url": "/2.%20Projects/2.%20Graphic%20Design/Artist%20Frame%201.png",
-        "type": "image"
+        "type": "image",
+        "webpSrcset": "/2.%20Projects/2.%20Graphic%20Design/Artist%20Frame%201.480.webp 480w, /2.%20Projects/2.%20Graphic%20Design/Artist%20Frame%201.1080.webp 1080w, /2.%20Projects/2.%20Graphic%20Design/Artist%20Frame%201.1920.webp 1920w",
+        "avifSrcset": "/2.%20Projects/2.%20Graphic%20Design/Artist%20Frame%201.1080.avif 1080w",
+        "lqip": "data:image/webp;base64,UklGRlIAAABXRUJQVlA4IEYAAADQAQCdASoIAAwABABoJaQAAudjc8k6gAD+bFZFfZ9jRJS8RNj3ZtD6LIcD5CplEHh2Fv84Y40v1an+jFiMfilY6dycMAAA"
       },
       {
         "file": "Artist Frame 2.png",
         "url": "/2.%20Projects/2.%20Graphic%20Design/Artist%20Frame%202.png",
-        "type": "image"
+        "type": "image",
+        "webpSrcset": "/2.%20Projects/2.%20Graphic%20Design/Artist%20Frame%202.480.webp 480w, /2.%20Projects/2.%20Graphic%20Design/Artist%20Frame%202.1080.webp 1080w, /2.%20Projects/2.%20Graphic%20Design/Artist%20Frame%202.1920.webp 1920w",
+        "avifSrcset": "/2.%20Projects/2.%20Graphic%20Design/Artist%20Frame%202.1080.avif 1080w",
+        "lqip": "data:image/webp;base64,UklGRlIAAABXRUJQVlA4IEYAAADQAQCdASoIAAwABABoJaQAAvrf4fs9QAD+m7OVzyveaZ9/wax7a42XalxYslnruO4yjlbF5vXIG9sWxxrq8oLJ5+ZlAAAA"
       },
       {
         "file": "Artist Frame 3.png",
         "url": "/2.%20Projects/2.%20Graphic%20Design/Artist%20Frame%203.png",
-        "type": "image"
+        "type": "image",
+        "webpSrcset": "/2.%20Projects/2.%20Graphic%20Design/Artist%20Frame%203.480.webp 480w, /2.%20Projects/2.%20Graphic%20Design/Artist%20Frame%203.1080.webp 1080w, /2.%20Projects/2.%20Graphic%20Design/Artist%20Frame%203.1920.webp 1920w",
+        "avifSrcset": "/2.%20Projects/2.%20Graphic%20Design/Artist%20Frame%203.1080.avif 1080w",
+        "lqip": "data:image/webp;base64,UklGRkoAAABXRUJQVlA4ID4AAADQAQCdASoIAAwABABoJaQAAp1TdqK4AAD+1irKJJ2EFIah1RXUCb4k4k2ZVTA6Mf24Hrjf5e5XrQF/v3YgAA=="
       },
       {
         "file": "Artist Frame 4.png",
         "url": "/2.%20Projects/2.%20Graphic%20Design/Artist%20Frame%204.png",
-        "type": "image"
+        "type": "image",
+        "webpSrcset": "/2.%20Projects/2.%20Graphic%20Design/Artist%20Frame%204.480.webp 480w, /2.%20Projects/2.%20Graphic%20Design/Artist%20Frame%204.1080.webp 1080w, /2.%20Projects/2.%20Graphic%20Design/Artist%20Frame%204.1920.webp 1920w",
+        "avifSrcset": "/2.%20Projects/2.%20Graphic%20Design/Artist%20Frame%204.1080.avif 1080w",
+        "lqip": "data:image/webp;base64,UklGRkoAAABXRUJQVlA4ID4AAADwAQCdASoIAAwABABoJaQAAup3lytqKAAA/u2somMYzR1XTOuvrEMStR6L3Qbu1htpMfYqpqxejqEC4AAAAA=="
       },
       {
         "file": "Artist Frame 5.png",
         "url": "/2.%20Projects/2.%20Graphic%20Design/Artist%20Frame%205.png",
-        "type": "image"
+        "type": "image",
+        "webpSrcset": "/2.%20Projects/2.%20Graphic%20Design/Artist%20Frame%205.480.webp 480w, /2.%20Projects/2.%20Graphic%20Design/Artist%20Frame%205.1080.webp 1080w, /2.%20Projects/2.%20Graphic%20Design/Artist%20Frame%205.1920.webp 1920w",
+        "avifSrcset": "/2.%20Projects/2.%20Graphic%20Design/Artist%20Frame%205.1080.avif 1080w",
+        "lqip": "data:image/webp;base64,UklGRkwAAABXRUJQVlA4IEAAAADwAQCdASoIAAwABABoJaQAD4VQb/3fgAAA/tYq2ePsKm2/vRtWFUFDWQV4Z2G5Kc/+cUkJmZNTmr2HmKhOAAAA"
       },
       {
         "file": "GlassErrorScrnshot.png",
         "url": "/2.%20Projects/2.%20Graphic%20Design/GlassErrorScrnshot.png",
-        "type": "image"
+        "type": "image",
+        "webpSrcset": "/2.%20Projects/2.%20Graphic%20Design/GlassErrorScrnshot.480.webp 480w",
+        "lqip": "data:image/webp;base64,UklGRlYAAABXRUJQVlA4IEoAAADwAQCdASoIAAwABABoJYgCdAD0jXbD8CAA9laDl5sUCeQzWY5h0OfVe7vwo6ClAJgvhrfSWq96Aa1neCEWj0Zs0lrCm9TRXAAAAA=="
       },
       {
         "file": "IMG_0669.jpg",
         "url": "/2.%20Projects/2.%20Graphic%20Design/IMG_0669.jpg",
-        "type": "image"
+        "type": "image",
+        "webpSrcset": "/2.%20Projects/2.%20Graphic%20Design/IMG_0669.480.webp 480w, /2.%20Projects/2.%20Graphic%20Design/IMG_0669.1080.webp 1080w, /2.%20Projects/2.%20Graphic%20Design/IMG_0669.1920.webp 1920w",
+        "avifSrcset": "/2.%20Projects/2.%20Graphic%20Design/IMG_0669.1080.avif 1080w",
+        "lqip": "data:image/webp;base64,UklGRkoAAABXRUJQVlA4ID4AAAAQAgCdASoIAAwABABoJYwCdAD0uRxjHrsAAP7a0vPxwMCa7x+wZ8HPiQ6w6SQXNZWLiDgAqqrr/gyhWUAoAA=="
       },
       {
         "file": "IMG_3330.png",
         "url": "/2.%20Projects/2.%20Graphic%20Design/IMG_3330.png",
-        "type": "image"
+        "type": "image",
+        "webpSrcset": "/2.%20Projects/2.%20Graphic%20Design/IMG_3330.480.webp 480w, /2.%20Projects/2.%20Graphic%20Design/IMG_3330.1080.webp 1080w, /2.%20Projects/2.%20Graphic%20Design/IMG_3330.1920.webp 1920w",
+        "avifSrcset": "/2.%20Projects/2.%20Graphic%20Design/IMG_3330.1080.avif 1080w",
+        "lqip": "data:image/webp;base64,UklGRmIAAABXRUJQVlA4IFYAAAAwAgCdASoIAAwABABoJbACdLoAAwkbCPlMwADicKPi9CKj7tJ8VdMQOg1nHsr2DeXJWwPvkcdSnS+384ym85OSnhmswc4n/4MU99nR4v3HYZtyeegAAA=="
       },
       {
         "file": "IMG_3335.png",
         "url": "/2.%20Projects/2.%20Graphic%20Design/IMG_3335.png",
-        "type": "image"
+        "type": "image",
+        "webpSrcset": "/2.%20Projects/2.%20Graphic%20Design/IMG_3335.480.webp 480w, /2.%20Projects/2.%20Graphic%20Design/IMG_3335.1080.webp 1080w",
+        "avifSrcset": "/2.%20Projects/2.%20Graphic%20Design/IMG_3335.1080.avif 1080w",
+        "lqip": "data:image/webp;base64,UklGRlAAAABXRUJQVlA4IEQAAADQAQCdASoIAAwABABoJbACdAEOtWT4AAD+8Ri6BzoF/ET4qD/2BY9197gnpsDmDZ+mnyLcpn+sVq8rz/lv2rcn6r4AAA=="
       },
       {
         "file": "IMG_3371.png",
         "url": "/2.%20Projects/2.%20Graphic%20Design/IMG_3371.png",
-        "type": "image"
+        "type": "image",
+        "webpSrcset": "/2.%20Projects/2.%20Graphic%20Design/IMG_3371.480.webp 480w, /2.%20Projects/2.%20Graphic%20Design/IMG_3371.1080.webp 1080w",
+        "avifSrcset": "/2.%20Projects/2.%20Graphic%20Design/IMG_3371.1080.avif 1080w",
+        "lqip": "data:image/webp;base64,UklGRigAAABXRUJQVlA4IBwAAAAwAQCdASoIAAwABABoJaQAA3AA/vJbrFB+aAAA"
       },
       {
         "file": "IMG_4145.JPG",
         "url": "/2.%20Projects/2.%20Graphic%20Design/IMG_4145.JPG",
-        "type": "image"
+        "type": "image",
+        "webpSrcset": "/2.%20Projects/2.%20Graphic%20Design/IMG_4145.480.webp 480w, /2.%20Projects/2.%20Graphic%20Design/IMG_4145.1080.webp 1080w, /2.%20Projects/2.%20Graphic%20Design/IMG_4145.1920.webp 1920w",
+        "avifSrcset": "/2.%20Projects/2.%20Graphic%20Design/IMG_4145.1080.avif 1080w",
+        "lqip": "data:image/webp;base64,UklGRlwAAABXRUJQVlA4IFAAAAAQAgCdASoIAAwABABoJbACdEf/gbTzxeQQAP1ltkMUemuNNpG6hhNhoW2q2AXEY7bZbUXX4pz5bJrZfoD/46qAaE5O/7RDQ/nJRKymtjPAAA=="
       },
       {
         "file": "IMG_4258.JPG",
         "url": "/2.%20Projects/2.%20Graphic%20Design/IMG_4258.JPG",
-        "type": "image"
+        "type": "image",
+        "webpSrcset": "/2.%20Projects/2.%20Graphic%20Design/IMG_4258.480.webp 480w, /2.%20Projects/2.%20Graphic%20Design/IMG_4258.1080.webp 1080w, /2.%20Projects/2.%20Graphic%20Design/IMG_4258.1920.webp 1920w",
+        "avifSrcset": "/2.%20Projects/2.%20Graphic%20Design/IMG_4258.1080.avif 1080w",
+        "lqip": "data:image/webp;base64,UklGRkwAAABXRUJQVlA4IEAAAACQAQCdASoIAAwABABoJYwAAptyIrgA98uJkKIk8dMdHz3dzSiV5pP09KIXiD/uMgdezUpeK3soA5qAau+xALgA"
       },
       {
         "file": "IMG_4263.JPG",
         "url": "/2.%20Projects/2.%20Graphic%20Design/IMG_4263.JPG",
-        "type": "image"
+        "type": "image",
+        "webpSrcset": "/2.%20Projects/2.%20Graphic%20Design/IMG_4263.480.webp 480w, /2.%20Projects/2.%20Graphic%20Design/IMG_4263.1080.webp 1080w, /2.%20Projects/2.%20Graphic%20Design/IMG_4263.1920.webp 1920w",
+        "avifSrcset": "/2.%20Projects/2.%20Graphic%20Design/IMG_4263.1080.avif 1080w",
+        "lqip": "data:image/webp;base64,UklGRkoAAABXRUJQVlA4ID4AAACwAQCdASoIAAwABABoJZQAAp0INBRUAP4nWvu1HQRu0LCJOaSzxk9Mxmd7EyDcqW4HhyyDx/REruMNKWAAAA=="
       },
       {
         "file": "IMG_4269(1).JPG",
         "url": "/2.%20Projects/2.%20Graphic%20Design/IMG_4269(1).JPG",
-        "type": "image"
+        "type": "image",
+        "webpSrcset": "/2.%20Projects/2.%20Graphic%20Design/IMG_4269(1).480.webp 480w, /2.%20Projects/2.%20Graphic%20Design/IMG_4269(1).1080.webp 1080w, /2.%20Projects/2.%20Graphic%20Design/IMG_4269(1).1920.webp 1920w",
+        "avifSrcset": "/2.%20Projects/2.%20Graphic%20Design/IMG_4269(1).1080.avif 1080w",
+        "lqip": "data:image/webp;base64,UklGRlAAAABXRUJQVlA4IEQAAADQAQCdASoIAAwABABoJQBYdiPg6FsmAAD+8aaa8PBYkzB2UMp6mC1uHm4IzKRPsVp7SSYBifg39WExBjeyA8GlxWQAAA=="
       },
       {
         "file": "IMG_9089.PNG",
         "url": "/2.%20Projects/2.%20Graphic%20Design/IMG_9089.PNG",
-        "type": "image"
+        "type": "image",
+        "webpSrcset": "/2.%20Projects/2.%20Graphic%20Design/IMG_9089.480.webp 480w, /2.%20Projects/2.%20Graphic%20Design/IMG_9089.1080.webp 1080w, /2.%20Projects/2.%20Graphic%20Design/IMG_9089.1920.webp 1920w",
+        "avifSrcset": "/2.%20Projects/2.%20Graphic%20Design/IMG_9089.1080.avif 1080w",
+        "lqip": "data:image/webp;base64,UklGRjgAAABXRUJQVlA4ICwAAACwAQCdASoIAAwABABoJaQAAqsHhDSAAP7e7DJDrodmSNJgS5nLA8vD+gAAAA=="
       },
       {
         "file": "IMG_9247.PNG",
         "url": "/2.%20Projects/2.%20Graphic%20Design/IMG_9247.PNG",
-        "type": "image"
+        "type": "image",
+        "webpSrcset": "/2.%20Projects/2.%20Graphic%20Design/IMG_9247.480.webp 480w, /2.%20Projects/2.%20Graphic%20Design/IMG_9247.1080.webp 1080w",
+        "avifSrcset": "/2.%20Projects/2.%20Graphic%20Design/IMG_9247.1080.avif 1080w",
+        "lqip": "data:image/webp;base64,UklGRkwAAABXRUJQVlA4IEAAAACQAQCdASoIAAwABABoJbACdADzRZAA272wkPaZnXw3Hf4QIe8kire92WWQAhdKXQOl3RGjAWv8c1/w8m8UAAAA"
       },
       {
         "file": "Paper.Portfolio_Journal.9.PNG",
         "url": "/2.%20Projects/2.%20Graphic%20Design/Paper.Portfolio_Journal.9.PNG",
-        "type": "image"
+        "type": "image",
+        "webpSrcset": "/2.%20Projects/2.%20Graphic%20Design/Paper.Portfolio_Journal.9.480.webp 480w, /2.%20Projects/2.%20Graphic%20Design/Paper.Portfolio_Journal.9.1080.webp 1080w, /2.%20Projects/2.%20Graphic%20Design/Paper.Portfolio_Journal.9.1920.webp 1920w",
+        "avifSrcset": "/2.%20Projects/2.%20Graphic%20Design/Paper.Portfolio_Journal.9.1080.avif 1080w",
+        "lqip": "data:image/webp;base64,UklGRkAAAABXRUJQVlA4IDQAAACwAQCdASoIAAwABABoJZQAAuYbYvJAAP7zcvJxKUq6/WdR2kw+wWV9Y/WmH0iSDG56AAAA"
       },
       {
         "file": "Pegasus.png",
         "url": "/2.%20Projects/2.%20Graphic%20Design/Pegasus.png",
-        "type": "image"
+        "type": "image",
+        "webpSrcset": "/2.%20Projects/2.%20Graphic%20Design/Pegasus.480.webp 480w, /2.%20Projects/2.%20Graphic%20Design/Pegasus.1080.webp 1080w, /2.%20Projects/2.%20Graphic%20Design/Pegasus.1920.webp 1920w",
+        "avifSrcset": "/2.%20Projects/2.%20Graphic%20Design/Pegasus.1080.avif 1080w",
+        "lqip": "data:image/webp;base64,UklGRkQAAABXRUJQVlA4IDgAAADwAQCdASoIAAwABABoJbACdAEO8IhfPOgA/uHNho44a+CkAv24/f0BNxw36wY1HcAeJC9OuoAAAA=="
       },
       {
         "file": "Print poster 4.jpg",
         "url": "/2.%20Projects/2.%20Graphic%20Design/Print%20poster%204.jpg",
-        "type": "image"
+        "type": "image",
+        "webpSrcset": "/2.%20Projects/2.%20Graphic%20Design/Print%20poster%204.480.webp 480w, /2.%20Projects/2.%20Graphic%20Design/Print%20poster%204.1080.webp 1080w, /2.%20Projects/2.%20Graphic%20Design/Print%20poster%204.1920.webp 1920w",
+        "avifSrcset": "/2.%20Projects/2.%20Graphic%20Design/Print%20poster%204.1080.avif 1080w",
+        "lqip": "data:image/webp;base64,UklGRkQAAABXRUJQVlA4IDgAAADQAQCdASoIAAwABABoJaQAAueLEhHiAAD+uAzIpkAf7d3oIPNi/baKn3Xs2pAtuLQfuvqK/AUAAA=="
       }
     ]
   },
@@ -153,7 +229,10 @@ export const PROJECT_FOLDERS: ProjectFolder[] = [
       {
         "file": "arc2.1.png",
         "url": "/2.%20Projects/3.%203D/arc2.1.png",
-        "type": "image"
+        "type": "image",
+        "webpSrcset": "/2.%20Projects/3.%203D/arc2.1.480.webp 480w, /2.%20Projects/3.%203D/arc2.1.1080.webp 1080w, /2.%20Projects/3.%203D/arc2.1.1920.webp 1920w",
+        "avifSrcset": "/2.%20Projects/3.%203D/arc2.1.1080.avif 1080w",
+        "lqip": "data:image/webp;base64,UklGRlAAAABXRUJQVlA4IEQAAACwAQCdASoIAAwABABoJQBOgB5vOdAAAP7By3Kd5O7Q6PbobUmr/YLWPYOvgsZaz8DGfoDtk4sxCi+/eNwzAopprQAAAA=="
       },
       {
         "file": "buildings1copy.jpg",
@@ -163,47 +242,72 @@ export const PROJECT_FOLDERS: ProjectFolder[] = [
       {
         "file": "Cemetery Scene1.png",
         "url": "/2.%20Projects/3.%203D/Cemetery%20Scene1.png",
-        "type": "image"
+        "type": "image",
+        "webpSrcset": "/2.%20Projects/3.%203D/Cemetery%20Scene1.480.webp 480w, /2.%20Projects/3.%203D/Cemetery%20Scene1.1080.webp 1080w, /2.%20Projects/3.%203D/Cemetery%20Scene1.1920.webp 1920w",
+        "avifSrcset": "/2.%20Projects/3.%203D/Cemetery%20Scene1.1080.avif 1080w",
+        "lqip": "data:image/webp;base64,UklGRiwAAABXRUJQVlA4ICAAAAAwAQCdASoIAAwABABoJZwAA3AA/vJvTYATkzMyDwAAAA=="
       },
       {
         "file": "Cemetery Scene16.png",
         "url": "/2.%20Projects/3.%203D/Cemetery%20Scene16.png",
-        "type": "image"
+        "type": "image",
+        "webpSrcset": "/2.%20Projects/3.%203D/Cemetery%20Scene16.480.webp 480w, /2.%20Projects/3.%203D/Cemetery%20Scene16.1080.webp 1080w, /2.%20Projects/3.%203D/Cemetery%20Scene16.1920.webp 1920w",
+        "avifSrcset": "/2.%20Projects/3.%203D/Cemetery%20Scene16.1080.avif 1080w",
+        "lqip": "data:image/webp;base64,UklGRjIAAABXRUJQVlA4ICYAAADQAQCdASoIAAwABABoJaQAAud8jEMeAAD+9ZYs5JyjmlYzGYYAAA=="
       },
       {
         "file": "Cemetery Scene18.3.png",
         "url": "/2.%20Projects/3.%203D/Cemetery%20Scene18.3.png",
-        "type": "image"
+        "type": "image",
+        "webpSrcset": "/2.%20Projects/3.%203D/Cemetery%20Scene18.3.480.webp 480w, /2.%20Projects/3.%203D/Cemetery%20Scene18.3.1080.webp 1080w, /2.%20Projects/3.%203D/Cemetery%20Scene18.3.1920.webp 1920w",
+        "avifSrcset": "/2.%20Projects/3.%203D/Cemetery%20Scene18.3.1080.avif 1080w",
+        "lqip": "data:image/webp;base64,UklGRioAAABXRUJQVlA4IB4AAAAwAQCdASoIAAwABABoJaQAA3AA/vIyUgfgJkdwAAA="
       },
       {
         "file": "Cemetery Scene18.png",
         "url": "/2.%20Projects/3.%203D/Cemetery%20Scene18.png",
-        "type": "image"
+        "type": "image",
+        "webpSrcset": "/2.%20Projects/3.%203D/Cemetery%20Scene18.480.webp 480w, /2.%20Projects/3.%203D/Cemetery%20Scene18.1080.webp 1080w, /2.%20Projects/3.%203D/Cemetery%20Scene18.1920.webp 1920w",
+        "avifSrcset": "/2.%20Projects/3.%203D/Cemetery%20Scene18.1080.avif 1080w",
+        "lqip": "data:image/webp;base64,UklGRiYAAABXRUJQVlA4IBoAAAAwAQCdASoIAAwABABoJaQAA3AA/vJ0gBcgAA=="
       },
       {
         "file": "Cemetery Scene2.png",
         "url": "/2.%20Projects/3.%203D/Cemetery%20Scene2.png",
-        "type": "image"
+        "type": "image",
+        "webpSrcset": "/2.%20Projects/3.%203D/Cemetery%20Scene2.480.webp 480w, /2.%20Projects/3.%203D/Cemetery%20Scene2.1080.webp 1080w, /2.%20Projects/3.%203D/Cemetery%20Scene2.1920.webp 1920w",
+        "avifSrcset": "/2.%20Projects/3.%203D/Cemetery%20Scene2.1080.avif 1080w",
+        "lqip": "data:image/webp;base64,UklGRiwAAABXRUJQVlA4ICAAAACwAQCdASoIAAwABABoJZQAA1WBd0kAAP70ZDLnfyAwAA=="
       },
       {
         "file": "Cemetery Scene20.png",
         "url": "/2.%20Projects/3.%203D/Cemetery%20Scene20.png",
-        "type": "image"
+        "type": "image",
+        "webpSrcset": "/2.%20Projects/3.%203D/Cemetery%20Scene20.480.webp 480w, /2.%20Projects/3.%203D/Cemetery%20Scene20.1080.webp 1080w, /2.%20Projects/3.%203D/Cemetery%20Scene20.1920.webp 1920w",
+        "avifSrcset": "/2.%20Projects/3.%203D/Cemetery%20Scene20.1080.avif 1080w",
+        "lqip": "data:image/webp;base64,UklGRiwAAABXRUJQVlA4ICAAAAAwAQCdASoIAAwABABoJaQAA3AA/vHq9OCRGBvkVQAAAA=="
       },
       {
         "file": "Cemetery Scene32.2.png",
         "url": "/2.%20Projects/3.%203D/Cemetery%20Scene32.2.png",
-        "type": "image"
+        "type": "image",
+        "webpSrcset": "/2.%20Projects/3.%203D/Cemetery%20Scene32.2.480.webp 480w, /2.%20Projects/3.%203D/Cemetery%20Scene32.2.1080.webp 1080w, /2.%20Projects/3.%203D/Cemetery%20Scene32.2.1920.webp 1920w",
+        "avifSrcset": "/2.%20Projects/3.%203D/Cemetery%20Scene32.2.1080.avif 1080w",
+        "lqip": "data:image/webp;base64,UklGRi4AAABXRUJQVlA4ICIAAAAwAQCdASoIAAwABABoJZwAA3AA/vHtEV8ZWtwlmOP+QAAA"
       },
       {
         "file": "Chrome Type 3D 15.png",
         "url": "/2.%20Projects/3.%203D/Chrome%20Type%203D%2015.png",
-        "type": "image"
+        "type": "image",
+        "webpSrcset": "/2.%20Projects/3.%203D/Chrome%20Type%203D%2015.480.webp 480w",
+        "lqip": "data:image/webp;base64,UklGRjgAAABXRUJQVlA4ICwAAABwAQCdASoIAAwABABoJbACw7FAAAD+57dWGesoX9TdDoPg95r+LtoqA10AAA=="
       },
       {
         "file": "cHROME tYPE bw 4.png",
         "url": "/2.%20Projects/3.%203D/cHROME%20tYPE%20bw%204.png",
-        "type": "image"
+        "type": "image",
+        "webpSrcset": "/2.%20Projects/3.%203D/cHROME%20tYPE%20bw%204.480.webp 480w",
+        "lqip": "data:image/webp;base64,UklGRkoAAABXRUJQVlA4ID4AAAAQAgCdASoIAAwABABoJaQAD46wyfdJNlQAAP7xqI3uoL/zbmfn1IRulXtSsAQPhnpDur0SvS0mj4IOAAAAAA=="
       },
       {
         "file": "g1.png",
@@ -248,42 +352,65 @@ export const PROJECT_FOLDERS: ProjectFolder[] = [
       {
         "file": "grassmesh.jpg",
         "url": "/2.%20Projects/3.%203D/grassmesh.jpg",
-        "type": "image"
+        "type": "image",
+        "webpSrcset": "/2.%20Projects/3.%203D/grassmesh.480.webp 480w",
+        "lqip": "data:image/webp;base64,UklGRioAAABXRUJQVlA4IB4AAABQAQCdASoIAAwABABoJYwABAAAAP7xDI97PpZgAAA="
       },
       {
         "file": "IMG_1033.PNG",
         "url": "/2.%20Projects/3.%203D/IMG_1033.PNG",
-        "type": "image"
+        "type": "image",
+        "webpSrcset": "/2.%20Projects/3.%203D/IMG_1033.480.webp 480w, /2.%20Projects/3.%203D/IMG_1033.1080.webp 1080w, /2.%20Projects/3.%203D/IMG_1033.1920.webp 1920w",
+        "avifSrcset": "/2.%20Projects/3.%203D/IMG_1033.1080.avif 1080w",
+        "lqip": "data:image/webp;base64,UklGRloAAABXRUJQVlA4IE4AAAAQAgCdASoIAAwABABoJZgCdAEUozeB8OoAAP7qOrLF03uQd6rjKeiB0y4wOg/F6LEkO7PjQ5Hi+FuPXRb7Q+RK2S8racck2Dk87zMaAAA="
       },
       {
         "file": "IMG_1034.PNG",
         "url": "/2.%20Projects/3.%203D/IMG_1034.PNG",
-        "type": "image"
+        "type": "image",
+        "webpSrcset": "/2.%20Projects/3.%203D/IMG_1034.480.webp 480w, /2.%20Projects/3.%203D/IMG_1034.1080.webp 1080w, /2.%20Projects/3.%203D/IMG_1034.1920.webp 1920w",
+        "avifSrcset": "/2.%20Projects/3.%203D/IMG_1034.1080.avif 1080w",
+        "lqip": "data:image/webp;base64,UklGRkgAAABXRUJQVlA4IDwAAADQAQCdASoIAAwABABoJZwAApt4Tu4dQAD+8VTFaq+0cNqxeDfaKbGXdhQ5nif+oT3RUb0wyZq82gjlgAA="
       },
       {
         "file": "IMG_3759.PNG",
         "url": "/2.%20Projects/3.%203D/IMG_3759.PNG",
-        "type": "image"
+        "type": "image",
+        "webpSrcset": "/2.%20Projects/3.%203D/IMG_3759.480.webp 480w, /2.%20Projects/3.%203D/IMG_3759.1080.webp 1080w, /2.%20Projects/3.%203D/IMG_3759.1920.webp 1920w",
+        "avifSrcset": "/2.%20Projects/3.%203D/IMG_3759.1080.avif 1080w",
+        "lqip": "data:image/webp;base64,UklGRnIAAABXRUJQVlA4IGYAAAAwAgCdASoIAAwABABoJbACdAYr7kzTnNBgAAD5YuhRKR5MflHQOrOJOcBb1XeWLFrEpXxkbzfjxXJnG5EAd1U8s8Ne7LLu/iGDi9FmR5vkIGzCwgzupkjq7kKG1LH2h6U5PEVQAAA="
       },
       {
         "file": "IMG_3760.PNG",
         "url": "/2.%20Projects/3.%203D/IMG_3760.PNG",
-        "type": "image"
+        "type": "image",
+        "webpSrcset": "/2.%20Projects/3.%203D/IMG_3760.480.webp 480w, /2.%20Projects/3.%203D/IMG_3760.1080.webp 1080w, /2.%20Projects/3.%203D/IMG_3760.1920.webp 1920w",
+        "avifSrcset": "/2.%20Projects/3.%203D/IMG_3760.1080.avif 1080w",
+        "lqip": "data:image/webp;base64,UklGRlYAAABXRUJQVlA4IEoAAADwAQCdASoIAAwABABoJaQAAqsk0yquAAAA/vM5znZkOuv5U0b0vvOZmKYn9QdWWyqxGCDnz4nmCF0lxA6labG7SNKU1/agPAAAAA=="
       },
       {
         "file": "IMG_3761.PNG",
         "url": "/2.%20Projects/3.%203D/IMG_3761.PNG",
-        "type": "image"
+        "type": "image",
+        "webpSrcset": "/2.%20Projects/3.%203D/IMG_3761.480.webp 480w, /2.%20Projects/3.%203D/IMG_3761.1080.webp 1080w, /2.%20Projects/3.%203D/IMG_3761.1920.webp 1920w",
+        "avifSrcset": "/2.%20Projects/3.%203D/IMG_3761.1080.avif 1080w",
+        "lqip": "data:image/webp;base64,UklGRkAAAABXRUJQVlA4IDQAAADwAQCdASoIAAwABABoJZwAAveI6M/ykAAA/vS2xDF+AyL1wZMMa4gM9eEUMOXezzZiAAAA"
       },
       {
         "file": "IMG_3764.PNG",
         "url": "/2.%20Projects/3.%203D/IMG_3764.PNG",
-        "type": "image"
+        "type": "image",
+        "webpSrcset": "/2.%20Projects/3.%203D/IMG_3764.480.webp 480w, /2.%20Projects/3.%203D/IMG_3764.1080.webp 1080w, /2.%20Projects/3.%203D/IMG_3764.1920.webp 1920w",
+        "avifSrcset": "/2.%20Projects/3.%203D/IMG_3764.1080.avif 1080w",
+        "lqip": "data:image/webp;base64,UklGRkAAAABXRUJQVlA4IDQAAACQAQCdASoIAAwABABoJZAAAuabyAAA/vd2V9rZwOsQBYMbP/3sNYMaopISIexajRy8MAAA"
       },
       {
         "file": "IMG_4270.JPG",
         "url": "/2.%20Projects/3.%203D/IMG_4270.JPG",
-        "type": "image"
+        "type": "image",
+        "webpSrcset": "/2.%20Projects/3.%203D/IMG_4270.480.webp 480w, /2.%20Projects/3.%203D/IMG_4270.1080.webp 1080w",
+        "avifSrcset": "/2.%20Projects/3.%203D/IMG_4270.1080.avif 1080w",
+        "lqip": "data:image/webp;base64,UklGRkIAAABXRUJQVlA4IDYAAADwAQCdASoIAAwABABoJYwCdAD5ej4ETAAA+FsgBafwUPe9xT0IMj/qHivmlLhESdCzg6c+AAA="
       },
       {
         "file": "IMG_4276.JPG",
@@ -293,42 +420,66 @@ export const PROJECT_FOLDERS: ProjectFolder[] = [
       {
         "file": "IMG_4279.JPG",
         "url": "/2.%20Projects/3.%203D/IMG_4279.JPG",
-        "type": "image"
+        "type": "image",
+        "webpSrcset": "/2.%20Projects/3.%203D/IMG_4279.480.webp 480w, /2.%20Projects/3.%203D/IMG_4279.1080.webp 1080w, /2.%20Projects/3.%203D/IMG_4279.1920.webp 1920w",
+        "avifSrcset": "/2.%20Projects/3.%203D/IMG_4279.1080.avif 1080w",
+        "lqip": "data:image/webp;base64,UklGRkwAAABXRUJQVlA4IEAAAADQAQCdASoIAAwABABoJZgC7AD0OWTOMAD+9FYcrwseuH4M4D6NTBTI9ZhALZ4b+DjaF+tjfDyREJhvKu0rRQAA"
       },
       {
         "file": "IMG_4281.JPG",
         "url": "/2.%20Projects/3.%203D/IMG_4281.JPG",
-        "type": "image"
+        "type": "image",
+        "webpSrcset": "/2.%20Projects/3.%203D/IMG_4281.480.webp 480w, /2.%20Projects/3.%203D/IMG_4281.1080.webp 1080w",
+        "avifSrcset": "/2.%20Projects/3.%203D/IMG_4281.1080.avif 1080w",
+        "lqip": "data:image/webp;base64,UklGRkgAAABXRUJQVlA4IDwAAADQAQCdASoIAAwABABoJbACdACG0zuCAAD+VISTLfy6KfjBluUHyWpubSMF44aSgpqQTWnI/r7yh6BfMAA="
       },
       {
         "file": "IMG_4285.JPG",
         "url": "/2.%20Projects/3.%203D/IMG_4285.JPG",
-        "type": "image"
+        "type": "image",
+        "webpSrcset": "/2.%20Projects/3.%203D/IMG_4285.480.webp 480w, /2.%20Projects/3.%203D/IMG_4285.1080.webp 1080w",
+        "avifSrcset": "/2.%20Projects/3.%203D/IMG_4285.1080.avif 1080w",
+        "lqip": "data:image/webp;base64,UklGRjgAAABXRUJQVlA4ICwAAABQAQCdASoIAAwABABoJZQABdUAAP7xWZ9f/9m6//orLJ12F1jCmxUiewviAA=="
       },
       {
         "file": "IMG_8105.PNG",
         "url": "/2.%20Projects/3.%203D/IMG_8105.PNG",
-        "type": "image"
+        "type": "image",
+        "webpSrcset": "/2.%20Projects/3.%203D/IMG_8105.480.webp 480w, /2.%20Projects/3.%203D/IMG_8105.1080.webp 1080w",
+        "avifSrcset": "/2.%20Projects/3.%203D/IMG_8105.1080.avif 1080w",
+        "lqip": "data:image/webp;base64,UklGRi4AAABXRUJQVlA4ICIAAAAwAQCdASoIAAwABABoJaQAA3AA/vK47VwMo9r9VtYIDXAA"
       },
       {
         "file": "IMG_8926.PNG",
         "url": "/2.%20Projects/3.%203D/IMG_8926.PNG",
-        "type": "image"
+        "type": "image",
+        "webpSrcset": "/2.%20Projects/3.%203D/IMG_8926.480.webp 480w, /2.%20Projects/3.%203D/IMG_8926.1080.webp 1080w",
+        "avifSrcset": "/2.%20Projects/3.%203D/IMG_8926.1080.avif 1080w",
+        "lqip": "data:image/webp;base64,UklGRsoAAABXRUJQVlA4WAoAAAAQAAAABwAACwAAQUxQSGEAAAAAAwBBs+rxw2UAV////v3+/xu1//n+///8tLr//+yCpfTKX///2QcAieOh9//4NABb/////P+CAKP++/3+/+2//v/+/v39/v/6/P/O8P/9/P//8Sh4/v72qdNKAAElRiYAAFZQOCBCAAAA8AEAnQEqCAAMAAQAaCWwAnQA9HrrXJ4AAP6ppx5dvy6vyrW8n3ydKUQxEk3XLxOrfdDkHOX3+X6dwjq4/D8GiAAA"
       },
       {
         "file": "IMG_8930.PNG",
         "url": "/2.%20Projects/3.%203D/IMG_8930.PNG",
-        "type": "image"
+        "type": "image",
+        "webpSrcset": "/2.%20Projects/3.%203D/IMG_8930.480.webp 480w, /2.%20Projects/3.%203D/IMG_8930.1080.webp 1080w",
+        "avifSrcset": "/2.%20Projects/3.%203D/IMG_8930.1080.avif 1080w",
+        "lqip": "data:image/webp;base64,UklGRk4AAABXRUJQVlA4IEIAAADwAQCdASoIAAwABABoJZwAAudCaGfrEgAA/u8vVuCVcUPz+UyMvMCD07kyl+nO+u+K/S4fwc2DAmscTq3jvkwAAAA="
       },
       {
         "file": "IMG_8967.PNG",
         "url": "/2.%20Projects/3.%203D/IMG_8967.PNG",
-        "type": "image"
+        "type": "image",
+        "webpSrcset": "/2.%20Projects/3.%203D/IMG_8967.480.webp 480w, /2.%20Projects/3.%203D/IMG_8967.1080.webp 1080w",
+        "avifSrcset": "/2.%20Projects/3.%203D/IMG_8967.1080.avif 1080w",
+        "lqip": "data:image/webp;base64,UklGRtQAAABXRUJQVlA4WAoAAAAQAAAABwAACwAAQUxQSGEAAAAAYQAEAQAAAQHxOQACAgAAAP91ACAAABIoeQBr/EsAdbEPAJiw0Rd/NQlZwFjwJn0AAMVvn8MCgQccvzzfqbh/EtFxY+St8ZIg/+Hp32yiewmbXElYCgoIAAACAAABAQAAAFZQOCBMAAAA0AEAnQEqCAAMAAQAaCUAToAekeByGAAA/e2JL9Oo2H0tBq/GKcaRk4DSJ+eudljlatvc74hX5BQBLwdcsN3lV4q23ALSoAoMZIfAAA=="
       },
       {
         "file": "IMG_8971.PNG",
         "url": "/2.%20Projects/3.%203D/IMG_8971.PNG",
-        "type": "image"
+        "type": "image",
+        "webpSrcset": "/2.%20Projects/3.%203D/IMG_8971.480.webp 480w, /2.%20Projects/3.%203D/IMG_8971.1080.webp 1080w",
+        "avifSrcset": "/2.%20Projects/3.%203D/IMG_8971.1080.avif 1080w",
+        "lqip": "data:image/webp;base64,UklGRk4AAABXRUJQVlA4IEIAAAAQAgCdASoIAAwABABoJaQAD4wO07Ao1rAAAP7uKVJW8fExRZX3mGk6gR25PwVanCKDD07NbspUnMHfKXn9blHOAAA="
       },
       {
         "file": "IMG_8974.JPEG",
@@ -338,67 +489,106 @@ export const PROJECT_FOLDERS: ProjectFolder[] = [
       {
         "file": "IMG_8976 (1).PNG",
         "url": "/2.%20Projects/3.%203D/IMG_8976%20(1).PNG",
-        "type": "image"
+        "type": "image",
+        "webpSrcset": "/2.%20Projects/3.%203D/IMG_8976%20(1).480.webp 480w, /2.%20Projects/3.%203D/IMG_8976%20(1).1080.webp 1080w, /2.%20Projects/3.%203D/IMG_8976%20(1).1920.webp 1920w",
+        "avifSrcset": "/2.%20Projects/3.%203D/IMG_8976%20(1).1080.avif 1080w",
+        "lqip": "data:image/webp;base64,UklGRtAAAABXRUJQVlA4WAoAAAAQAAAABwAACwAAQUxQSGEAAAAApAgAAQAAAADpFAABAAAAAKkNAAEAAAAAAAAAAAEBAAICAQAAAAECADcBAAAPHwAt7DcCAGPSHcOW7hQAcvmKo2LxBxq6apVtZO4geHtxs3mS7l3aZ63vONg0P9VDlUQAAFZQOCBIAAAAsAEAnQEqCAAMAAQAaCWkAA+Hjr99agD+6hTDx+WnBp1uIQw4qmAXs0b8h2H9K5BQI/9C1Lvp/ua3cWbI6gY1KuY/2txDuAAA"
       },
       {
         "file": "IMG_8977.jpeg",
         "url": "/2.%20Projects/3.%203D/IMG_8977.jpeg",
-        "type": "image"
+        "type": "image",
+        "webpSrcset": "/2.%20Projects/3.%203D/IMG_8977.480.webp 480w, /2.%20Projects/3.%203D/IMG_8977.1080.webp 1080w",
+        "avifSrcset": "/2.%20Projects/3.%203D/IMG_8977.1080.avif 1080w",
+        "lqip": "data:image/webp;base64,UklGRkgAAABXRUJQVlA4IDwAAACQAQCdASoIAAwABABoJaQAApofuAAA/uoL3fYcL1NKfls5NuIPbRr6CRlVa1+3k6JbkG4EOtoSl2gAAAA="
       },
       {
         "file": "IMG_9712-min.png",
         "url": "/2.%20Projects/3.%203D/IMG_9712-min.png",
-        "type": "image"
+        "type": "image",
+        "webpSrcset": "/2.%20Projects/3.%203D/IMG_9712-min.480.webp 480w, /2.%20Projects/3.%203D/IMG_9712-min.1080.webp 1080w",
+        "avifSrcset": "/2.%20Projects/3.%203D/IMG_9712-min.1080.avif 1080w",
+        "lqip": "data:image/webp;base64,UklGRiwAAABXRUJQVlA4ICAAAABQAQCdASoIAAwABABoJaQAAAAAAPgCsipSs9BH4AAAAA=="
       },
       {
         "file": "IMG_9748-min.PNG",
         "url": "/2.%20Projects/3.%203D/IMG_9748-min.PNG",
-        "type": "image"
+        "type": "image",
+        "webpSrcset": "/2.%20Projects/3.%203D/IMG_9748-min.480.webp 480w, /2.%20Projects/3.%203D/IMG_9748-min.1080.webp 1080w, /2.%20Projects/3.%203D/IMG_9748-min.1920.webp 1920w",
+        "avifSrcset": "/2.%20Projects/3.%203D/IMG_9748-min.1080.avif 1080w",
+        "lqip": "data:image/webp;base64,UklGRkYAAABXRUJQVlA4IDoAAADQAQCdASoIAAwABABoJYwAAuWuU64mAAD+8BZqMrwF6F5psSAf5DKb3Fql/HGISw6g0X/s6l9sh7AA"
       },
       {
         "file": "IMG_9754-min.PNG",
         "url": "/2.%20Projects/3.%203D/IMG_9754-min.PNG",
-        "type": "image"
+        "type": "image",
+        "webpSrcset": "/2.%20Projects/3.%203D/IMG_9754-min.480.webp 480w, /2.%20Projects/3.%203D/IMG_9754-min.1080.webp 1080w, /2.%20Projects/3.%203D/IMG_9754-min.1920.webp 1920w",
+        "avifSrcset": "/2.%20Projects/3.%203D/IMG_9754-min.1080.avif 1080w",
+        "lqip": "data:image/webp;base64,UklGRlIAAABXRUJQVlA4IEYAAAAQAgCdASoIAAwABABoJbACdAD0o1OyhniAAP60La6P9EAHlY0d3DLPE6+qq1EPBEZo+xgSpb59l/zvjK0OTMBmjaEeAAAA"
       },
       {
         "file": "IMG_9790-min.png",
         "url": "/2.%20Projects/3.%203D/IMG_9790-min.png",
-        "type": "image"
+        "type": "image",
+        "webpSrcset": "/2.%20Projects/3.%203D/IMG_9790-min.480.webp 480w, /2.%20Projects/3.%203D/IMG_9790-min.1080.webp 1080w, /2.%20Projects/3.%203D/IMG_9790-min.1920.webp 1920w",
+        "avifSrcset": "/2.%20Projects/3.%203D/IMG_9790-min.1080.avif 1080w",
+        "lqip": "data:image/webp;base64,UklGRjwAAABXRUJQVlA4IDAAAACwAQCdASoIAAwABABoJZwAAuTnEtAAAP72ry9Feqx7NheHDWPh02SRutQn9vAAAAA="
       },
       {
         "file": "IMG_9791-min.PNG",
         "url": "/2.%20Projects/3.%203D/IMG_9791-min.PNG",
-        "type": "image"
+        "type": "image",
+        "webpSrcset": "/2.%20Projects/3.%203D/IMG_9791-min.480.webp 480w, /2.%20Projects/3.%203D/IMG_9791-min.1080.webp 1080w, /2.%20Projects/3.%203D/IMG_9791-min.1920.webp 1920w",
+        "avifSrcset": "/2.%20Projects/3.%203D/IMG_9791-min.1080.avif 1080w",
+        "lqip": "data:image/webp;base64,UklGRkoAAABXRUJQVlA4ID4AAAAQAgCdASoIAAwABABoJZQCw7EPEJc8DoAAAP72yap7CIY6gQkH7dzGWwmIOPgRM58tkrjnWdhs7czyzwAAAA=="
       },
       {
         "file": "IMG_9793-min.PNG",
         "url": "/2.%20Projects/3.%203D/IMG_9793-min.PNG",
-        "type": "image"
+        "type": "image",
+        "webpSrcset": "/2.%20Projects/3.%203D/IMG_9793-min.480.webp 480w, /2.%20Projects/3.%203D/IMG_9793-min.1080.webp 1080w, /2.%20Projects/3.%203D/IMG_9793-min.1920.webp 1920w",
+        "avifSrcset": "/2.%20Projects/3.%203D/IMG_9793-min.1080.avif 1080w",
+        "lqip": "data:image/webp;base64,UklGRkQAAABXRUJQVlA4IDgAAACwAQCdASoIAAwABABoJaQAAvdm7rgAAP7sW76EACfxRx2ikLg/7sBh1VTBHbXQzHnn1CKIn+gAAA=="
       },
       {
         "file": "IMG_9794-min.PNG",
         "url": "/2.%20Projects/3.%203D/IMG_9794-min.PNG",
-        "type": "image"
+        "type": "image",
+        "webpSrcset": "/2.%20Projects/3.%203D/IMG_9794-min.480.webp 480w, /2.%20Projects/3.%203D/IMG_9794-min.1080.webp 1080w, /2.%20Projects/3.%203D/IMG_9794-min.1920.webp 1920w",
+        "avifSrcset": "/2.%20Projects/3.%203D/IMG_9794-min.1080.avif 1080w",
+        "lqip": "data:image/webp;base64,UklGRkoAAABXRUJQVlA4ID4AAADQAQCdASoIAAwABABoJbACdAEO06wQQAD+6FA9JFakXIx3TDrQMCS3cn/EiLlJN4vztomVQ9kl8ymt+AAAAA=="
       },
       {
         "file": "IMG_9796-min.PNG",
         "url": "/2.%20Projects/3.%203D/IMG_9796-min.PNG",
-        "type": "image"
+        "type": "image",
+        "webpSrcset": "/2.%20Projects/3.%203D/IMG_9796-min.480.webp 480w, /2.%20Projects/3.%203D/IMG_9796-min.1080.webp 1080w, /2.%20Projects/3.%203D/IMG_9796-min.1920.webp 1920w",
+        "avifSrcset": "/2.%20Projects/3.%203D/IMG_9796-min.1080.avif 1080w",
+        "lqip": "data:image/webp;base64,UklGRkAAAABXRUJQVlA4IDQAAADQAQCdASoIAAwABABoJYwAAp23QwxXAAD+84H0dGW5XTq4L2lAXdR5mIcLYOWn2LmF8QAA"
       },
       {
         "file": "IMG_9800-min.PNG",
         "url": "/2.%20Projects/3.%203D/IMG_9800-min.PNG",
-        "type": "image"
+        "type": "image",
+        "webpSrcset": "/2.%20Projects/3.%203D/IMG_9800-min.480.webp 480w, /2.%20Projects/3.%203D/IMG_9800-min.1080.webp 1080w, /2.%20Projects/3.%203D/IMG_9800-min.1920.webp 1920w",
+        "avifSrcset": "/2.%20Projects/3.%203D/IMG_9800-min.1080.avif 1080w",
+        "lqip": "data:image/webp;base64,UklGRlAAAABXRUJQVlA4IEQAAADwAQCdASoIAAwABABoJZwAAxPD9tEF3gAA/rbLsugAn1HTcrH0UJ0Xt1SXGDO1wN17rbWX7Wls9lPsMdbK8GfD1HAAAA=="
       },
       {
         "file": "IMG_9805-min.JPEG",
         "url": "/2.%20Projects/3.%203D/IMG_9805-min.JPEG",
-        "type": "image"
+        "type": "image",
+        "webpSrcset": "/2.%20Projects/3.%203D/IMG_9805-min.480.webp 480w, /2.%20Projects/3.%203D/IMG_9805-min.1080.webp 1080w, /2.%20Projects/3.%203D/IMG_9805-min.1920.webp 1920w",
+        "avifSrcset": "/2.%20Projects/3.%203D/IMG_9805-min.1080.avif 1080w",
+        "lqip": "data:image/webp;base64,UklGRkoAAABXRUJQVlA4ID4AAADQAQCdASoIAAwABABoJQBOgCHhZZygAADv1RHYCoos4VtWKPkiOB04aCFH2Q3yIabf1uvcqO4pwwvE4wAAAA=="
       },
       {
         "file": "IMG_9826-min.PNG",
         "url": "/2.%20Projects/3.%203D/IMG_9826-min.PNG",
-        "type": "image"
+        "type": "image",
+        "webpSrcset": "/2.%20Projects/3.%203D/IMG_9826-min.480.webp 480w, /2.%20Projects/3.%203D/IMG_9826-min.1080.webp 1080w, /2.%20Projects/3.%203D/IMG_9826-min.1920.webp 1920w",
+        "avifSrcset": "/2.%20Projects/3.%203D/IMG_9826-min.1080.avif 1080w",
+        "lqip": "data:image/webp;base64,UklGRkoAAABXRUJQVlA4ID4AAACQAQCdASoIAAwABABoJaQAAkokuQAA/uiKZfmu+HVxoG696av07IgeUskTbOMHjJWG1Lkadriq8dBr6AAAAA=="
       },
       {
         "file": "Jolly Smile design 2.png",
@@ -408,12 +598,18 @@ export const PROJECT_FOLDERS: ProjectFolder[] = [
       {
         "file": "Jolly Smile design.png",
         "url": "/2.%20Projects/3.%203D/Jolly%20Smile%20design.png",
-        "type": "image"
+        "type": "image",
+        "webpSrcset": "/2.%20Projects/3.%203D/Jolly%20Smile%20design.480.webp 480w, /2.%20Projects/3.%203D/Jolly%20Smile%20design.1080.webp 1080w",
+        "avifSrcset": "/2.%20Projects/3.%203D/Jolly%20Smile%20design.1080.avif 1080w",
+        "lqip": "data:image/webp;base64,UklGRkwAAABXRUJQVlA4IEAAAAAQAgCdASoIAAwABABoJZACdH8AGAmWASYAAP707wagFxWKWOwhtKUxg+N4+Gca0P7QCR0PAFiMeoKJygLlpBAA"
       },
       {
         "file": "LevelSequence-1.0011.png",
         "url": "/2.%20Projects/3.%203D/LevelSequence-1.0011.png",
-        "type": "image"
+        "type": "image",
+        "webpSrcset": "/2.%20Projects/3.%203D/LevelSequence-1.0011.480.webp 480w, /2.%20Projects/3.%203D/LevelSequence-1.0011.1080.webp 1080w, /2.%20Projects/3.%203D/LevelSequence-1.0011.1920.webp 1920w",
+        "avifSrcset": "/2.%20Projects/3.%203D/LevelSequence-1.0011.1080.avif 1080w",
+        "lqip": "data:image/webp;base64,UklGRkYAAABXRUJQVlA4IDoAAACwAQCdASoIAAwABABoJQBYdh5u1TQAAP6ob1SBuItFiqqKgWNj/+AcaR6egtcS6uIJKvlXLYrvYAAA"
       },
       {
         "file": "litnei.jpg",
@@ -423,32 +619,48 @@ export const PROJECT_FOLDERS: ProjectFolder[] = [
       {
         "file": "matalowpoly1.jpg",
         "url": "/2.%20Projects/3.%203D/matalowpoly1.jpg",
-        "type": "image"
+        "type": "image",
+        "webpSrcset": "/2.%20Projects/3.%203D/matalowpoly1.480.webp 480w",
+        "lqip": "data:image/webp;base64,UklGRjgAAABXRUJQVlA4ICwAAADQAQCdASoIAAwABABoJZQAApyhoMVagAD+QGH+lWKelBK7jzhhiPYnfPgAAA=="
       },
       {
         "file": "rustycementt.png",
         "url": "/2.%20Projects/3.%203D/rustycementt.png",
-        "type": "image"
+        "type": "image",
+        "webpSrcset": "/2.%20Projects/3.%203D/rustycementt.480.webp 480w, /2.%20Projects/3.%203D/rustycementt.1080.webp 1080w",
+        "avifSrcset": "/2.%20Projects/3.%203D/rustycementt.1080.avif 1080w",
+        "lqip": "data:image/webp;base64,UklGRjQAAABXRUJQVlA4ICgAAABwAQCdASoIAAwABABoJZwAAkim6ADMkCFkFU4/cop+Kb7R08qYQCAA"
       },
       {
         "file": "seashack.png",
         "url": "/2.%20Projects/3.%203D/seashack.png",
-        "type": "image"
+        "type": "image",
+        "webpSrcset": "/2.%20Projects/3.%203D/seashack.480.webp 480w, /2.%20Projects/3.%203D/seashack.1080.webp 1080w",
+        "avifSrcset": "/2.%20Projects/3.%203D/seashack.1080.avif 1080w",
+        "lqip": "data:image/webp;base64,UklGRlYAAABXRUJQVlA4IEoAAAAQAgCdASoIAAwABABoJbACdAD0uQwe0QgAAPQ+zOOglcucqYDt7XHZv6UuWwzvVaU+0al2f18p11ezbdQej47/94637pFhPxIAAA=="
       },
       {
         "file": "Skjermbilde 2024-05-07 011311.png",
         "url": "/2.%20Projects/3.%203D/Skjermbilde%202024-05-07%20011311.png",
-        "type": "image"
+        "type": "image",
+        "webpSrcset": "/2.%20Projects/3.%203D/Skjermbilde%202024-05-07%20011311.480.webp 480w, /2.%20Projects/3.%203D/Skjermbilde%202024-05-07%20011311.1080.webp 1080w",
+        "avifSrcset": "/2.%20Projects/3.%203D/Skjermbilde%202024-05-07%20011311.1080.avif 1080w",
+        "lqip": "data:image/webp;base64,UklGRkYAAABXRUJQVlA4IDoAAADwAQCdASoIAAwABABoJbACdADZtQpodAAA/iX3buXQAFJ5Bx4nDYSBoNEw5Hg87WZ5t8uBpXH6oAAA"
       },
       {
         "file": "Skjermbilde 2024-05-07 011443.png",
         "url": "/2.%20Projects/3.%203D/Skjermbilde%202024-05-07%20011443.png",
-        "type": "image"
+        "type": "image",
+        "webpSrcset": "/2.%20Projects/3.%203D/Skjermbilde%202024-05-07%20011443.480.webp 480w",
+        "lqip": "data:image/webp;base64,UklGRkwAAABXRUJQVlA4IEAAAAAQAgCdASoIAAwABABoJQBOgCKUoLV1WqgAAP6+j7FMiKvKZYP2gMky8SVf6D6mk4vTt32GnNpHRpbUC/LQ7iAA"
       },
       {
         "file": "Skjermbilde 2024-05-07 011643.png",
         "url": "/2.%20Projects/3.%203D/Skjermbilde%202024-05-07%20011643.png",
-        "type": "image"
+        "type": "image",
+        "webpSrcset": "/2.%20Projects/3.%203D/Skjermbilde%202024-05-07%20011643.480.webp 480w, /2.%20Projects/3.%203D/Skjermbilde%202024-05-07%20011643.1080.webp 1080w",
+        "avifSrcset": "/2.%20Projects/3.%203D/Skjermbilde%202024-05-07%20011643.1080.avif 1080w",
+        "lqip": "data:image/webp;base64,UklGRjwAAABXRUJQVlA4IDAAAACQAQCdASoIAAwABABoJQAAU0oP1cAA/tp8o+FLh+jMlbRAtvQpsgAtlGO0+5ufAAA="
       },
       {
         "file": "underwater13.jpg",
@@ -463,7 +675,10 @@ export const PROJECT_FOLDERS: ProjectFolder[] = [
       {
         "file": "untitled5.png",
         "url": "/2.%20Projects/3.%203D/untitled5.png",
-        "type": "image"
+        "type": "image",
+        "webpSrcset": "/2.%20Projects/3.%203D/untitled5.480.webp 480w, /2.%20Projects/3.%203D/untitled5.1080.webp 1080w, /2.%20Projects/3.%203D/untitled5.1920.webp 1920w",
+        "avifSrcset": "/2.%20Projects/3.%203D/untitled5.1080.avif 1080w",
+        "lqip": "data:image/webp;base64,UklGRj4AAABXRUJQVlA4IDIAAADQAQCdASoIAAwABABoJQBWACHXFe7YAAD+dMriY0CptFgWlNSs28XcRvQaEhnA2UUEAA=="
       }
     ]
   },
@@ -473,7 +688,10 @@ export const PROJECT_FOLDERS: ProjectFolder[] = [
       {
         "file": "IMG_9639.jpg",
         "url": "/2.%20Projects/4.%20Interactive%20Media%20Technology/IMG_9639.jpg",
-        "type": "image"
+        "type": "image",
+        "webpSrcset": "/2.%20Projects/4.%20Interactive%20Media%20Technology/IMG_9639.480.webp 480w, /2.%20Projects/4.%20Interactive%20Media%20Technology/IMG_9639.1080.webp 1080w",
+        "avifSrcset": "/2.%20Projects/4.%20Interactive%20Media%20Technology/IMG_9639.1080.avif 1080w",
+        "lqip": "data:image/webp;base64,UklGRkAAAABXRUJQVlA4IDQAAADQAQCdASoIAAwABABoJZAC7AEOaPtUIAD+9X1mssMbxAjw52WHWVwgM2c/hS5HyoUHN3AA"
       }
     ]
   },
@@ -488,17 +706,26 @@ export const PROJECT_FOLDERS: ProjectFolder[] = [
       {
         "file": "Jolly Smile design.png",
         "url": "/2.%20Projects/5.%20Product%20Design%20&%20Brand%20Identity/Jolly%20Smile%20design.png",
-        "type": "image"
+        "type": "image",
+        "webpSrcset": "/2.%20Projects/5.%20Product%20Design%20&%20Brand%20Identity/Jolly%20Smile%20design.480.webp 480w, /2.%20Projects/5.%20Product%20Design%20&%20Brand%20Identity/Jolly%20Smile%20design.1080.webp 1080w",
+        "avifSrcset": "/2.%20Projects/5.%20Product%20Design%20&%20Brand%20Identity/Jolly%20Smile%20design.1080.avif 1080w",
+        "lqip": "data:image/webp;base64,UklGRkwAAABXRUJQVlA4IEAAAAAQAgCdASoIAAwABABoJZACdH8AGAmWASYAAP707wagFxWKWOwhtKUxg+N4+Gca0P7QCR0PAFiMeoKJygLlpBAA"
       },
       {
         "file": "Paper.Portfolio_Journal.3.PNG",
         "url": "/2.%20Projects/5.%20Product%20Design%20&%20Brand%20Identity/Paper.Portfolio_Journal.3.PNG",
-        "type": "image"
+        "type": "image",
+        "webpSrcset": "/2.%20Projects/5.%20Product%20Design%20&%20Brand%20Identity/Paper.Portfolio_Journal.3.480.webp 480w, /2.%20Projects/5.%20Product%20Design%20&%20Brand%20Identity/Paper.Portfolio_Journal.3.1080.webp 1080w, /2.%20Projects/5.%20Product%20Design%20&%20Brand%20Identity/Paper.Portfolio_Journal.3.1920.webp 1920w",
+        "avifSrcset": "/2.%20Projects/5.%20Product%20Design%20&%20Brand%20Identity/Paper.Portfolio_Journal.3.1080.avif 1080w",
+        "lqip": "data:image/webp;base64,UklGRjgAAABXRUJQVlA4ICwAAADQAQCdASoIAAwABABoJZwAAud56b/20AD+82231VwDQ+4xar09OQZ1/eiEAA=="
       },
       {
         "file": "Paper.Portfolio_Journal.9.PNG",
         "url": "/2.%20Projects/5.%20Product%20Design%20&%20Brand%20Identity/Paper.Portfolio_Journal.9.PNG",
-        "type": "image"
+        "type": "image",
+        "webpSrcset": "/2.%20Projects/5.%20Product%20Design%20&%20Brand%20Identity/Paper.Portfolio_Journal.9.480.webp 480w, /2.%20Projects/5.%20Product%20Design%20&%20Brand%20Identity/Paper.Portfolio_Journal.9.1080.webp 1080w, /2.%20Projects/5.%20Product%20Design%20&%20Brand%20Identity/Paper.Portfolio_Journal.9.1920.webp 1920w",
+        "avifSrcset": "/2.%20Projects/5.%20Product%20Design%20&%20Brand%20Identity/Paper.Portfolio_Journal.9.1080.avif 1080w",
+        "lqip": "data:image/webp;base64,UklGRkAAAABXRUJQVlA4IDQAAACwAQCdASoIAAwABABoJZQAAuYbYvJAAP7zcvJxKUq6/WdR2kw+wWV9Y/WmH0iSDG56AAAA"
       }
     ]
   },
@@ -508,67 +735,105 @@ export const PROJECT_FOLDERS: ProjectFolder[] = [
       {
         "file": "cHROME tYPE bw 4.png",
         "url": "/2.%20Projects/6.%20Typography/cHROME%20tYPE%20bw%204.png",
-        "type": "image"
+        "type": "image",
+        "webpSrcset": "/2.%20Projects/6.%20Typography/cHROME%20tYPE%20bw%204.480.webp 480w",
+        "lqip": "data:image/webp;base64,UklGRkoAAABXRUJQVlA4ID4AAAAQAgCdASoIAAwABABoJaQAD46wyfdJNlQAAP7xqI3uoL/zbmfn1IRulXtSsAQPhnpDur0SvS0mj4IOAAAAAA=="
       },
       {
         "file": "IMG_1027.PNG",
         "url": "/2.%20Projects/6.%20Typography/IMG_1027.PNG",
-        "type": "image"
+        "type": "image",
+        "webpSrcset": "/2.%20Projects/6.%20Typography/IMG_1027.480.webp 480w, /2.%20Projects/6.%20Typography/IMG_1027.1080.webp 1080w",
+        "avifSrcset": "/2.%20Projects/6.%20Typography/IMG_1027.1080.avif 1080w",
+        "lqip": "data:image/webp;base64,UklGRlIAAABXRUJQVlA4IEYAAAAQAgCdASoIAAwABABoJYwC7H8AFcD1pEmAAP7HHLCqBqz3X5uYiCqdYeoZxi0kFR7jGILVJ7ewzaRDyucYgB/ifAAsxQAA"
       },
       {
         "file": "IMG_1032.PNG",
         "url": "/2.%20Projects/6.%20Typography/IMG_1032.PNG",
-        "type": "image"
+        "type": "image",
+        "webpSrcset": "/2.%20Projects/6.%20Typography/IMG_1032.480.webp 480w, /2.%20Projects/6.%20Typography/IMG_1032.1080.webp 1080w, /2.%20Projects/6.%20Typography/IMG_1032.1920.webp 1920w",
+        "avifSrcset": "/2.%20Projects/6.%20Typography/IMG_1032.1080.avif 1080w",
+        "lqip": "data:image/webp;base64,UklGRkQAAABXRUJQVlA4IDgAAADwAQCdASoIAAwABABoJZwAAxanGfzMmAAA/vRd7jZ/pDS+WBio4QPn58NIAcS351beLGRxweigAA=="
       },
       {
         "file": "IMG_3759.PNG",
         "url": "/2.%20Projects/6.%20Typography/IMG_3759.PNG",
-        "type": "image"
+        "type": "image",
+        "webpSrcset": "/2.%20Projects/6.%20Typography/IMG_3759.480.webp 480w, /2.%20Projects/6.%20Typography/IMG_3759.1080.webp 1080w, /2.%20Projects/6.%20Typography/IMG_3759.1920.webp 1920w",
+        "avifSrcset": "/2.%20Projects/6.%20Typography/IMG_3759.1080.avif 1080w",
+        "lqip": "data:image/webp;base64,UklGRnIAAABXRUJQVlA4IGYAAAAwAgCdASoIAAwABABoJbACdAYr7kzTnNBgAAD5YuhRKR5MflHQOrOJOcBb1XeWLFrEpXxkbzfjxXJnG5EAd1U8s8Ne7LLu/iGDi9FmR5vkIGzCwgzupkjq7kKG1LH2h6U5PEVQAAA="
       },
       {
         "file": "IMG_3760.PNG",
         "url": "/2.%20Projects/6.%20Typography/IMG_3760.PNG",
-        "type": "image"
+        "type": "image",
+        "webpSrcset": "/2.%20Projects/6.%20Typography/IMG_3760.480.webp 480w, /2.%20Projects/6.%20Typography/IMG_3760.1080.webp 1080w, /2.%20Projects/6.%20Typography/IMG_3760.1920.webp 1920w",
+        "avifSrcset": "/2.%20Projects/6.%20Typography/IMG_3760.1080.avif 1080w",
+        "lqip": "data:image/webp;base64,UklGRlYAAABXRUJQVlA4IEoAAADwAQCdASoIAAwABABoJaQAAqsk0yquAAAA/vM5znZkOuv5U0b0vvOZmKYn9QdWWyqxGCDnz4nmCF0lxA6labG7SNKU1/agPAAAAA=="
       },
       {
         "file": "IMG_3761.PNG",
         "url": "/2.%20Projects/6.%20Typography/IMG_3761.PNG",
-        "type": "image"
+        "type": "image",
+        "webpSrcset": "/2.%20Projects/6.%20Typography/IMG_3761.480.webp 480w, /2.%20Projects/6.%20Typography/IMG_3761.1080.webp 1080w, /2.%20Projects/6.%20Typography/IMG_3761.1920.webp 1920w",
+        "avifSrcset": "/2.%20Projects/6.%20Typography/IMG_3761.1080.avif 1080w",
+        "lqip": "data:image/webp;base64,UklGRkAAAABXRUJQVlA4IDQAAADwAQCdASoIAAwABABoJZwAAveI6M/ykAAA/vS2xDF+AyL1wZMMa4gM9eEUMOXezzZiAAAA"
       },
       {
         "file": "IMG_3762.PNG",
         "url": "/2.%20Projects/6.%20Typography/IMG_3762.PNG",
-        "type": "image"
+        "type": "image",
+        "webpSrcset": "/2.%20Projects/6.%20Typography/IMG_3762.480.webp 480w, /2.%20Projects/6.%20Typography/IMG_3762.1080.webp 1080w, /2.%20Projects/6.%20Typography/IMG_3762.1920.webp 1920w",
+        "avifSrcset": "/2.%20Projects/6.%20Typography/IMG_3762.1080.avif 1080w",
+        "lqip": "data:image/webp;base64,UklGRlAAAABXRUJQVlA4IEQAAACwAQCdASoIAAwABABoJYwAAp2wxfYgAP7J7XZi0kfonoT6ArdEZvfybkBI+4gJGdjJxAPoo0H6e2kLa549UbgCAHgAAA=="
       },
       {
         "file": "IMG_3763.PNG",
         "url": "/2.%20Projects/6.%20Typography/IMG_3763.PNG",
-        "type": "image"
+        "type": "image",
+        "webpSrcset": "/2.%20Projects/6.%20Typography/IMG_3763.480.webp 480w, /2.%20Projects/6.%20Typography/IMG_3763.1080.webp 1080w, /2.%20Projects/6.%20Typography/IMG_3763.1920.webp 1920w",
+        "avifSrcset": "/2.%20Projects/6.%20Typography/IMG_3763.1080.avif 1080w",
+        "lqip": "data:image/webp;base64,UklGRjoAAABXRUJQVlA4IC4AAACwAQCdASoIAAwABABoJZwAAublEx0QAP73c7Ec6ByY2c0IrE4Ry+X5ivaa6AAA"
       },
       {
         "file": "IMG_3764.PNG",
         "url": "/2.%20Projects/6.%20Typography/IMG_3764.PNG",
-        "type": "image"
+        "type": "image",
+        "webpSrcset": "/2.%20Projects/6.%20Typography/IMG_3764.480.webp 480w, /2.%20Projects/6.%20Typography/IMG_3764.1080.webp 1080w, /2.%20Projects/6.%20Typography/IMG_3764.1920.webp 1920w",
+        "avifSrcset": "/2.%20Projects/6.%20Typography/IMG_3764.1080.avif 1080w",
+        "lqip": "data:image/webp;base64,UklGRkAAAABXRUJQVlA4IDQAAACQAQCdASoIAAwABABoJZAAAuabyAAA/vd2V9rZwOsQBYMbP/3sNYMaopISIexajRy8MAAA"
       },
       {
         "file": "IMG_8926.PNG",
         "url": "/2.%20Projects/6.%20Typography/IMG_8926.PNG",
-        "type": "image"
+        "type": "image",
+        "webpSrcset": "/2.%20Projects/6.%20Typography/IMG_8926.480.webp 480w, /2.%20Projects/6.%20Typography/IMG_8926.1080.webp 1080w",
+        "avifSrcset": "/2.%20Projects/6.%20Typography/IMG_8926.1080.avif 1080w",
+        "lqip": "data:image/webp;base64,UklGRsoAAABXRUJQVlA4WAoAAAAQAAAABwAACwAAQUxQSGEAAAAAAwBBs+rxw2UAV////v3+/xu1//n+///8tLr//+yCpfTKX///2QcAieOh9//4NABb/////P+CAKP++/3+/+2//v/+/v39/v/6/P/O8P/9/P//8Sh4/v72qdNKAAElRiYAAFZQOCBCAAAA8AEAnQEqCAAMAAQAaCWwAnQA9HrrXJ4AAP6ppx5dvy6vyrW8n3ydKUQxEk3XLxOrfdDkHOX3+X6dwjq4/D8GiAAA"
       },
       {
         "file": "IMG_8930.PNG",
         "url": "/2.%20Projects/6.%20Typography/IMG_8930.PNG",
-        "type": "image"
+        "type": "image",
+        "webpSrcset": "/2.%20Projects/6.%20Typography/IMG_8930.480.webp 480w, /2.%20Projects/6.%20Typography/IMG_8930.1080.webp 1080w",
+        "avifSrcset": "/2.%20Projects/6.%20Typography/IMG_8930.1080.avif 1080w",
+        "lqip": "data:image/webp;base64,UklGRk4AAABXRUJQVlA4IEIAAADwAQCdASoIAAwABABoJZwAAudCaGfrEgAA/u8vVuCVcUPz+UyMvMCD07kyl+nO+u+K/S4fwc2DAmscTq3jvkwAAAA="
       },
       {
         "file": "IMG_8967.PNG",
         "url": "/2.%20Projects/6.%20Typography/IMG_8967.PNG",
-        "type": "image"
+        "type": "image",
+        "webpSrcset": "/2.%20Projects/6.%20Typography/IMG_8967.480.webp 480w, /2.%20Projects/6.%20Typography/IMG_8967.1080.webp 1080w",
+        "avifSrcset": "/2.%20Projects/6.%20Typography/IMG_8967.1080.avif 1080w",
+        "lqip": "data:image/webp;base64,UklGRtQAAABXRUJQVlA4WAoAAAAQAAAABwAACwAAQUxQSGEAAAAAYQAEAQAAAQHxOQACAgAAAP91ACAAABIoeQBr/EsAdbEPAJiw0Rd/NQlZwFjwJn0AAMVvn8MCgQccvzzfqbh/EtFxY+St8ZIg/+Hp32yiewmbXElYCgoIAAACAAABAQAAAFZQOCBMAAAA0AEAnQEqCAAMAAQAaCUAToAekeByGAAA/e2JL9Oo2H0tBq/GKcaRk4DSJ+eudljlatvc74hX5BQBLwdcsN3lV4q23ALSoAoMZIfAAA=="
       },
       {
         "file": "IMG_8971.PNG",
         "url": "/2.%20Projects/6.%20Typography/IMG_8971.PNG",
-        "type": "image"
+        "type": "image",
+        "webpSrcset": "/2.%20Projects/6.%20Typography/IMG_8971.480.webp 480w, /2.%20Projects/6.%20Typography/IMG_8971.1080.webp 1080w",
+        "avifSrcset": "/2.%20Projects/6.%20Typography/IMG_8971.1080.avif 1080w",
+        "lqip": "data:image/webp;base64,UklGRk4AAABXRUJQVlA4IEIAAAAQAgCdASoIAAwABABoJaQAD4wO07Ao1rAAAP7uKVJW8fExRZX3mGk6gR25PwVanCKDD07NbspUnMHfKXn9blHOAAA="
       },
       {
         "file": "IMG_8974.JPEG",
@@ -578,17 +843,26 @@ export const PROJECT_FOLDERS: ProjectFolder[] = [
       {
         "file": "IMG_8976 (1).PNG",
         "url": "/2.%20Projects/6.%20Typography/IMG_8976%20(1).PNG",
-        "type": "image"
+        "type": "image",
+        "webpSrcset": "/2.%20Projects/6.%20Typography/IMG_8976%20(1).480.webp 480w, /2.%20Projects/6.%20Typography/IMG_8976%20(1).1080.webp 1080w, /2.%20Projects/6.%20Typography/IMG_8976%20(1).1920.webp 1920w",
+        "avifSrcset": "/2.%20Projects/6.%20Typography/IMG_8976%20(1).1080.avif 1080w",
+        "lqip": "data:image/webp;base64,UklGRtAAAABXRUJQVlA4WAoAAAAQAAAABwAACwAAQUxQSGEAAAAApAgAAQAAAADpFAABAAAAAKkNAAEAAAAAAAAAAAEBAAICAQAAAAECADcBAAAPHwAt7DcCAGPSHcOW7hQAcvmKo2LxBxq6apVtZO4geHtxs3mS7l3aZ63vONg0P9VDlUQAAFZQOCBIAAAAsAEAnQEqCAAMAAQAaCWkAA+Hjr99agD+6hTDx+WnBp1uIQw4qmAXs0b8h2H9K5BQI/9C1Lvp/ua3cWbI6gY1KuY/2txDuAAA"
       },
       {
         "file": "IMG_8977.jpeg",
         "url": "/2.%20Projects/6.%20Typography/IMG_8977.jpeg",
-        "type": "image"
+        "type": "image",
+        "webpSrcset": "/2.%20Projects/6.%20Typography/IMG_8977.480.webp 480w, /2.%20Projects/6.%20Typography/IMG_8977.1080.webp 1080w",
+        "avifSrcset": "/2.%20Projects/6.%20Typography/IMG_8977.1080.avif 1080w",
+        "lqip": "data:image/webp;base64,UklGRkgAAABXRUJQVlA4IDwAAACQAQCdASoIAAwABABoJaQAApofuAAA/uoL3fYcL1NKfls5NuIPbRr6CRlVa1+3k6JbkG4EOtoSl2gAAAA="
       },
       {
         "file": "Logo Ema 260305.png",
         "url": "/2.%20Projects/6.%20Typography/Logo%20Ema%20260305.png",
-        "type": "image"
+        "type": "image",
+        "webpSrcset": "/2.%20Projects/6.%20Typography/Logo%20Ema%20260305.480.webp 480w, /2.%20Projects/6.%20Typography/Logo%20Ema%20260305.1080.webp 1080w",
+        "avifSrcset": "/2.%20Projects/6.%20Typography/Logo%20Ema%20260305.1080.avif 1080w",
+        "lqip": "data:image/webp;base64,UklGRq4AAABXRUJQVlA4WAoAAAAQAAAABwAACwAAQUxQSGEAAAAAAgA5l2wgAAEUAEzyvxEADLDGo9PwiKKEbHNKJUa2hJ25XaW2kTR5TZaShY9wm7ykhld/paaPnoXNs3a4moSsm36YtraxvYRf4bfInl6bjlyHWkFDKXAwmAEAAAAAAAECAFZQOCAmAAAAsAEAnQEqCAAMAAQAaCWkAALnUiqPoAD+8qNtHId9xSu3DogAAAA="
       }
     ]
   },
@@ -598,17 +872,26 @@ export const PROJECT_FOLDERS: ProjectFolder[] = [
       {
         "file": "FAKT.org.png",
         "url": "/2.%20Projects/7.%20AI/FAKT.org.png",
-        "type": "image"
+        "type": "image",
+        "webpSrcset": "/2.%20Projects/7.%20AI/FAKT.org.480.webp 480w, /2.%20Projects/7.%20AI/FAKT.org.1080.webp 1080w, /2.%20Projects/7.%20AI/FAKT.org.1920.webp 1920w",
+        "avifSrcset": "/2.%20Projects/7.%20AI/FAKT.org.1080.avif 1080w",
+        "lqip": "data:image/webp;base64,UklGRnIAAABXRUJQVlA4WAoAAAAQAAAABwAACwAAQUxQSBIAAAABD9D/iAiIBZP5S/fFENH/cAFWUDggOgAAANABAJ0BKggADAAEAGgllAJ0APNjb9AAAPjA5Ed/0Aa3XPh03B51n0Q2gV3vurhpDNLAgjMQ4b8AAAA="
       },
       {
         "file": "Firefly inflated, puffy shapes made of white soft cotton, folds and wrinkles on materials, isolated  AA.png",
         "url": "/2.%20Projects/7.%20AI/Firefly%20inflated,%20puffy%20shapes%20made%20of%20white%20soft%20cotton,%20folds%20and%20wrinkles%20on%20materials,%20isolated%20%20AA.png",
-        "type": "image"
+        "type": "image",
+        "webpSrcset": "/2.%20Projects/7.%20AI/Firefly%20inflated,%20puffy%20shapes%20made%20of%20white%20soft%20cotton,%20folds%20and%20wrinkles%20on%20materials,%20isolated%20%20AA.480.webp 480w, /2.%20Projects/7.%20AI/Firefly%20inflated,%20puffy%20shapes%20made%20of%20white%20soft%20cotton,%20folds%20and%20wrinkles%20on%20materials,%20isolated%20%20AA.1080.webp 1080w, /2.%20Projects/7.%20AI/Firefly%20inflated,%20puffy%20shapes%20made%20of%20white%20soft%20cotton,%20folds%20and%20wrinkles%20on%20materials,%20isolated%20%20AA.1920.webp 1920w",
+        "avifSrcset": "/2.%20Projects/7.%20AI/Firefly%20inflated,%20puffy%20shapes%20made%20of%20white%20soft%20cotton,%20folds%20and%20wrinkles%20on%20materials,%20isolated%20%20AA.1080.avif 1080w",
+        "lqip": "data:image/webp;base64,UklGRj4AAABXRUJQVlA4IDIAAADQAQCdASoIAAwABABoJaQAAp3CIs8dAAD+9hPKiKSwvC2rHHNnT2BGp5xn5U7nXNoAAA=="
       },
       {
         "file": "metttfcoral.png",
         "url": "/2.%20Projects/7.%20AI/metttfcoral.png",
-        "type": "image"
+        "type": "image",
+        "webpSrcset": "/2.%20Projects/7.%20AI/metttfcoral.480.webp 480w, /2.%20Projects/7.%20AI/metttfcoral.1080.webp 1080w, /2.%20Projects/7.%20AI/metttfcoral.1920.webp 1920w",
+        "avifSrcset": "/2.%20Projects/7.%20AI/metttfcoral.1080.avif 1080w",
+        "lqip": "data:image/webp;base64,UklGRkoAAABXRUJQVlA4ID4AAADQAQCdASoIAAwABABoJZwAAprFXKLLAAD+lNpS20VR6WcyCWgyQanMbn9rWFfjTapBsd8bSBpLZsep7vHAAA=="
       }
     ]
   },
@@ -618,7 +901,10 @@ export const PROJECT_FOLDERS: ProjectFolder[] = [
       {
         "file": "IMG_2471.PNG",
         "url": "/2.%20Projects/8.%20Digital%20Art/IMG_2471.PNG",
-        "type": "image"
+        "type": "image",
+        "webpSrcset": "/2.%20Projects/8.%20Digital%20Art/IMG_2471.480.webp 480w, /2.%20Projects/8.%20Digital%20Art/IMG_2471.1080.webp 1080w, /2.%20Projects/8.%20Digital%20Art/IMG_2471.1920.webp 1920w",
+        "avifSrcset": "/2.%20Projects/8.%20Digital%20Art/IMG_2471.1080.avif 1080w",
+        "lqip": "data:image/webp;base64,UklGRkgAAABXRUJQVlA4IDwAAAAQAgCdASoIAAwABABoJZwAAup60j8r58AAAP72Ci5ZtLCPbrocqPOwIQa5GPkrzvDCyyT7tZ7n9cOgAAA="
       },
       {
         "file": "IMG_4265.JPG",
@@ -628,52 +914,82 @@ export const PROJECT_FOLDERS: ProjectFolder[] = [
       {
         "file": "IMG_4287.JPG",
         "url": "/2.%20Projects/8.%20Digital%20Art/IMG_4287.JPG",
-        "type": "image"
+        "type": "image",
+        "webpSrcset": "/2.%20Projects/8.%20Digital%20Art/IMG_4287.480.webp 480w, /2.%20Projects/8.%20Digital%20Art/IMG_4287.1080.webp 1080w, /2.%20Projects/8.%20Digital%20Art/IMG_4287.1920.webp 1920w",
+        "avifSrcset": "/2.%20Projects/8.%20Digital%20Art/IMG_4287.1080.avif 1080w",
+        "lqip": "data:image/webp;base64,UklGRkQAAABXRUJQVlA4IDgAAADQAQCdASoIAAwABABoJbACdAEO9z7gAAD+ryka/LDFWheQhkrtXVun/zsM40f+CwTv/zv3hAAAAA=="
       },
       {
         "file": "IMG_4288.JPG",
         "url": "/2.%20Projects/8.%20Digital%20Art/IMG_4288.JPG",
-        "type": "image"
+        "type": "image",
+        "webpSrcset": "/2.%20Projects/8.%20Digital%20Art/IMG_4288.480.webp 480w, /2.%20Projects/8.%20Digital%20Art/IMG_4288.1080.webp 1080w, /2.%20Projects/8.%20Digital%20Art/IMG_4288.1920.webp 1920w",
+        "avifSrcset": "/2.%20Projects/8.%20Digital%20Art/IMG_4288.1080.avif 1080w",
+        "lqip": "data:image/webp;base64,UklGRlIAAABXRUJQVlA4IEYAAAAQAgCdASoIAAwABABoJZACdAEegmhvqpgAAP7z6dLtjcXVUtp/RGEwr7vSXA7s6oUo9+jvEWx54tXcjzriyGHkb3aXAAAA"
       },
       {
         "file": "IMG_4294.JPG",
         "url": "/2.%20Projects/8.%20Digital%20Art/IMG_4294.JPG",
-        "type": "image"
+        "type": "image",
+        "webpSrcset": "/2.%20Projects/8.%20Digital%20Art/IMG_4294.480.webp 480w, /2.%20Projects/8.%20Digital%20Art/IMG_4294.1080.webp 1080w",
+        "avifSrcset": "/2.%20Projects/8.%20Digital%20Art/IMG_4294.1080.avif 1080w",
+        "lqip": "data:image/webp;base64,UklGRlQAAABXRUJQVlA4IEgAAADQAQCdASoIAAwABABoJZwAD4Ns/g1AAAD+bMAuu7jGPW9RmR8T9944ByEv6cgUAH8rbBL7vNnD+L1L3FdZ71Tyyh75N6jgAAA="
       },
       {
         "file": "IMG_4296.JPG",
         "url": "/2.%20Projects/8.%20Digital%20Art/IMG_4296.JPG",
-        "type": "image"
+        "type": "image",
+        "webpSrcset": "/2.%20Projects/8.%20Digital%20Art/IMG_4296.480.webp 480w, /2.%20Projects/8.%20Digital%20Art/IMG_4296.1080.webp 1080w",
+        "avifSrcset": "/2.%20Projects/8.%20Digital%20Art/IMG_4296.1080.avif 1080w",
+        "lqip": "data:image/webp;base64,UklGRkQAAABXRUJQVlA4IDgAAADQAQCdASoIAAwABABoJaQAAu1+IfM6AAD+82MWCEUf9S25rvgPQaS2WF6cwNIgjw/1yI6igpOAAA=="
       },
       {
         "file": "IMG_4297.JPG",
         "url": "/2.%20Projects/8.%20Digital%20Art/IMG_4297.JPG",
-        "type": "image"
+        "type": "image",
+        "webpSrcset": "/2.%20Projects/8.%20Digital%20Art/IMG_4297.480.webp 480w, /2.%20Projects/8.%20Digital%20Art/IMG_4297.1080.webp 1080w, /2.%20Projects/8.%20Digital%20Art/IMG_4297.1920.webp 1920w",
+        "avifSrcset": "/2.%20Projects/8.%20Digital%20Art/IMG_4297.1080.avif 1080w",
+        "lqip": "data:image/webp;base64,UklGRkwAAABXRUJQVlA4IEAAAADwAQCdASoIAAwABABoJQBYheADAd2VdYgA/qN/lm228jf7y0y2uMb5ECdR69bbZj73uL0YpJcPiDu83TEiwAAA"
       },
       {
         "file": "IMG_4298.JPG",
         "url": "/2.%20Projects/8.%20Digital%20Art/IMG_4298.JPG",
-        "type": "image"
+        "type": "image",
+        "webpSrcset": "/2.%20Projects/8.%20Digital%20Art/IMG_4298.480.webp 480w, /2.%20Projects/8.%20Digital%20Art/IMG_4298.1080.webp 1080w, /2.%20Projects/8.%20Digital%20Art/IMG_4298.1920.webp 1920w",
+        "avifSrcset": "/2.%20Projects/8.%20Digital%20Art/IMG_4298.1080.avif 1080w",
+        "lqip": "data:image/webp;base64,UklGRjoAAABXRUJQVlA4IC4AAADQAQCdASoIAAwABABoJQBYdiHHpUfgAAD+93ZJByPBdn1FpHSvqRiXrMH6IAAA"
       },
       {
         "file": "IMG_4299.JPG",
         "url": "/2.%20Projects/8.%20Digital%20Art/IMG_4299.JPG",
-        "type": "image"
+        "type": "image",
+        "webpSrcset": "/2.%20Projects/8.%20Digital%20Art/IMG_4299.480.webp 480w, /2.%20Projects/8.%20Digital%20Art/IMG_4299.1080.webp 1080w",
+        "avifSrcset": "/2.%20Projects/8.%20Digital%20Art/IMG_4299.1080.avif 1080w",
+        "lqip": "data:image/webp;base64,UklGRjwAAABXRUJQVlA4IDAAAACQAQCdASoIAAwABABoJZwAAuUve0AA/u8rFWN3ncTAzbOAKEIFLWa0ZLEDe9aCgAA="
       },
       {
         "file": "IMG_4301.JPG",
         "url": "/2.%20Projects/8.%20Digital%20Art/IMG_4301.JPG",
-        "type": "image"
+        "type": "image",
+        "webpSrcset": "/2.%20Projects/8.%20Digital%20Art/IMG_4301.480.webp 480w, /2.%20Projects/8.%20Digital%20Art/IMG_4301.1080.webp 1080w, /2.%20Projects/8.%20Digital%20Art/IMG_4301.1920.webp 1920w",
+        "avifSrcset": "/2.%20Projects/8.%20Digital%20Art/IMG_4301.1080.avif 1080w",
+        "lqip": "data:image/webp;base64,UklGRk4AAABXRUJQVlA4IEIAAAAQAgCdASoIAAwABABoJaQAD4eO04U/kv6AAP7vaIHkhz5Hv8kwZB1FDatbBJMIItFoMHHeZy0mJqByoeXHGJSHuAA="
       },
       {
         "file": "IMG_4303.JPG",
         "url": "/2.%20Projects/8.%20Digital%20Art/IMG_4303.JPG",
-        "type": "image"
+        "type": "image",
+        "webpSrcset": "/2.%20Projects/8.%20Digital%20Art/IMG_4303.480.webp 480w, /2.%20Projects/8.%20Digital%20Art/IMG_4303.1080.webp 1080w, /2.%20Projects/8.%20Digital%20Art/IMG_4303.1920.webp 1920w",
+        "avifSrcset": "/2.%20Projects/8.%20Digital%20Art/IMG_4303.1080.avif 1080w",
+        "lqip": "data:image/webp;base64,UklGRlQAAABXRUJQVlA4IEgAAAAQAgCdASoIAAwABABoJbACsH8AFjgxcKqAAP7nmTqkN62ff//+A8/QzD6pVBWihnFnTH9x2HlsOjryO94QkXJUYDVCjm7HkAA="
       },
       {
         "file": "IMG_4304.JPG",
         "url": "/2.%20Projects/8.%20Digital%20Art/IMG_4304.JPG",
-        "type": "image"
+        "type": "image",
+        "webpSrcset": "/2.%20Projects/8.%20Digital%20Art/IMG_4304.480.webp 480w, /2.%20Projects/8.%20Digital%20Art/IMG_4304.1080.webp 1080w",
+        "avifSrcset": "/2.%20Projects/8.%20Digital%20Art/IMG_4304.1080.avif 1080w",
+        "lqip": "data:image/webp;base64,UklGRkQAAABXRUJQVlA4IDgAAADwAQCdASoIAAwABABoJZwAAl0gXIM6MsAA/pM1qTM5xLvA4FPDtxq3rNOCnQ7R/cSJPa8+MIAAAA=="
       },
       {
         "file": "IMG_4305.JPG",
@@ -683,42 +999,66 @@ export const PROJECT_FOLDERS: ProjectFolder[] = [
       {
         "file": "IMG_4306.JPG",
         "url": "/2.%20Projects/8.%20Digital%20Art/IMG_4306.JPG",
-        "type": "image"
+        "type": "image",
+        "webpSrcset": "/2.%20Projects/8.%20Digital%20Art/IMG_4306.480.webp 480w, /2.%20Projects/8.%20Digital%20Art/IMG_4306.1080.webp 1080w, /2.%20Projects/8.%20Digital%20Art/IMG_4306.1920.webp 1920w",
+        "avifSrcset": "/2.%20Projects/8.%20Digital%20Art/IMG_4306.1080.avif 1080w",
+        "lqip": "data:image/webp;base64,UklGRjgAAABXRUJQVlA4ICwAAACwAQCdASoIAAwABABoJaQAAuTrLpgAAP71zgEb8IOUickNkFQog1sLf+QAAA=="
       },
       {
         "file": "IMG_4307.JPG",
         "url": "/2.%20Projects/8.%20Digital%20Art/IMG_4307.JPG",
-        "type": "image"
+        "type": "image",
+        "webpSrcset": "/2.%20Projects/8.%20Digital%20Art/IMG_4307.480.webp 480w, /2.%20Projects/8.%20Digital%20Art/IMG_4307.1080.webp 1080w, /2.%20Projects/8.%20Digital%20Art/IMG_4307.1920.webp 1920w",
+        "avifSrcset": "/2.%20Projects/8.%20Digital%20Art/IMG_4307.1080.avif 1080w",
+        "lqip": "data:image/webp;base64,UklGRlIAAABXRUJQVlA4IEYAAAAQAgCdASoIAAwABABoJbACdAEXtkEqnB7gAP6Il3tYCglTjzcm8V7copQ5TIIlfvE1Kh0Z1yYludQTywK2f2Hx1sYnAAAA"
       },
       {
         "file": "IMG_4308.JPG",
         "url": "/2.%20Projects/8.%20Digital%20Art/IMG_4308.JPG",
-        "type": "image"
+        "type": "image",
+        "webpSrcset": "/2.%20Projects/8.%20Digital%20Art/IMG_4308.480.webp 480w, /2.%20Projects/8.%20Digital%20Art/IMG_4308.1080.webp 1080w, /2.%20Projects/8.%20Digital%20Art/IMG_4308.1920.webp 1920w",
+        "avifSrcset": "/2.%20Projects/8.%20Digital%20Art/IMG_4308.1080.avif 1080w",
+        "lqip": "data:image/webp;base64,UklGRlQAAABXRUJQVlA4IEgAAADwAQCdASoIAAwABABoJbACdAD0j8OWYAAA/vEi4VWxObaXBInZjoFxM3ERa3WE0MaIi7nV8lR55rFJDwU4YCeCamSQXWigAAA="
       },
       {
         "file": "IMG_4311.JPG",
         "url": "/2.%20Projects/8.%20Digital%20Art/IMG_4311.JPG",
-        "type": "image"
+        "type": "image",
+        "webpSrcset": "/2.%20Projects/8.%20Digital%20Art/IMG_4311.480.webp 480w, /2.%20Projects/8.%20Digital%20Art/IMG_4311.1080.webp 1080w, /2.%20Projects/8.%20Digital%20Art/IMG_4311.1920.webp 1920w",
+        "avifSrcset": "/2.%20Projects/8.%20Digital%20Art/IMG_4311.1080.avif 1080w",
+        "lqip": "data:image/webp;base64,UklGRkwAAABXRUJQVlA4IEAAAADwAQCdASoIAAwABABoJQBdgCLJ6PbugAAA/uFZWdcLKKY6K7RTGBJdR+QH5GaJSlJsyNZqWPcPlpZqi76mcAAA"
       },
       {
         "file": "IMG_4312.JPG",
         "url": "/2.%20Projects/8.%20Digital%20Art/IMG_4312.JPG",
-        "type": "image"
+        "type": "image",
+        "webpSrcset": "/2.%20Projects/8.%20Digital%20Art/IMG_4312.480.webp 480w, /2.%20Projects/8.%20Digital%20Art/IMG_4312.1080.webp 1080w, /2.%20Projects/8.%20Digital%20Art/IMG_4312.1920.webp 1920w",
+        "avifSrcset": "/2.%20Projects/8.%20Digital%20Art/IMG_4312.1080.avif 1080w",
+        "lqip": "data:image/webp;base64,UklGRlYAAABXRUJQVlA4IEoAAAAwAgCdASoIAAwABABoJaAC7AEf3ZAt8GXYgADNz1QBZUIZRNYnr8IcS0kHumBXF+mrb7k/lNgyGWfwVrVh9ljrAZTjtBuo50AAAA=="
       },
       {
         "file": "IMG_4313.JPG",
         "url": "/2.%20Projects/8.%20Digital%20Art/IMG_4313.JPG",
-        "type": "image"
+        "type": "image",
+        "webpSrcset": "/2.%20Projects/8.%20Digital%20Art/IMG_4313.480.webp 480w, /2.%20Projects/8.%20Digital%20Art/IMG_4313.1080.webp 1080w, /2.%20Projects/8.%20Digital%20Art/IMG_4313.1920.webp 1920w",
+        "avifSrcset": "/2.%20Projects/8.%20Digital%20Art/IMG_4313.1080.avif 1080w",
+        "lqip": "data:image/webp;base64,UklGRloAAABXRUJQVlA4IE4AAAAQAgCdASoIAAwABABoJbACdGuAAocF00R4APvqhiH11LqBg9XT7W7dMjT/OBFrjJ1CZ3PGveRXAoJ7J7DPauP170vALf5MUpnJeIdAAAA="
       },
       {
         "file": "IMG_4316.JPG",
         "url": "/2.%20Projects/8.%20Digital%20Art/IMG_4316.JPG",
-        "type": "image"
+        "type": "image",
+        "webpSrcset": "/2.%20Projects/8.%20Digital%20Art/IMG_4316.480.webp 480w, /2.%20Projects/8.%20Digital%20Art/IMG_4316.1080.webp 1080w, /2.%20Projects/8.%20Digital%20Art/IMG_4316.1920.webp 1920w",
+        "avifSrcset": "/2.%20Projects/8.%20Digital%20Art/IMG_4316.1080.avif 1080w",
+        "lqip": "data:image/webp;base64,UklGRlIAAABXRUJQVlA4IEYAAADwAQCdASoIAAwABABoJaACdADzfdYq4AAA/qnDP2TQS7fzdK14I329EHeTl5CdZoKOPbdemCHSRipojJe5bAqt/LF2MAAA"
       },
       {
         "file": "IMG_4317.JPG",
         "url": "/2.%20Projects/8.%20Digital%20Art/IMG_4317.JPG",
-        "type": "image"
+        "type": "image",
+        "webpSrcset": "/2.%20Projects/8.%20Digital%20Art/IMG_4317.480.webp 480w, /2.%20Projects/8.%20Digital%20Art/IMG_4317.1080.webp 1080w",
+        "avifSrcset": "/2.%20Projects/8.%20Digital%20Art/IMG_4317.1080.avif 1080w",
+        "lqip": "data:image/webp;base64,UklGRkwAAABXRUJQVlA4IEAAAADwAQCdASoIAAwABABoJbACdADceDSPpAAAyUdyFiRJ0YudmUPT2/QsIt/vWdJVMpDENw2s9LCtuXgjEEctQAAA"
       }
     ]
   },
@@ -728,17 +1068,26 @@ export const PROJECT_FOLDERS: ProjectFolder[] = [
       {
         "file": "IMG_2834.PNG",
         "url": "/2.%20Projects/9.%20Marketing%20Campaigns/IMG_2834.PNG",
-        "type": "image"
+        "type": "image",
+        "webpSrcset": "/2.%20Projects/9.%20Marketing%20Campaigns/IMG_2834.480.webp 480w, /2.%20Projects/9.%20Marketing%20Campaigns/IMG_2834.1080.webp 1080w, /2.%20Projects/9.%20Marketing%20Campaigns/IMG_2834.1920.webp 1920w",
+        "avifSrcset": "/2.%20Projects/9.%20Marketing%20Campaigns/IMG_2834.1080.avif 1080w",
+        "lqip": "data:image/webp;base64,UklGRswAAABXRUJQVlA4WAoAAAAQAAAABwAACwAAQUxQSF4AAAABcFpr25s8fzknKiorJIq2ADNwsHgWwSJxTMAUaBQSha2qd/7yrhERAQbnAHwBxjmG20nPYlgqhtWYkUIImjU75axzvVZS0BTFGLSpWHylRx9La34a4LBQWgNYiwUAVlA4IEgAAACQAQCdASoIAAwABABoJbACdACPUAAAzJPnT1XFeUsCuVGXH4dkfwDHh6AcnDwl0LO2gKn/xW1gMt0Ca4QWomODb9kPpI/gAAA="
       },
       {
         "file": "Paper.Portfolio_Journal.3.PNG",
         "url": "/2.%20Projects/9.%20Marketing%20Campaigns/Paper.Portfolio_Journal.3.PNG",
-        "type": "image"
+        "type": "image",
+        "webpSrcset": "/2.%20Projects/9.%20Marketing%20Campaigns/Paper.Portfolio_Journal.3.480.webp 480w, /2.%20Projects/9.%20Marketing%20Campaigns/Paper.Portfolio_Journal.3.1080.webp 1080w, /2.%20Projects/9.%20Marketing%20Campaigns/Paper.Portfolio_Journal.3.1920.webp 1920w",
+        "avifSrcset": "/2.%20Projects/9.%20Marketing%20Campaigns/Paper.Portfolio_Journal.3.1080.avif 1080w",
+        "lqip": "data:image/webp;base64,UklGRjgAAABXRUJQVlA4ICwAAADQAQCdASoIAAwABABoJZwAAud56b/20AD+82231VwDQ+4xar09OQZ1/eiEAA=="
       },
       {
         "file": "Paper.Portfolio_Journal.9.PNG",
         "url": "/2.%20Projects/9.%20Marketing%20Campaigns/Paper.Portfolio_Journal.9.PNG",
-        "type": "image"
+        "type": "image",
+        "webpSrcset": "/2.%20Projects/9.%20Marketing%20Campaigns/Paper.Portfolio_Journal.9.480.webp 480w, /2.%20Projects/9.%20Marketing%20Campaigns/Paper.Portfolio_Journal.9.1080.webp 1080w, /2.%20Projects/9.%20Marketing%20Campaigns/Paper.Portfolio_Journal.9.1920.webp 1920w",
+        "avifSrcset": "/2.%20Projects/9.%20Marketing%20Campaigns/Paper.Portfolio_Journal.9.1080.avif 1080w",
+        "lqip": "data:image/webp;base64,UklGRkAAAABXRUJQVlA4IDQAAACwAQCdASoIAAwABABoJZQAAuYbYvJAAP7zcvJxKUq6/WdR2kw+wWV9Y/WmH0iSDG56AAAA"
       }
     ]
   },
@@ -763,27 +1112,42 @@ export const PROJECT_FOLDERS: ProjectFolder[] = [
       {
         "file": "Skjermbilde 2024-05-19 191532.png",
         "url": "/2.%20Projects/11.%20UX`UI/Skjermbilde%202024-05-19%20191532.png",
-        "type": "image"
+        "type": "image",
+        "webpSrcset": "/2.%20Projects/11.%20UX`UI/Skjermbilde%202024-05-19%20191532.480.webp 480w, /2.%20Projects/11.%20UX`UI/Skjermbilde%202024-05-19%20191532.1080.webp 1080w, /2.%20Projects/11.%20UX`UI/Skjermbilde%202024-05-19%20191532.1920.webp 1920w",
+        "avifSrcset": "/2.%20Projects/11.%20UX`UI/Skjermbilde%202024-05-19%20191532.1080.avif 1080w",
+        "lqip": "data:image/webp;base64,UklGRlgAAABXRUJQVlA4IEwAAADwAQCdASoIAAwABABoJbACdAD0e3Xw1AAA/sKS9Iu/+R/CaMEq9s/R5GBqEuJyPJ0IqHn5SzsCc9kTqvTl3b0Z5fqUh/gpySwvWEAA"
       },
       {
         "file": "Skjermbilde 2024-05-19 191908.png",
         "url": "/2.%20Projects/11.%20UX`UI/Skjermbilde%202024-05-19%20191908.png",
-        "type": "image"
+        "type": "image",
+        "webpSrcset": "/2.%20Projects/11.%20UX`UI/Skjermbilde%202024-05-19%20191908.480.webp 480w, /2.%20Projects/11.%20UX`UI/Skjermbilde%202024-05-19%20191908.1080.webp 1080w, /2.%20Projects/11.%20UX`UI/Skjermbilde%202024-05-19%20191908.1920.webp 1920w",
+        "avifSrcset": "/2.%20Projects/11.%20UX`UI/Skjermbilde%202024-05-19%20191908.1080.avif 1080w",
+        "lqip": "data:image/webp;base64,UklGRjQAAABXRUJQVlA4ICgAAACwAQCdASoIAAwABABoJaQAAudentoAAP73c6e/iiSvqshDoVp8wAAA"
       },
       {
         "file": "Skjermbilde 2024-05-19 192023.png",
         "url": "/2.%20Projects/11.%20UX`UI/Skjermbilde%202024-05-19%20192023.png",
-        "type": "image"
+        "type": "image",
+        "webpSrcset": "/2.%20Projects/11.%20UX`UI/Skjermbilde%202024-05-19%20192023.480.webp 480w, /2.%20Projects/11.%20UX`UI/Skjermbilde%202024-05-19%20192023.1080.webp 1080w, /2.%20Projects/11.%20UX`UI/Skjermbilde%202024-05-19%20192023.1920.webp 1920w",
+        "avifSrcset": "/2.%20Projects/11.%20UX`UI/Skjermbilde%202024-05-19%20192023.1080.avif 1080w",
+        "lqip": "data:image/webp;base64,UklGRkYAAABXRUJQVlA4IDoAAADwAQCdASoIAAwABABoJbACw7Ef/lglqkAA/vXa0UYFjLz3ETvcIc9IfSX1sG+tNLoDIZzCbAGTwAAA"
       },
       {
         "file": "Skjermbilde 2024-05-19 192042.png",
         "url": "/2.%20Projects/11.%20UX`UI/Skjermbilde%202024-05-19%20192042.png",
-        "type": "image"
+        "type": "image",
+        "webpSrcset": "/2.%20Projects/11.%20UX`UI/Skjermbilde%202024-05-19%20192042.480.webp 480w, /2.%20Projects/11.%20UX`UI/Skjermbilde%202024-05-19%20192042.1080.webp 1080w, /2.%20Projects/11.%20UX`UI/Skjermbilde%202024-05-19%20192042.1920.webp 1920w",
+        "avifSrcset": "/2.%20Projects/11.%20UX`UI/Skjermbilde%202024-05-19%20192042.1080.avif 1080w",
+        "lqip": "data:image/webp;base64,UklGRjIAAABXRUJQVlA4ICYAAACwAQCdASoIAAwABABoJaQAAudaVW2AAP73c6e/ODXsVII7ZgAAAA=="
       },
       {
         "file": "Skjermbilde 2024-05-19 192201.png",
         "url": "/2.%20Projects/11.%20UX`UI/Skjermbilde%202024-05-19%20192201.png",
-        "type": "image"
+        "type": "image",
+        "webpSrcset": "/2.%20Projects/11.%20UX`UI/Skjermbilde%202024-05-19%20192201.480.webp 480w, /2.%20Projects/11.%20UX`UI/Skjermbilde%202024-05-19%20192201.1080.webp 1080w",
+        "avifSrcset": "/2.%20Projects/11.%20UX`UI/Skjermbilde%202024-05-19%20192201.1080.avif 1080w",
+        "lqip": "data:image/webp;base64,UklGRj4AAABXRUJQVlA4IDIAAADQAQCdASoIAAwABABoJZwAAu1/f4aWwAD+zgPuv3C1Qn3Ut4Lgblzh/Serz16Bz9gAAA=="
       }
     ]
   },
@@ -793,17 +1157,24 @@ export const PROJECT_FOLDERS: ProjectFolder[] = [
       {
         "file": "Holistic Letter from the Editor & 3D article.png",
         "url": "/2.%20Projects/12.%20Holistic%20Art%20Magazine/Holistic%20Letter%20from%20the%20Editor%20&%203D%20article.png",
-        "type": "image"
+        "type": "image",
+        "webpSrcset": "/2.%20Projects/12.%20Holistic%20Art%20Magazine/Holistic%20Letter%20from%20the%20Editor%20&%203D%20article.480.webp 480w",
+        "lqip": "data:image/webp;base64,UklGRlwAAABXRUJQVlA4IFAAAAAQAgCdASoIAAwABABoJbACdAEQFVLn+/egAPjfjHZ4FBdwGGkYgYUN5+OPw56et1n2sX8kUCBcITE6q6CcNn2hgCu4Fj663fBD/grSoAAAAA=="
       },
       {
         "file": "Holistic Letter from the Editor & 3D article2.png",
         "url": "/2.%20Projects/12.%20Holistic%20Art%20Magazine/Holistic%20Letter%20from%20the%20Editor%20&%203D%20article2.png",
-        "type": "image"
+        "type": "image",
+        "webpSrcset": "/2.%20Projects/12.%20Holistic%20Art%20Magazine/Holistic%20Letter%20from%20the%20Editor%20&%203D%20article2.480.webp 480w",
+        "lqip": "data:image/webp;base64,UklGRlIAAABXRUJQVlA4IEYAAAAQAgCdASoIAAwABABoJaQAD5Au1ApzeDvgAMs7w3eGygaDBh+h/b/el6dxrcXrg82UqOAUE2um5r9EEi8D6O7iYaWP4jgA"
       },
       {
         "file": "IMG_1027.PNG",
         "url": "/2.%20Projects/12.%20Holistic%20Art%20Magazine/IMG_1027.PNG",
-        "type": "image"
+        "type": "image",
+        "webpSrcset": "/2.%20Projects/12.%20Holistic%20Art%20Magazine/IMG_1027.480.webp 480w, /2.%20Projects/12.%20Holistic%20Art%20Magazine/IMG_1027.1080.webp 1080w",
+        "avifSrcset": "/2.%20Projects/12.%20Holistic%20Art%20Magazine/IMG_1027.1080.avif 1080w",
+        "lqip": "data:image/webp;base64,UklGRlIAAABXRUJQVlA4IEYAAAAQAgCdASoIAAwABABoJYwC7H8AFcD1pEmAAP7HHLCqBqz3X5uYiCqdYeoZxi0kFR7jGILVJ7ewzaRDyucYgB/ifAAsxQAA"
       }
     ]
   },
@@ -813,52 +1184,82 @@ export const PROJECT_FOLDERS: ProjectFolder[] = [
       {
         "file": "000008390021_20A.jpg",
         "url": "/2.%20Projects/13.%20Photography/000008390021_20A.jpg",
-        "type": "image"
+        "type": "image",
+        "webpSrcset": "/2.%20Projects/13.%20Photography/000008390021_20A.480.webp 480w, /2.%20Projects/13.%20Photography/000008390021_20A.1080.webp 1080w, /2.%20Projects/13.%20Photography/000008390021_20A.1920.webp 1920w",
+        "avifSrcset": "/2.%20Projects/13.%20Photography/000008390021_20A.1080.avif 1080w",
+        "lqip": "data:image/webp;base64,UklGRkwAAABXRUJQVlA4IEAAAADwAQCdASoIAAwABABoJQBdgCBvtV5+t04A/uok03FRr9z43fXErWMX3qe6HVV0yhjGaaS3DBGv7KrhbqR8AAAA"
       },
       {
         "file": "000008390023_22A.jpg",
         "url": "/2.%20Projects/13.%20Photography/000008390023_22A.jpg",
-        "type": "image"
+        "type": "image",
+        "webpSrcset": "/2.%20Projects/13.%20Photography/000008390023_22A.480.webp 480w, /2.%20Projects/13.%20Photography/000008390023_22A.1080.webp 1080w, /2.%20Projects/13.%20Photography/000008390023_22A.1920.webp 1920w",
+        "avifSrcset": "/2.%20Projects/13.%20Photography/000008390023_22A.1080.avif 1080w",
+        "lqip": "data:image/webp;base64,UklGRkoAAABXRUJQVlA4ID4AAADQAQCdASoIAAwABABoJQBOgB9SiTGfgAD3yyxEq3gkYzi/l2Mcd3Fu+i2TWkv2G6UcAPZsNqMmpDSkRJAAAA=="
       },
       {
         "file": "000008390027_26A.jpg",
         "url": "/2.%20Projects/13.%20Photography/000008390027_26A.jpg",
-        "type": "image"
+        "type": "image",
+        "webpSrcset": "/2.%20Projects/13.%20Photography/000008390027_26A.480.webp 480w, /2.%20Projects/13.%20Photography/000008390027_26A.1080.webp 1080w, /2.%20Projects/13.%20Photography/000008390027_26A.1920.webp 1920w",
+        "avifSrcset": "/2.%20Projects/13.%20Photography/000008390027_26A.1080.avif 1080w",
+        "lqip": "data:image/webp;base64,UklGRkoAAABXRUJQVlA4ID4AAADQAQCdASoIAAwABABoJZQAAlvyxdJMgAD8jFMgfenvc3HFC55KVharEeIZnsjoB54gk5PrgGjFs3oLo4AAAA=="
       },
       {
         "file": "000008390032_31A.jpg",
         "url": "/2.%20Projects/13.%20Photography/000008390032_31A.jpg",
-        "type": "image"
+        "type": "image",
+        "webpSrcset": "/2.%20Projects/13.%20Photography/000008390032_31A.480.webp 480w, /2.%20Projects/13.%20Photography/000008390032_31A.1080.webp 1080w, /2.%20Projects/13.%20Photography/000008390032_31A.1920.webp 1920w",
+        "avifSrcset": "/2.%20Projects/13.%20Photography/000008390032_31A.1080.avif 1080w",
+        "lqip": "data:image/webp;base64,UklGRkwAAABXRUJQVlA4IEAAAADwAQCdASoIAAwABABoJYwCdAEPDU2LJAAA+TQb9deMq/TqbpLsF7GhCcbRK0hghJ1w8mS3Pdn6iUcoFjp6KAAA"
       },
       {
         "file": "000008390034_33A - Copy 2.jpg",
         "url": "/2.%20Projects/13.%20Photography/000008390034_33A%20-%20Copy%202.jpg",
-        "type": "image"
+        "type": "image",
+        "webpSrcset": "/2.%20Projects/13.%20Photography/000008390034_33A%20-%20Copy%202.480.webp 480w, /2.%20Projects/13.%20Photography/000008390034_33A%20-%20Copy%202.1080.webp 1080w, /2.%20Projects/13.%20Photography/000008390034_33A%20-%20Copy%202.1920.webp 1920w",
+        "avifSrcset": "/2.%20Projects/13.%20Photography/000008390034_33A%20-%20Copy%202.1080.avif 1080w",
+        "lqip": "data:image/webp;base64,UklGRkIAAABXRUJQVlA4IDYAAADwAQCdASoIAAwABABoJYgCdAEPDryiE4AA/uamo8qCYCwghaSF5eOV7Fj1uw68ekOWp2xAAAA="
       },
       {
         "file": "000008390035_34A.jpg",
         "url": "/2.%20Projects/13.%20Photography/000008390035_34A.jpg",
-        "type": "image"
+        "type": "image",
+        "webpSrcset": "/2.%20Projects/13.%20Photography/000008390035_34A.480.webp 480w, /2.%20Projects/13.%20Photography/000008390035_34A.1080.webp 1080w, /2.%20Projects/13.%20Photography/000008390035_34A.1920.webp 1920w",
+        "avifSrcset": "/2.%20Projects/13.%20Photography/000008390035_34A.1080.avif 1080w",
+        "lqip": "data:image/webp;base64,UklGRk4AAABXRUJQVlA4IEIAAADQAQCdASoIAAwABABoJYwC7AD0e4RqEAD8aDdZ4NVdFubO1p8AZBH0TiCOSAGX1vjmzjPkWdX4zV06eYKQJkMAAAA="
       },
       {
         "file": "AA020A.jpg",
         "url": "/2.%20Projects/13.%20Photography/AA020A.jpg",
-        "type": "image"
+        "type": "image",
+        "webpSrcset": "/2.%20Projects/13.%20Photography/AA020A.480.webp 480w, /2.%20Projects/13.%20Photography/AA020A.1080.webp 1080w, /2.%20Projects/13.%20Photography/AA020A.1920.webp 1920w",
+        "avifSrcset": "/2.%20Projects/13.%20Photography/AA020A.1080.avif 1080w",
+        "lqip": "data:image/webp;base64,UklGRjQAAABXRUJQVlA4ICgAAAAQAgCdASoIAAwABABoJZQCdAEPAhOUQWAAAP6LQqYOjBFTJcfqsAAA"
       },
       {
         "file": "IMG_4145.JPG",
         "url": "/2.%20Projects/13.%20Photography/IMG_4145.JPG",
-        "type": "image"
+        "type": "image",
+        "webpSrcset": "/2.%20Projects/13.%20Photography/IMG_4145.480.webp 480w, /2.%20Projects/13.%20Photography/IMG_4145.1080.webp 1080w, /2.%20Projects/13.%20Photography/IMG_4145.1920.webp 1920w",
+        "avifSrcset": "/2.%20Projects/13.%20Photography/IMG_4145.1080.avif 1080w",
+        "lqip": "data:image/webp;base64,UklGRlwAAABXRUJQVlA4IFAAAAAQAgCdASoIAAwABABoJbACdEf/gbTzxeQQAP1ltkMUemuNNpG6hhNhoW2q2AXEY7bZbUXX4pz5bJrZfoD/46qAaE5O/7RDQ/nJRKymtjPAAA=="
       },
       {
         "file": "IMG_4238.JPG",
         "url": "/2.%20Projects/13.%20Photography/IMG_4238.JPG",
-        "type": "image"
+        "type": "image",
+        "webpSrcset": "/2.%20Projects/13.%20Photography/IMG_4238.480.webp 480w, /2.%20Projects/13.%20Photography/IMG_4238.1080.webp 1080w, /2.%20Projects/13.%20Photography/IMG_4238.1920.webp 1920w",
+        "avifSrcset": "/2.%20Projects/13.%20Photography/IMG_4238.1080.avif 1080w",
+        "lqip": "data:image/webp;base64,UklGRlgAAABXRUJQVlA4IEwAAADQAQCdASoIAAwABABoJbACdAEOujrTCADOPbblxEalUIgHQRHdn7on5m0insegpA3Ye1ITY0bsofCKMB8l5EUdt60faKnNf8Ag9QAA"
       },
       {
         "file": "IMG_4239.JPG",
         "url": "/2.%20Projects/13.%20Photography/IMG_4239.JPG",
-        "type": "image"
+        "type": "image",
+        "webpSrcset": "/2.%20Projects/13.%20Photography/IMG_4239.480.webp 480w, /2.%20Projects/13.%20Photography/IMG_4239.1080.webp 1080w, /2.%20Projects/13.%20Photography/IMG_4239.1920.webp 1920w",
+        "avifSrcset": "/2.%20Projects/13.%20Photography/IMG_4239.1080.avif 1080w",
+        "lqip": "data:image/webp;base64,UklGRj4AAABXRUJQVlA4IDIAAACwAQCdASoIAAwABABoJZgAAucKO7+AAP7zm0Kj4UftV7rTb1rIm2X6B6NIPI5B5QCAAA=="
       }
     ]
   },
@@ -868,7 +1269,9 @@ export const PROJECT_FOLDERS: ProjectFolder[] = [
       {
         "file": "83917-sims-green-triangle-hd-image-free-png(1).png",
         "url": "/2.%20Projects/14.%20Sims%20Custom%20Content/83917-sims-green-triangle-hd-image-free-png(1).png",
-        "type": "image"
+        "type": "image",
+        "webpSrcset": "/2.%20Projects/14.%20Sims%20Custom%20Content/83917-sims-green-triangle-hd-image-free-png(1).480.webp 480w",
+        "lqip": "data:image/webp;base64,UklGRtYAAABXRUJQVlA4WAoAAAAQAAAABwAACwAAQUxQSFEAAAABcFXbtqqs8857uH/SgxqewF0q+qdDCCI4u0ZEBAH1MoaReyxxnIkuaYzMXerj9PTROUnsqvdTbWytz091qOqjFRCspBbu1LV3MOzQw8GolAAAVlA4IF4AAACwAQCdASoIAAwABABoJbACdADyVhpgAP29FbHEtYpMpxhV2Al9D6fkcsexANVCRnNSEpAImtIWfvtDRi7wurVqhSWYPkbbuqdYBU7BnVa3fyCLkeHiui2p0oByPkAA"
       }
     ]
   },
@@ -908,12 +1311,18 @@ export const PROJECT_FOLDERS: ProjectFolder[] = [
       {
         "file": "IMG_2776.png",
         "url": "/2.%20Projects/15.%20Projection%20Mapping%20+%20VJ%20+%20Lights/IMG_2776.png",
-        "type": "image"
+        "type": "image",
+        "webpSrcset": "/2.%20Projects/15.%20Projection%20Mapping%20+%20VJ%20+%20Lights/IMG_2776.480.webp 480w, /2.%20Projects/15.%20Projection%20Mapping%20+%20VJ%20+%20Lights/IMG_2776.1080.webp 1080w, /2.%20Projects/15.%20Projection%20Mapping%20+%20VJ%20+%20Lights/IMG_2776.1920.webp 1920w",
+        "avifSrcset": "/2.%20Projects/15.%20Projection%20Mapping%20+%20VJ%20+%20Lights/IMG_2776.1080.avif 1080w",
+        "lqip": "data:image/webp;base64,UklGRkgAAABXRUJQVlA4IDwAAADwAQCdASoIAAwABABoJQBdgCHh84CV2lAA/vE0fnhtnxCcyRJwfzZ+iznAy4HkC6qBRuCXKI39h54AAAA="
       },
       {
         "file": "IMG_2778.png",
         "url": "/2.%20Projects/15.%20Projection%20Mapping%20+%20VJ%20+%20Lights/IMG_2778.png",
-        "type": "image"
+        "type": "image",
+        "webpSrcset": "/2.%20Projects/15.%20Projection%20Mapping%20+%20VJ%20+%20Lights/IMG_2778.480.webp 480w, /2.%20Projects/15.%20Projection%20Mapping%20+%20VJ%20+%20Lights/IMG_2778.1080.webp 1080w, /2.%20Projects/15.%20Projection%20Mapping%20+%20VJ%20+%20Lights/IMG_2778.1920.webp 1920w",
+        "avifSrcset": "/2.%20Projects/15.%20Projection%20Mapping%20+%20VJ%20+%20Lights/IMG_2778.1080.avif 1080w",
+        "lqip": "data:image/webp;base64,UklGRlQAAABXRUJQVlA4IEgAAADQAQCdASoIAAwABABoJbAC7ADZcGigAAD+0oDd+vwRK5y0izR+WSCIhKsUMDXr2atjqpZO+ROOrxl9ztZHJGauNqQTP34vgAA="
       },
       {
         "file": "IMG_2780.MOV",
@@ -933,7 +1342,10 @@ export const PROJECT_FOLDERS: ProjectFolder[] = [
       {
         "file": "Bralala2.jpg",
         "url": "/2.%20Projects/16.%20Experimental/Bralala2.jpg",
-        "type": "image"
+        "type": "image",
+        "webpSrcset": "/2.%20Projects/16.%20Experimental/Bralala2.480.webp 480w, /2.%20Projects/16.%20Experimental/Bralala2.1080.webp 1080w, /2.%20Projects/16.%20Experimental/Bralala2.1920.webp 1920w",
+        "avifSrcset": "/2.%20Projects/16.%20Experimental/Bralala2.1080.avif 1080w",
+        "lqip": "data:image/webp;base64,UklGRkwAAABXRUJQVlA4IEAAAACwAQCdASoIAAwABABoJaQAApzAuOZAAP7whDy5dZsizPhteFJo3CvOlJRLIUTxkoq4VEs3YZCIcRKo5qe1QAAA"
       }
     ]
   }
@@ -943,7 +1355,10 @@ export const HIGHLIGHTS_ASSETS: MediaAsset[] = [
   {
     "file": "000008390027_26A.jpg",
     "url": "/3.%20Highlights/000008390027_26A.jpg",
-    "type": "image"
+    "type": "image",
+    "webpSrcset": "/3.%20Highlights/000008390027_26A.480.webp 480w, /3.%20Highlights/000008390027_26A.1080.webp 1080w, /3.%20Highlights/000008390027_26A.1920.webp 1920w",
+    "avifSrcset": "/3.%20Highlights/000008390027_26A.1080.avif 1080w",
+    "lqip": "data:image/webp;base64,UklGRkoAAABXRUJQVlA4ID4AAADQAQCdASoIAAwABABoJZQAAlvyxdJMgAD8jFMgfenvc3HFC55KVharEeIZnsjoB54gk5PrgGjFs3oLo4AAAA=="
   },
   {
     "file": "301 - the_Lovers_I.mp4",
@@ -953,12 +1368,17 @@ export const HIGHLIGHTS_ASSETS: MediaAsset[] = [
   {
     "file": "Cemetery Scene20.png",
     "url": "/3.%20Highlights/Cemetery%20Scene20.png",
-    "type": "image"
+    "type": "image",
+    "webpSrcset": "/3.%20Highlights/Cemetery%20Scene20.480.webp 480w, /3.%20Highlights/Cemetery%20Scene20.1080.webp 1080w, /3.%20Highlights/Cemetery%20Scene20.1920.webp 1920w",
+    "avifSrcset": "/3.%20Highlights/Cemetery%20Scene20.1080.avif 1080w",
+    "lqip": "data:image/webp;base64,UklGRiwAAABXRUJQVlA4ICAAAAAwAQCdASoIAAwABABoJaQAA3AA/vHq9OCRGBvkVQAAAA=="
   },
   {
     "file": "cHROME tYPE bw 4.png",
     "url": "/3.%20Highlights/cHROME%20tYPE%20bw%204.png",
-    "type": "image"
+    "type": "image",
+    "webpSrcset": "/3.%20Highlights/cHROME%20tYPE%20bw%204.480.webp 480w",
+    "lqip": "data:image/webp;base64,UklGRkoAAABXRUJQVlA4ID4AAAAQAgCdASoIAAwABABoJaQAD46wyfdJNlQAAP7xqI3uoL/zbmfn1IRulXtSsAQPhnpDur0SvS0mj4IOAAAAAA=="
   },
   {
     "file": "Epicenter Treasure Hunt.jpg",
@@ -968,92 +1388,145 @@ export const HIGHLIGHTS_ASSETS: MediaAsset[] = [
   {
     "file": "GlassErrorScrnshot.png",
     "url": "/3.%20Highlights/GlassErrorScrnshot.png",
-    "type": "image"
+    "type": "image",
+    "webpSrcset": "/3.%20Highlights/GlassErrorScrnshot.480.webp 480w",
+    "lqip": "data:image/webp;base64,UklGRlYAAABXRUJQVlA4IEoAAADwAQCdASoIAAwABABoJYgCdAD0jXbD8CAA9laDl5sUCeQzWY5h0OfVe7vwo6ClAJgvhrfSWq96Aa1neCEWj0Zs0lrCm9TRXAAAAA=="
   },
   {
     "file": "Holistic Art Mag Vol.0 Cover Page.PNG",
     "url": "/3.%20Highlights/Holistic%20Art%20Mag%20Vol.0%20Cover%20Page.PNG",
-    "type": "image"
+    "type": "image",
+    "webpSrcset": "/3.%20Highlights/Holistic%20Art%20Mag%20Vol.0%20Cover%20Page.480.webp 480w, /3.%20Highlights/Holistic%20Art%20Mag%20Vol.0%20Cover%20Page.1080.webp 1080w, /3.%20Highlights/Holistic%20Art%20Mag%20Vol.0%20Cover%20Page.1920.webp 1920w",
+    "avifSrcset": "/3.%20Highlights/Holistic%20Art%20Mag%20Vol.0%20Cover%20Page.1080.avif 1080w",
+    "lqip": "data:image/webp;base64,UklGRlwAAABXRUJQVlA4IFAAAADwAQCdASoIAAwABABoJbACdAEO87BNgUAA4fDFX3hgK4RIRQ4sJ9uv12En+IsYjObAFD4+p5ClpfUf1+NmWpG6uAK7gWPrrd8EP+CtQkAAAA=="
   },
   {
     "file": "hp2(1).png",
     "url": "/3.%20Highlights/hp2(1).png",
-    "type": "image"
+    "type": "image",
+    "webpSrcset": "/3.%20Highlights/hp2(1).480.webp 480w, /3.%20Highlights/hp2(1).1080.webp 1080w",
+    "avifSrcset": "/3.%20Highlights/hp2(1).1080.avif 1080w",
+    "lqip": "data:image/webp;base64,UklGRkwAAABXRUJQVlA4IEAAAADwAQCdASoIAAwABABoJZQC7AEUoJT1lpAA/sUI1kSdL3urslc0N+hsyD0bkMIHKAdniqgSwDASUnY4ejjs8AAA"
   },
   {
     "file": "IMG_2471.PNG",
     "url": "/3.%20Highlights/IMG_2471.PNG",
-    "type": "image"
+    "type": "image",
+    "webpSrcset": "/3.%20Highlights/IMG_2471.480.webp 480w, /3.%20Highlights/IMG_2471.1080.webp 1080w, /3.%20Highlights/IMG_2471.1920.webp 1920w",
+    "avifSrcset": "/3.%20Highlights/IMG_2471.1080.avif 1080w",
+    "lqip": "data:image/webp;base64,UklGRkgAAABXRUJQVlA4IDwAAAAQAgCdASoIAAwABABoJZwAAup60j8r58AAAP72Ci5ZtLCPbrocqPOwIQa5GPkrzvDCyyT7tZ7n9cOgAAA="
   },
   {
     "file": "IMG_3327.png",
     "url": "/3.%20Highlights/IMG_3327.png",
-    "type": "image"
+    "type": "image",
+    "webpSrcset": "/3.%20Highlights/IMG_3327.480.webp 480w, /3.%20Highlights/IMG_3327.1080.webp 1080w, /3.%20Highlights/IMG_3327.1920.webp 1920w",
+    "avifSrcset": "/3.%20Highlights/IMG_3327.1080.avif 1080w",
+    "lqip": "data:image/webp;base64,UklGRl4AAABXRUJQVlA4WAoAAAAQAAAABwAACwAAQUxQSBoAAAABFyCQTfxV7tjSiIg4EAgQJk0qlRDR/2QoFFZQOCAeAAAAMAEAnQEqCAAMAAQAaCWkAANwAP7yWX1t5ubNFAAA"
   },
   {
     "file": "IMG_3330.png",
     "url": "/3.%20Highlights/IMG_3330.png",
-    "type": "image"
+    "type": "image",
+    "webpSrcset": "/3.%20Highlights/IMG_3330.480.webp 480w, /3.%20Highlights/IMG_3330.1080.webp 1080w, /3.%20Highlights/IMG_3330.1920.webp 1920w",
+    "avifSrcset": "/3.%20Highlights/IMG_3330.1080.avif 1080w",
+    "lqip": "data:image/webp;base64,UklGRmIAAABXRUJQVlA4IFYAAAAwAgCdASoIAAwABABoJbACdLoAAwkbCPlMwADicKPi9CKj7tJ8VdMQOg1nHsr2DeXJWwPvkcdSnS+384ym85OSnhmswc4n/4MU99nR4v3HYZtyeegAAA=="
   },
   {
     "file": "IMG_3335.png",
     "url": "/3.%20Highlights/IMG_3335.png",
-    "type": "image"
+    "type": "image",
+    "webpSrcset": "/3.%20Highlights/IMG_3335.480.webp 480w, /3.%20Highlights/IMG_3335.1080.webp 1080w",
+    "avifSrcset": "/3.%20Highlights/IMG_3335.1080.avif 1080w",
+    "lqip": "data:image/webp;base64,UklGRlAAAABXRUJQVlA4IEQAAADQAQCdASoIAAwABABoJbACdAEOtWT4AAD+8Ri6BzoF/ET4qD/2BY9197gnpsDmDZ+mnyLcpn+sVq8rz/lv2rcn6r4AAA=="
   },
   {
     "file": "IMG_3760.PNG",
     "url": "/3.%20Highlights/IMG_3760.PNG",
-    "type": "image"
+    "type": "image",
+    "webpSrcset": "/3.%20Highlights/IMG_3760.480.webp 480w, /3.%20Highlights/IMG_3760.1080.webp 1080w, /3.%20Highlights/IMG_3760.1920.webp 1920w",
+    "avifSrcset": "/3.%20Highlights/IMG_3760.1080.avif 1080w",
+    "lqip": "data:image/webp;base64,UklGRlYAAABXRUJQVlA4IEoAAADwAQCdASoIAAwABABoJaQAAqsk0yquAAAA/vM5znZkOuv5U0b0vvOZmKYn9QdWWyqxGCDnz4nmCF0lxA6labG7SNKU1/agPAAAAA=="
   },
   {
     "file": "IMG_4258.JPG",
     "url": "/3.%20Highlights/IMG_4258.JPG",
-    "type": "image"
+    "type": "image",
+    "webpSrcset": "/3.%20Highlights/IMG_4258.480.webp 480w, /3.%20Highlights/IMG_4258.1080.webp 1080w, /3.%20Highlights/IMG_4258.1920.webp 1920w",
+    "avifSrcset": "/3.%20Highlights/IMG_4258.1080.avif 1080w",
+    "lqip": "data:image/webp;base64,UklGRkwAAABXRUJQVlA4IEAAAACQAQCdASoIAAwABABoJYwAAptyIrgA98uJkKIk8dMdHz3dzSiV5pP09KIXiD/uMgdezUpeK3soA5qAau+xALgA"
   },
   {
     "file": "IMG_4263.JPG",
     "url": "/3.%20Highlights/IMG_4263.JPG",
-    "type": "image"
+    "type": "image",
+    "webpSrcset": "/3.%20Highlights/IMG_4263.480.webp 480w, /3.%20Highlights/IMG_4263.1080.webp 1080w, /3.%20Highlights/IMG_4263.1920.webp 1920w",
+    "avifSrcset": "/3.%20Highlights/IMG_4263.1080.avif 1080w",
+    "lqip": "data:image/webp;base64,UklGRkoAAABXRUJQVlA4ID4AAACwAQCdASoIAAwABABoJZQAAp0INBRUAP4nWvu1HQRu0LCJOaSzxk9Mxmd7EyDcqW4HhyyDx/REruMNKWAAAA=="
   },
   {
     "file": "IMG_4269.JPG",
     "url": "/3.%20Highlights/IMG_4269.JPG",
-    "type": "image"
+    "type": "image",
+    "webpSrcset": "/3.%20Highlights/IMG_4269.480.webp 480w, /3.%20Highlights/IMG_4269.1080.webp 1080w, /3.%20Highlights/IMG_4269.1920.webp 1920w",
+    "avifSrcset": "/3.%20Highlights/IMG_4269.1080.avif 1080w",
+    "lqip": "data:image/webp;base64,UklGRlAAAABXRUJQVlA4IEQAAADQAQCdASoIAAwABABoJQBYdiPg6FsmAAD+8aaa8PBYkzB2UMp6mC1uHm4IzKRPsVp7SSYBifg39WExBjeyA8GlxWQAAA=="
   },
   {
     "file": "IMG_4285.JPG",
     "url": "/3.%20Highlights/IMG_4285.JPG",
-    "type": "image"
+    "type": "image",
+    "webpSrcset": "/3.%20Highlights/IMG_4285.480.webp 480w, /3.%20Highlights/IMG_4285.1080.webp 1080w",
+    "avifSrcset": "/3.%20Highlights/IMG_4285.1080.avif 1080w",
+    "lqip": "data:image/webp;base64,UklGRjgAAABXRUJQVlA4ICwAAABQAQCdASoIAAwABABoJZQABdUAAP7xWZ9f/9m6//orLJ12F1jCmxUiewviAA=="
   },
   {
     "file": "IMG_9089.PNG",
     "url": "/3.%20Highlights/IMG_9089.PNG",
-    "type": "image"
+    "type": "image",
+    "webpSrcset": "/3.%20Highlights/IMG_9089.480.webp 480w, /3.%20Highlights/IMG_9089.1080.webp 1080w, /3.%20Highlights/IMG_9089.1920.webp 1920w",
+    "avifSrcset": "/3.%20Highlights/IMG_9089.1080.avif 1080w",
+    "lqip": "data:image/webp;base64,UklGRjgAAABXRUJQVlA4ICwAAACwAQCdASoIAAwABABoJaQAAqsHhDSAAP7e7DJDrodmSNJgS5nLA8vD+gAAAA=="
   },
   {
     "file": "IMG_9754-min.PNG",
     "url": "/3.%20Highlights/IMG_9754-min.PNG",
-    "type": "image"
+    "type": "image",
+    "webpSrcset": "/3.%20Highlights/IMG_9754-min.480.webp 480w, /3.%20Highlights/IMG_9754-min.1080.webp 1080w, /3.%20Highlights/IMG_9754-min.1920.webp 1920w",
+    "avifSrcset": "/3.%20Highlights/IMG_9754-min.1080.avif 1080w",
+    "lqip": "data:image/webp;base64,UklGRlIAAABXRUJQVlA4IEYAAAAQAgCdASoIAAwABABoJbACdAD0o1OyhniAAP60La6P9EAHlY0d3DLPE6+qq1EPBEZo+xgSpb59l/zvjK0OTMBmjaEeAAAA"
   },
   {
     "file": "IMG_9790-min_edited.jpg",
     "url": "/3.%20Highlights/IMG_9790-min_edited.jpg",
-    "type": "image"
+    "type": "image",
+    "webpSrcset": "/3.%20Highlights/IMG_9790-min_edited.480.webp 480w, /3.%20Highlights/IMG_9790-min_edited.1080.webp 1080w, /3.%20Highlights/IMG_9790-min_edited.1920.webp 1920w",
+    "avifSrcset": "/3.%20Highlights/IMG_9790-min_edited.1080.avif 1080w",
+    "lqip": "data:image/webp;base64,UklGRkQAAABXRUJQVlA4IDgAAAAQAgCdASoIAAwABABoJZQCw7EQCUjCcu4AAP7u88cdyyeh0gHmFCY5HtR06U0Po3MFF2dhcwAAAA=="
   },
   {
     "file": "IMG_9791-min.PNG",
     "url": "/3.%20Highlights/IMG_9791-min.PNG",
-    "type": "image"
+    "type": "image",
+    "webpSrcset": "/3.%20Highlights/IMG_9791-min.480.webp 480w, /3.%20Highlights/IMG_9791-min.1080.webp 1080w, /3.%20Highlights/IMG_9791-min.1920.webp 1920w",
+    "avifSrcset": "/3.%20Highlights/IMG_9791-min.1080.avif 1080w",
+    "lqip": "data:image/webp;base64,UklGRkoAAABXRUJQVlA4ID4AAAAQAgCdASoIAAwABABoJZQCw7EPEJc8DoAAAP72yap7CIY6gQkH7dzGWwmIOPgRM58tkrjnWdhs7czyzwAAAA=="
   },
   {
     "file": "LevelSequence-1.0011.png",
     "url": "/3.%20Highlights/LevelSequence-1.0011.png",
-    "type": "image"
+    "type": "image",
+    "webpSrcset": "/3.%20Highlights/LevelSequence-1.0011.480.webp 480w, /3.%20Highlights/LevelSequence-1.0011.1080.webp 1080w, /3.%20Highlights/LevelSequence-1.0011.1920.webp 1920w",
+    "avifSrcset": "/3.%20Highlights/LevelSequence-1.0011.1080.avif 1080w",
+    "lqip": "data:image/webp;base64,UklGRkYAAABXRUJQVlA4IDoAAACwAQCdASoIAAwABABoJQBYdh5u1TQAAP6ob1SBuItFiqqKgWNj/+AcaR6egtcS6uIJKvlXLYrvYAAA"
   },
   {
     "file": "untitled5.png",
     "url": "/3.%20Highlights/untitled5.png",
-    "type": "image"
+    "type": "image",
+    "webpSrcset": "/3.%20Highlights/untitled5.480.webp 480w, /3.%20Highlights/untitled5.1080.webp 1080w, /3.%20Highlights/untitled5.1920.webp 1920w",
+    "avifSrcset": "/3.%20Highlights/untitled5.1080.avif 1080w",
+    "lqip": "data:image/webp;base64,UklGRj4AAABXRUJQVlA4IDIAAADQAQCdASoIAAwABABoJQBWACHXFe7YAAD+dMriY0CptFgWlNSs28XcRvQaEhnA2UUEAA=="
   }
 ];
 
@@ -1066,7 +1539,10 @@ export const VOCABULARY_ASSETS: MediaAsset[] = [
   {
     "file": "Letter B.png",
     "url": "/4.%20Vocabulary/Letter%20B.png",
-    "type": "image"
+    "type": "image",
+    "webpSrcset": "/4.%20Vocabulary/Letter%20B.480.webp 480w, /4.%20Vocabulary/Letter%20B.1080.webp 1080w",
+    "avifSrcset": "/4.%20Vocabulary/Letter%20B.1080.avif 1080w",
+    "lqip": "data:image/webp;base64,UklGRswAAABXRUJQVlA4WAoAAAAQAAAABwAACwAAQUxQSGEAAAAA8PLy/f3TbQT//f+juf//kOL/9BwAqf/u0P/0JABf//jM//QeAIb/t9L//LS3/uwl5f/9p6Dt/7nZ//YiAFL//8L/9SUAKv7/9//2JAB8/////P/Hvfr/veHi4O3swm0KAFZQOCBEAAAAEAIAnQEqCAAMAAQAaCUAXYAiyiCX9DrgAAD74sRs2NclnjJYNTxCOe4yP/JlOhlEInpBuISGsJqQFGFCWWVKiLuliAA="
   },
   {
     "file": "Letter C.png",
@@ -1079,12 +1555,18 @@ export const ABOUT_ASSETS: MediaAsset[] = [
   {
     "file": "IMG_5787.PNG",
     "url": "/5.%20About/IMG_5787.PNG",
-    "type": "image"
+    "type": "image",
+    "webpSrcset": "/5.%20About/IMG_5787.480.webp 480w, /5.%20About/IMG_5787.1080.webp 1080w, /5.%20About/IMG_5787.1920.webp 1920w",
+    "avifSrcset": "/5.%20About/IMG_5787.1080.avif 1080w",
+    "lqip": "data:image/webp;base64,UklGRowAAABXRUJQVlA4WAoAAAAQAAAABwAACwAAQUxQSDUAAAABYBRJkiL/tpaOmZlJxPa8jhxERE7D0a1bc3lWLqKE1XTDjX5DA4AG3UKZmVlh9kMxNeNUrgBWUDggMAAAANABAJ0BKggADAAEAGglpAAC6naVKH4AAP70Ssw0DHDKF23fwyb2DktLR9XUbkjQAA=="
   },
   {
     "file": "IMG_5790.PNG",
     "url": "/5.%20About/IMG_5790.PNG",
-    "type": "image"
+    "type": "image",
+    "webpSrcset": "/5.%20About/IMG_5790.480.webp 480w, /5.%20About/IMG_5790.1080.webp 1080w",
+    "avifSrcset": "/5.%20About/IMG_5790.1080.avif 1080w",
+    "lqip": "data:image/webp;base64,UklGRpQAAABXRUJQVlA4WAoAAAAQAAAABwAACwAAQUxQSEMAAAABZ6CgjSTlGF2df0/3YCIiEvYPBjYqEEKyladwCs/gzzf4CjmEkEMIMaQQwtfKIaL/IUnd7wKRmQOI33aBC4i5zpYkAFZQOCAqAAAA0AEAnQEqCAAMAAQAaCWcAALnZg7B4gAA/vWQDKSp2SPqfR9FoDLjAAAA"
   },
   {
     "file": "IMG_5794.PNG",
@@ -1094,7 +1576,10 @@ export const ABOUT_ASSETS: MediaAsset[] = [
   {
     "file": "IMG_5800-min.PNG",
     "url": "/5.%20About/IMG_5800-min.PNG",
-    "type": "image"
+    "type": "image",
+    "webpSrcset": "/5.%20About/IMG_5800-min.480.webp 480w, /5.%20About/IMG_5800-min.1080.webp 1080w, /5.%20About/IMG_5800-min.1920.webp 1920w",
+    "avifSrcset": "/5.%20About/IMG_5800-min.1080.avif 1080w",
+    "lqip": "data:image/webp;base64,UklGRj4AAABXRUJQVlA4IDIAAAAQAgCdASoIAAwABABoJQBdj+ADAz5arYAAAP72hg8z7e74m2koaOX8rIPKpTP6XeAAAA=="
   }
 ];
 
@@ -1102,7 +1587,10 @@ export const CONTACT_ASSETS: MediaAsset[] = [
   {
     "file": "Layer 1 star.png",
     "url": "/6.%20Contact/Layer%201%20star.png",
-    "type": "image"
+    "type": "image",
+    "webpSrcset": "/6.%20Contact/Layer%201%20star.480.webp 480w, /6.%20Contact/Layer%201%20star.1080.webp 1080w, /6.%20Contact/Layer%201%20star.1920.webp 1920w",
+    "avifSrcset": "/6.%20Contact/Layer%201%20star.1080.avif 1080w",
+    "lqip": "data:image/webp;base64,UklGRo4AAABXRUJQVlA4WAoAAAAQAAAABwAACwAAQUxQSE8AAAABcB3JtmnNtW373mfj6+Wf2AsiIhLMEgEU9A1VYSi1yd4MpGpz23vvCcQB6YAwfG25fw7bu96Pg9gonPp4lUD5adLNACOGqwMIAlXPn1YBAFZQOCAYAAAAMAEAnQEqCAAMAAQAaCWkAANwAP7znYAA"
   }
 ];
 
@@ -1110,17 +1598,26 @@ export const LANDING_ASSETS: MediaAsset[] = [
   {
     "file": "000008390027_26a.jpg",
     "url": "/landing/000008390027_26a.jpg",
-    "type": "image"
+    "type": "image",
+    "webpSrcset": "/landing/000008390027_26a.480.webp 480w, /landing/000008390027_26a.1080.webp 1080w, /landing/000008390027_26a.1920.webp 1920w",
+    "avifSrcset": "/landing/000008390027_26a.1080.avif 1080w",
+    "lqip": "data:image/webp;base64,UklGRkwAAABXRUJQVlA4IEAAAADQAQCdASoIAAwABABoJZQAAp1IrX50AAD8rIoS1bbM0Ajq/5SKTj09fml3T7YAaywSbpxj/xkSXx8DD7w1b6AA"
   },
   {
     "file": "000008390032_31a.jpg",
     "url": "/landing/000008390032_31a.jpg",
-    "type": "image"
+    "type": "image",
+    "webpSrcset": "/landing/000008390032_31a.480.webp 480w, /landing/000008390032_31a.1080.webp 1080w, /landing/000008390032_31a.1920.webp 1920w",
+    "avifSrcset": "/landing/000008390032_31a.1080.avif 1080w",
+    "lqip": "data:image/webp;base64,UklGRkwAAABXRUJQVlA4IEAAAADwAQCdASoIAAwABABoJYwCdAEPDU2LJAAA+TQb9deMq/TqbpLsF7GhCcbRK0hghJ1w8mS3Pdn6iUcoFjp6KAAA"
   },
   {
     "file": "000008390034_33a-copy-2.jpg",
     "url": "/landing/000008390034_33a-copy-2.jpg",
-    "type": "image"
+    "type": "image",
+    "webpSrcset": "/landing/000008390034_33a-copy-2.480.webp 480w, /landing/000008390034_33a-copy-2.1080.webp 1080w, /landing/000008390034_33a-copy-2.1920.webp 1920w",
+    "avifSrcset": "/landing/000008390034_33a-copy-2.1080.avif 1080w",
+    "lqip": "data:image/webp;base64,UklGRkIAAABXRUJQVlA4IDYAAADwAQCdASoIAAwABABoJYgCdAEPDryiE4AA/uamo8qCYCwghaSF5eOV7Fj1uw68ekOWp2xAAAA="
   },
   {
     "file": "01-done-downloaded-from-ig.mp4",
@@ -1135,17 +1632,26 @@ export const LANDING_ASSETS: MediaAsset[] = [
   {
     "file": "add-more-chaos.png",
     "url": "/landing/add-more-chaos.png",
-    "type": "image"
+    "type": "image",
+    "webpSrcset": "/landing/add-more-chaos.480.webp 480w, /landing/add-more-chaos.1080.webp 1080w",
+    "avifSrcset": "/landing/add-more-chaos.1080.avif 1080w",
+    "lqip": "data:image/webp;base64,UklGRlQAAABXRUJQVlA4IEgAAAAwAgCdASoIAAwABABoJaQAD4rwNlBDxtTAAAD33/jrsXpBgTtHGkLJTfJRNhyvJVtu9wbRuHwGF8+VGnBJOXhW8xEewSeAAAA="
   },
   {
     "file": "artist-frame-1.png",
     "url": "/landing/artist-frame-1.png",
-    "type": "image"
+    "type": "image",
+    "webpSrcset": "/landing/artist-frame-1.480.webp 480w, /landing/artist-frame-1.1080.webp 1080w, /landing/artist-frame-1.1920.webp 1920w",
+    "avifSrcset": "/landing/artist-frame-1.1080.avif 1080w",
+    "lqip": "data:image/webp;base64,UklGRlIAAABXRUJQVlA4IEYAAADQAQCdASoIAAwABABoJaQAAudjc8k6gAD+bFZFfZ9jRJS8RNj3ZtD6LIcD5CplEHh2Fv84Y40v1an+jFiMfilY6dycMAAA"
   },
   {
     "file": "artist-frame-2.png",
     "url": "/landing/artist-frame-2.png",
-    "type": "image"
+    "type": "image",
+    "webpSrcset": "/landing/artist-frame-2.480.webp 480w, /landing/artist-frame-2.1080.webp 1080w, /landing/artist-frame-2.1920.webp 1920w",
+    "avifSrcset": "/landing/artist-frame-2.1080.avif 1080w",
+    "lqip": "data:image/webp;base64,UklGRlIAAABXRUJQVlA4IEYAAADQAQCdASoIAAwABABoJaQAAvrf4fs9QAD+m7OVzyveaZ9/wax7a42XalxYslnruO4yjlbF5vXIG9sWxxrq8oLJ5+ZlAAAA"
   },
   {
     "file": "blob-ogzeet.png",
@@ -1155,257 +1661,407 @@ export const LANDING_ASSETS: MediaAsset[] = [
   {
     "file": "cemetery-scene1.png",
     "url": "/landing/cemetery-scene1.png",
-    "type": "image"
+    "type": "image",
+    "webpSrcset": "/landing/cemetery-scene1.480.webp 480w, /landing/cemetery-scene1.1080.webp 1080w, /landing/cemetery-scene1.1920.webp 1920w",
+    "avifSrcset": "/landing/cemetery-scene1.1080.avif 1080w",
+    "lqip": "data:image/webp;base64,UklGRiwAAABXRUJQVlA4ICAAAAAwAQCdASoIAAwABABoJZwAA3AA/vJvTYATkzMyDwAAAA=="
   },
   {
     "file": "cemetery-scene16.png",
     "url": "/landing/cemetery-scene16.png",
-    "type": "image"
+    "type": "image",
+    "webpSrcset": "/landing/cemetery-scene16.480.webp 480w, /landing/cemetery-scene16.1080.webp 1080w, /landing/cemetery-scene16.1920.webp 1920w",
+    "avifSrcset": "/landing/cemetery-scene16.1080.avif 1080w",
+    "lqip": "data:image/webp;base64,UklGRjIAAABXRUJQVlA4ICYAAADQAQCdASoIAAwABABoJaQAAud8jEMeAAD+9ZYs5JyjmlYzGYYAAA=="
   },
   {
     "file": "cemetery-scene20.png",
     "url": "/landing/cemetery-scene20.png",
-    "type": "image"
+    "type": "image",
+    "webpSrcset": "/landing/cemetery-scene20.480.webp 480w, /landing/cemetery-scene20.1080.webp 1080w, /landing/cemetery-scene20.1920.webp 1920w",
+    "avifSrcset": "/landing/cemetery-scene20.1080.avif 1080w",
+    "lqip": "data:image/webp;base64,UklGRiwAAABXRUJQVlA4ICAAAAAwAQCdASoIAAwABABoJaQAA3AA/vHq9OCRGBvkVQAAAA=="
   },
   {
     "file": "chrome-type-bw-4.png",
     "url": "/landing/chrome-type-bw-4.png",
-    "type": "image"
+    "type": "image",
+    "webpSrcset": "/landing/chrome-type-bw-4.480.webp 480w",
+    "lqip": "data:image/webp;base64,UklGRkoAAABXRUJQVlA4ID4AAAAQAgCdASoIAAwABABoJaQAD46wyfdJNlQAAP7xqI3uoL/zbmfn1IRulXtSsAQPhnpDur0SvS0mj4IOAAAAAA=="
   },
   {
     "file": "glasserrorscrnshot.png",
     "url": "/landing/glasserrorscrnshot.png",
-    "type": "image"
+    "type": "image",
+    "webpSrcset": "/landing/glasserrorscrnshot.480.webp 480w",
+    "lqip": "data:image/webp;base64,UklGRlYAAABXRUJQVlA4IEoAAADwAQCdASoIAAwABABoJYgCdAD0jXbD8CAA9laDl5sUCeQzWY5h0OfVe7vwo6ClAJgvhrfSWq96Aa1neCEWj0Zs0lrCm9TRXAAAAA=="
   },
   {
     "file": "holistic-letter-from-the-editor-and-3d-article.png",
     "url": "/landing/holistic-letter-from-the-editor-and-3d-article.png",
-    "type": "image"
+    "type": "image",
+    "webpSrcset": "/landing/holistic-letter-from-the-editor-and-3d-article.480.webp 480w",
+    "lqip": "data:image/webp;base64,UklGRlwAAABXRUJQVlA4IFAAAAAQAgCdASoIAAwABABoJbACdAEQFVLn+/egAPjfjHZ4FBdwGGkYgYUN5+OPw56et1n2sX8kUCBcITE6q6CcNn2hgCu4Fj663fBD/grSoAAAAA=="
   },
   {
     "file": "img_1027-2.png",
     "url": "/landing/img_1027-2.png",
-    "type": "image"
+    "type": "image",
+    "webpSrcset": "/landing/img_1027-2.480.webp 480w, /landing/img_1027-2.1080.webp 1080w",
+    "avifSrcset": "/landing/img_1027-2.1080.avif 1080w",
+    "lqip": "data:image/webp;base64,UklGRlIAAABXRUJQVlA4IEYAAAAQAgCdASoIAAwABABoJYwC7H8AFcD1pEmAAP7HHLCqBqz3X5uYiCqdYeoZxi0kFR7jGILVJ7ewzaRDyucYgB/ifAAsxQAA"
   },
   {
     "file": "img_1034.png",
     "url": "/landing/img_1034.png",
-    "type": "image"
+    "type": "image",
+    "webpSrcset": "/landing/img_1034.480.webp 480w, /landing/img_1034.1080.webp 1080w, /landing/img_1034.1920.webp 1920w",
+    "avifSrcset": "/landing/img_1034.1080.avif 1080w",
+    "lqip": "data:image/webp;base64,UklGRkgAAABXRUJQVlA4IDwAAADQAQCdASoIAAwABABoJZwAApt4Tu4dQAD+8VTFaq+0cNqxeDfaKbGXdhQ5nif+oT3RUb0wyZq82gjlgAA="
   },
   {
     "file": "img_1041-1.png",
     "url": "/landing/img_1041-1.png",
-    "type": "image"
+    "type": "image",
+    "webpSrcset": "/landing/img_1041-1.480.webp 480w, /landing/img_1041-1.1080.webp 1080w, /landing/img_1041-1.1920.webp 1920w",
+    "avifSrcset": "/landing/img_1041-1.1080.avif 1080w",
+    "lqip": "data:image/webp;base64,UklGRkgAAABXRUJQVlA4IDwAAACwAQCdASoIAAwABABoJagCsAEOrnAAAP7I91JWS4gG2c9eHG+hn2iIMAactgVsyi1ehzE82MPtnSGKAAA="
   },
   {
     "file": "img_2778.png",
     "url": "/landing/img_2778.png",
-    "type": "image"
+    "type": "image",
+    "webpSrcset": "/landing/img_2778.480.webp 480w, /landing/img_2778.1080.webp 1080w, /landing/img_2778.1920.webp 1920w",
+    "avifSrcset": "/landing/img_2778.1080.avif 1080w",
+    "lqip": "data:image/webp;base64,UklGRlQAAABXRUJQVlA4IEgAAADQAQCdASoIAAwABABoJbAC7ADZcGigAAD+0oDd+vwRK5y0izR+WSCIhKsUMDXr2atjqpZO+ROOrxl9ztZHJGauNqQTP34vgAA="
   },
   {
     "file": "img_2832.png",
     "url": "/landing/img_2832.png",
-    "type": "image"
+    "type": "image",
+    "webpSrcset": "/landing/img_2832.480.webp 480w, /landing/img_2832.1080.webp 1080w, /landing/img_2832.1920.webp 1920w",
+    "avifSrcset": "/landing/img_2832.1080.avif 1080w",
+    "lqip": "data:image/webp;base64,UklGRkYAAABXRUJQVlA4IDoAAADwAQCdASoIAAwABABoJZQCdAEegbN7S7AA/tdxpriZea0DmHzf+SdoHMtnEoeP5+CttIUHEUYGMAAA"
   },
   {
     "file": "img_3370.png",
     "url": "/landing/img_3370.png",
-    "type": "image"
+    "type": "image",
+    "webpSrcset": "/landing/img_3370.480.webp 480w, /landing/img_3370.1080.webp 1080w, /landing/img_3370.1920.webp 1920w",
+    "avifSrcset": "/landing/img_3370.1080.avif 1080w",
+    "lqip": "data:image/webp;base64,UklGRk4AAABXRUJQVlA4IEIAAADwAQCdASoIAAwABABoJbAC7AEegKhQqgAAzeROSX7QtYlxbvvShY5HvcqmeFJG53iQ//Idh4gob/Cfh/1oaSLDoAA="
   },
   {
     "file": "img_3375.png",
     "url": "/landing/img_3375.png",
-    "type": "image"
+    "type": "image",
+    "webpSrcset": "/landing/img_3375.480.webp 480w, /landing/img_3375.1080.webp 1080w, /landing/img_3375.1920.webp 1920w",
+    "avifSrcset": "/landing/img_3375.1080.avif 1080w",
+    "lqip": "data:image/webp;base64,UklGRlwAAABXRUJQVlA4IFAAAABQAgCdASoIAAwABABoJYgCdAYsjvuOhJnknIAA/tz80OYb4A4OpDT5r2qq1XGOpuN1N9Fv5y//YaDnJKCLM8DmjSVTirSuDv1wXnCY/6AAAA=="
   },
   {
     "file": "img_4145-1.jpg",
     "url": "/landing/img_4145-1.jpg",
-    "type": "image"
+    "type": "image",
+    "webpSrcset": "/landing/img_4145-1.480.webp 480w, /landing/img_4145-1.1080.webp 1080w, /landing/img_4145-1.1920.webp 1920w",
+    "avifSrcset": "/landing/img_4145-1.1080.avif 1080w",
+    "lqip": "data:image/webp;base64,UklGRlwAAABXRUJQVlA4IFAAAAAQAgCdASoIAAwABABoJbACdEf/gbTzxeQQAP1ltkMUemuNNpG6hhNhoW2q2AXEY7bZbUXX4pz5bJrZfoD/46qAaE5O/7RDQ/nJRKymtjPAAA=="
   },
   {
     "file": "img_4253-1.jpg",
     "url": "/landing/img_4253-1.jpg",
-    "type": "image"
+    "type": "image",
+    "webpSrcset": "/landing/img_4253-1.480.webp 480w, /landing/img_4253-1.1080.webp 1080w, /landing/img_4253-1.1920.webp 1920w",
+    "avifSrcset": "/landing/img_4253-1.1080.avif 1080w",
+    "lqip": "data:image/webp;base64,UklGRmAAAABXRUJQVlA4IFQAAADwAQCdASoIAAwABABoJQBOgMWH3w3rCAAA/vCmnGDO0IyCSKpQ/DBjoofj5ykhnqYmnLd8VQzrchaCB4zy75L5YZxGX/HCrnhwJan+U2FoU7ZAAAA="
   },
   {
     "file": "img_4256.jpg",
     "url": "/landing/img_4256.jpg",
-    "type": "image"
+    "type": "image",
+    "webpSrcset": "/landing/img_4256.480.webp 480w, /landing/img_4256.1080.webp 1080w, /landing/img_4256.1920.webp 1920w",
+    "avifSrcset": "/landing/img_4256.1080.avif 1080w",
+    "lqip": "data:image/webp;base64,UklGRkoAAABXRUJQVlA4ID4AAAAwAgCdASoIAAwABABoJbACsH8AGZMIf0o5AAD+6T9U5jQ88aN7mClOdBmZzyDFg62tDVDqFzhFAABW1CgAAA=="
   },
   {
     "file": "img_4258.jpg",
     "url": "/landing/img_4258.jpg",
-    "type": "image"
+    "type": "image",
+    "webpSrcset": "/landing/img_4258.480.webp 480w, /landing/img_4258.1080.webp 1080w, /landing/img_4258.1920.webp 1920w",
+    "avifSrcset": "/landing/img_4258.1080.avif 1080w",
+    "lqip": "data:image/webp;base64,UklGRkwAAABXRUJQVlA4IEAAAACQAQCdASoIAAwABABoJYwAAptyIrgA98uJkKIk8dMdHz3dzSiV5pP09KIXiD/uMgdezUpeK3soA5qAau+xALgA"
   },
   {
     "file": "img_4263.jpg",
     "url": "/landing/img_4263.jpg",
-    "type": "image"
+    "type": "image",
+    "webpSrcset": "/landing/img_4263.480.webp 480w, /landing/img_4263.1080.webp 1080w, /landing/img_4263.1920.webp 1920w",
+    "avifSrcset": "/landing/img_4263.1080.avif 1080w",
+    "lqip": "data:image/webp;base64,UklGRkoAAABXRUJQVlA4ID4AAACwAQCdASoIAAwABABoJZQAAp0INBRUAP4nWvu1HQRu0LCJOaSzxk9Mxmd7EyDcqW4HhyyDx/REruMNKWAAAA=="
   },
   {
     "file": "img_4269.jpg",
     "url": "/landing/img_4269.jpg",
-    "type": "image"
+    "type": "image",
+    "webpSrcset": "/landing/img_4269.480.webp 480w, /landing/img_4269.1080.webp 1080w, /landing/img_4269.1920.webp 1920w",
+    "avifSrcset": "/landing/img_4269.1080.avif 1080w",
+    "lqip": "data:image/webp;base64,UklGRlAAAABXRUJQVlA4IEQAAADQAQCdASoIAAwABABoJQBYdiPg6FsmAAD+8aaa8PBYkzB2UMp6mC1uHm4IzKRPsVp7SSYBifg39WExBjeyA8GlxWQAAA=="
   },
   {
     "file": "img_4285.jpg",
     "url": "/landing/img_4285.jpg",
-    "type": "image"
+    "type": "image",
+    "webpSrcset": "/landing/img_4285.480.webp 480w, /landing/img_4285.1080.webp 1080w",
+    "avifSrcset": "/landing/img_4285.1080.avif 1080w",
+    "lqip": "data:image/webp;base64,UklGRjgAAABXRUJQVlA4ICwAAABQAQCdASoIAAwABABoJZQABdUAAP7xWZ9f/9m6//orLJ12F1jCmxUiewviAA=="
   },
   {
     "file": "img_4287-1.jpg",
     "url": "/landing/img_4287-1.jpg",
-    "type": "image"
+    "type": "image",
+    "webpSrcset": "/landing/img_4287-1.480.webp 480w, /landing/img_4287-1.1080.webp 1080w, /landing/img_4287-1.1920.webp 1920w",
+    "avifSrcset": "/landing/img_4287-1.1080.avif 1080w",
+    "lqip": "data:image/webp;base64,UklGRkQAAABXRUJQVlA4IDgAAADQAQCdASoIAAwABABoJbACdAEO9z7gAAD+ryka/LDFWheQhkrtXVun/zsM40f+CwTv/zv3hAAAAA=="
   },
   {
     "file": "img_4288.jpg",
     "url": "/landing/img_4288.jpg",
-    "type": "image"
+    "type": "image",
+    "webpSrcset": "/landing/img_4288.480.webp 480w, /landing/img_4288.1080.webp 1080w, /landing/img_4288.1920.webp 1920w",
+    "avifSrcset": "/landing/img_4288.1080.avif 1080w",
+    "lqip": "data:image/webp;base64,UklGRlIAAABXRUJQVlA4IEYAAAAQAgCdASoIAAwABABoJZACdAEegmhvqpgAAP7z6dLtjcXVUtp/RGEwr7vSXA7s6oUo9+jvEWx54tXcjzriyGHkb3aXAAAA"
   },
   {
     "file": "img_4294.jpg",
     "url": "/landing/img_4294.jpg",
-    "type": "image"
+    "type": "image",
+    "webpSrcset": "/landing/img_4294.480.webp 480w, /landing/img_4294.1080.webp 1080w",
+    "avifSrcset": "/landing/img_4294.1080.avif 1080w",
+    "lqip": "data:image/webp;base64,UklGRlQAAABXRUJQVlA4IEgAAADQAQCdASoIAAwABABoJZwAD4Ns/g1AAAD+bMAuu7jGPW9RmR8T9944ByEv6cgUAH8rbBL7vNnD+L1L3FdZ71Tyyh75N6jgAAA="
   },
   {
     "file": "img_4296.jpg",
     "url": "/landing/img_4296.jpg",
-    "type": "image"
+    "type": "image",
+    "webpSrcset": "/landing/img_4296.480.webp 480w, /landing/img_4296.1080.webp 1080w",
+    "avifSrcset": "/landing/img_4296.1080.avif 1080w",
+    "lqip": "data:image/webp;base64,UklGRkQAAABXRUJQVlA4IDgAAADQAQCdASoIAAwABABoJaQAAu1+IfM6AAD+82MWCEUf9S25rvgPQaS2WF6cwNIgjw/1yI6igpOAAA=="
   },
   {
     "file": "img_4297.jpg",
     "url": "/landing/img_4297.jpg",
-    "type": "image"
+    "type": "image",
+    "webpSrcset": "/landing/img_4297.480.webp 480w, /landing/img_4297.1080.webp 1080w, /landing/img_4297.1920.webp 1920w",
+    "avifSrcset": "/landing/img_4297.1080.avif 1080w",
+    "lqip": "data:image/webp;base64,UklGRkwAAABXRUJQVlA4IEAAAADwAQCdASoIAAwABABoJQBYheADAd2VdYgA/qN/lm228jf7y0y2uMb5ECdR69bbZj73uL0YpJcPiDu83TEiwAAA"
   },
   {
     "file": "img_4298.jpg",
     "url": "/landing/img_4298.jpg",
-    "type": "image"
+    "type": "image",
+    "webpSrcset": "/landing/img_4298.480.webp 480w, /landing/img_4298.1080.webp 1080w, /landing/img_4298.1920.webp 1920w",
+    "avifSrcset": "/landing/img_4298.1080.avif 1080w",
+    "lqip": "data:image/webp;base64,UklGRjoAAABXRUJQVlA4IC4AAADQAQCdASoIAAwABABoJQBYdiHHpUfgAAD+93ZJByPBdn1FpHSvqRiXrMH6IAAA"
   },
   {
     "file": "img_4303.jpg",
     "url": "/landing/img_4303.jpg",
-    "type": "image"
+    "type": "image",
+    "webpSrcset": "/landing/img_4303.480.webp 480w, /landing/img_4303.1080.webp 1080w, /landing/img_4303.1920.webp 1920w",
+    "avifSrcset": "/landing/img_4303.1080.avif 1080w",
+    "lqip": "data:image/webp;base64,UklGRlQAAABXRUJQVlA4IEgAAAAQAgCdASoIAAwABABoJbACsH8AFjgxcKqAAP7nmTqkN62ff//+A8/QzD6pVBWihnFnTH9x2HlsOjryO94QkXJUYDVCjm7HkAA="
   },
   {
     "file": "img_4559-1.jpg",
     "url": "/landing/img_4559-1.jpg",
-    "type": "image"
+    "type": "image",
+    "webpSrcset": "/landing/img_4559-1.480.webp 480w, /landing/img_4559-1.1080.webp 1080w",
+    "avifSrcset": "/landing/img_4559-1.1080.avif 1080w",
+    "lqip": "data:image/webp;base64,UklGRk4AAABXRUJQVlA4IEIAAACwAQCdASoIAAwABABoJZwAApp0vzQAAP7rJ1/o1yh9ruI13dyFg5vs/JK0q6S3rc7aRb3m5COmHslNMvs2ACeKAAA="
   },
   {
     "file": "img_8105.png",
     "url": "/landing/img_8105.png",
-    "type": "image"
+    "type": "image",
+    "webpSrcset": "/landing/img_8105.480.webp 480w, /landing/img_8105.1080.webp 1080w",
+    "avifSrcset": "/landing/img_8105.1080.avif 1080w",
+    "lqip": "data:image/webp;base64,UklGRi4AAABXRUJQVlA4ICIAAAAwAQCdASoIAAwABABoJaQAA3AA/vK47VwMo9r9VtYIDXAA"
   },
   {
     "file": "img_9089.png",
     "url": "/landing/img_9089.png",
-    "type": "image"
+    "type": "image",
+    "webpSrcset": "/landing/img_9089.480.webp 480w, /landing/img_9089.1080.webp 1080w, /landing/img_9089.1920.webp 1920w",
+    "avifSrcset": "/landing/img_9089.1080.avif 1080w",
+    "lqip": "data:image/webp;base64,UklGRjgAAABXRUJQVlA4ICwAAACwAQCdASoIAAwABABoJaQAAqsHhDSAAP7e7DJDrodmSNJgS5nLA8vD+gAAAA=="
   },
   {
     "file": "img_9247.png",
     "url": "/landing/img_9247.png",
-    "type": "image"
+    "type": "image",
+    "webpSrcset": "/landing/img_9247.480.webp 480w, /landing/img_9247.1080.webp 1080w",
+    "avifSrcset": "/landing/img_9247.1080.avif 1080w",
+    "lqip": "data:image/webp;base64,UklGRkwAAABXRUJQVlA4IEAAAACQAQCdASoIAAwABABoJbACdADzRZAA272wkPaZnXw3Hf4QIe8kire92WWQAhdKXQOl3RGjAWv8c1/w8m8UAAAA"
   },
   {
     "file": "img_9258.jpeg",
     "url": "/landing/img_9258.jpeg",
-    "type": "image"
+    "type": "image",
+    "webpSrcset": "/landing/img_9258.480.webp 480w, /landing/img_9258.1080.webp 1080w, /landing/img_9258.1920.webp 1920w",
+    "avifSrcset": "/landing/img_9258.1080.avif 1080w",
+    "lqip": "data:image/webp;base64,UklGRkgAAABXRUJQVlA4IDwAAADQAQCdASoIAAwABABoJaQAAubMCCN5AAD+x3CpiIvf12kUqs1RJwsoMmdzVxiZYHnmxfDLJ3qyOsQBwAA="
   },
   {
     "file": "img_9712-min.png",
     "url": "/landing/img_9712-min.png",
-    "type": "image"
+    "type": "image",
+    "webpSrcset": "/landing/img_9712-min.480.webp 480w, /landing/img_9712-min.1080.webp 1080w",
+    "avifSrcset": "/landing/img_9712-min.1080.avif 1080w",
+    "lqip": "data:image/webp;base64,UklGRiwAAABXRUJQVlA4ICAAAABQAQCdASoIAAwABABoJaQAAAAAAPgCsipSs9BH4AAAAA=="
   },
   {
     "file": "img_9748a-min.png",
     "url": "/landing/img_9748a-min.png",
-    "type": "image"
+    "type": "image",
+    "webpSrcset": "/landing/img_9748a-min.480.webp 480w, /landing/img_9748a-min.1080.webp 1080w, /landing/img_9748a-min.1920.webp 1920w",
+    "avifSrcset": "/landing/img_9748a-min.1080.avif 1080w",
+    "lqip": "data:image/webp;base64,UklGRkoAAABXRUJQVlA4ID4AAADQAQCdASoIAAwABABoJYwAAuWrX/HgAAD+6vHtD6mk/BERugWqhiNfYl/ASRCIwfVOcf8aWEQ/f2+/bIewAA=="
   },
   {
     "file": "img_9754-min.png",
     "url": "/landing/img_9754-min.png",
-    "type": "image"
+    "type": "image",
+    "webpSrcset": "/landing/img_9754-min.480.webp 480w, /landing/img_9754-min.1080.webp 1080w, /landing/img_9754-min.1920.webp 1920w",
+    "avifSrcset": "/landing/img_9754-min.1080.avif 1080w",
+    "lqip": "data:image/webp;base64,UklGRlIAAABXRUJQVlA4IEYAAAAQAgCdASoIAAwABABoJbACdAD0o1OyhniAAP60La6P9EAHlY0d3DLPE6+qq1EPBEZo+xgSpb59l/zvjK0OTMBmjaEeAAAA"
   },
   {
     "file": "img_9788-min.png",
     "url": "/landing/img_9788-min.png",
-    "type": "image"
+    "type": "image",
+    "webpSrcset": "/landing/img_9788-min.480.webp 480w, /landing/img_9788-min.1080.webp 1080w, /landing/img_9788-min.1920.webp 1920w",
+    "avifSrcset": "/landing/img_9788-min.1080.avif 1080w",
+    "lqip": "data:image/webp;base64,UklGRjQAAABXRUJQVlA4ICgAAADQAQCdASoIAAwABABoJZQAAuc/xsUjAAD+9ag5chltKBXawtDGPl4A"
   },
   {
     "file": "img_9790-min.png",
     "url": "/landing/img_9790-min.png",
-    "type": "image"
+    "type": "image",
+    "webpSrcset": "/landing/img_9790-min.480.webp 480w, /landing/img_9790-min.1080.webp 1080w, /landing/img_9790-min.1920.webp 1920w",
+    "avifSrcset": "/landing/img_9790-min.1080.avif 1080w",
+    "lqip": "data:image/webp;base64,UklGRjwAAABXRUJQVlA4IDAAAACwAQCdASoIAAwABABoJZwAAuTnEtAAAP72ry9Feqx7NheHDWPh02SRutQn9vAAAAA="
   },
   {
     "file": "img_9791-min.png",
     "url": "/landing/img_9791-min.png",
-    "type": "image"
+    "type": "image",
+    "webpSrcset": "/landing/img_9791-min.480.webp 480w, /landing/img_9791-min.1080.webp 1080w, /landing/img_9791-min.1920.webp 1920w",
+    "avifSrcset": "/landing/img_9791-min.1080.avif 1080w",
+    "lqip": "data:image/webp;base64,UklGRkoAAABXRUJQVlA4ID4AAAAQAgCdASoIAAwABABoJZQCw7EPEJc8DoAAAP72yap7CIY6gQkH7dzGWwmIOPgRM58tkrjnWdhs7czyzwAAAA=="
   },
   {
     "file": "img_9793-min.png",
     "url": "/landing/img_9793-min.png",
-    "type": "image"
+    "type": "image",
+    "webpSrcset": "/landing/img_9793-min.480.webp 480w, /landing/img_9793-min.1080.webp 1080w, /landing/img_9793-min.1920.webp 1920w",
+    "avifSrcset": "/landing/img_9793-min.1080.avif 1080w",
+    "lqip": "data:image/webp;base64,UklGRkQAAABXRUJQVlA4IDgAAACwAQCdASoIAAwABABoJaQAAvdm7rgAAP7sW76EACfxRx2ikLg/7sBh1VTBHbXQzHnn1CKIn+gAAA=="
   },
   {
     "file": "img_9794-min.png",
     "url": "/landing/img_9794-min.png",
-    "type": "image"
+    "type": "image",
+    "webpSrcset": "/landing/img_9794-min.480.webp 480w, /landing/img_9794-min.1080.webp 1080w, /landing/img_9794-min.1920.webp 1920w",
+    "avifSrcset": "/landing/img_9794-min.1080.avif 1080w",
+    "lqip": "data:image/webp;base64,UklGRkoAAABXRUJQVlA4ID4AAADQAQCdASoIAAwABABoJbACdAEO06wQQAD+6FA9JFakXIx3TDrQMCS3cn/EiLlJN4vztomVQ9kl8ymt+AAAAA=="
   },
   {
     "file": "img_9796-min.png",
     "url": "/landing/img_9796-min.png",
-    "type": "image"
+    "type": "image",
+    "webpSrcset": "/landing/img_9796-min.480.webp 480w, /landing/img_9796-min.1080.webp 1080w, /landing/img_9796-min.1920.webp 1920w",
+    "avifSrcset": "/landing/img_9796-min.1080.avif 1080w",
+    "lqip": "data:image/webp;base64,UklGRkAAAABXRUJQVlA4IDQAAADQAQCdASoIAAwABABoJYwAAp23QwxXAAD+84H0dGW5XTq4L2lAXdR5mIcLYOWn2LmF8QAA"
   },
   {
     "file": "img_9800-min-1.png",
     "url": "/landing/img_9800-min-1.png",
-    "type": "image"
+    "type": "image",
+    "webpSrcset": "/landing/img_9800-min-1.480.webp 480w, /landing/img_9800-min-1.1080.webp 1080w, /landing/img_9800-min-1.1920.webp 1920w",
+    "avifSrcset": "/landing/img_9800-min-1.1080.avif 1080w",
+    "lqip": "data:image/webp;base64,UklGRlAAAABXRUJQVlA4IEQAAADwAQCdASoIAAwABABoJZwAAxPD9tEF3gAA/rbLsugAn1HTcrH0UJ0Xt1SXGDO1wN17rbWX7Wls9lPsMdbK8GfD1HAAAA=="
   },
   {
     "file": "img_9805-min.jpeg",
     "url": "/landing/img_9805-min.jpeg",
-    "type": "image"
+    "type": "image",
+    "webpSrcset": "/landing/img_9805-min.480.webp 480w, /landing/img_9805-min.1080.webp 1080w, /landing/img_9805-min.1920.webp 1920w",
+    "avifSrcset": "/landing/img_9805-min.1080.avif 1080w",
+    "lqip": "data:image/webp;base64,UklGRkoAAABXRUJQVlA4ID4AAADQAQCdASoIAAwABABoJQBOgCHhZZygAADv1RHYCoos4VtWKPkiOB04aCFH2Q3yIabf1uvcqO4pwwvE4wAAAA=="
   },
   {
     "file": "img_9826-min.png",
     "url": "/landing/img_9826-min.png",
-    "type": "image"
+    "type": "image",
+    "webpSrcset": "/landing/img_9826-min.480.webp 480w, /landing/img_9826-min.1080.webp 1080w, /landing/img_9826-min.1920.webp 1920w",
+    "avifSrcset": "/landing/img_9826-min.1080.avif 1080w",
+    "lqip": "data:image/webp;base64,UklGRkoAAABXRUJQVlA4ID4AAACQAQCdASoIAAwABABoJaQAAkokuQAA/uiKZfmu+HVxoG696av07IgeUskTbOMHjJWG1Lkadriq8dBr6AAAAA=="
   },
   {
     "file": "jolly-smile-design.png",
     "url": "/landing/jolly-smile-design.png",
-    "type": "image"
+    "type": "image",
+    "webpSrcset": "/landing/jolly-smile-design.480.webp 480w, /landing/jolly-smile-design.1080.webp 1080w",
+    "avifSrcset": "/landing/jolly-smile-design.1080.avif 1080w",
+    "lqip": "data:image/webp;base64,UklGRkwAAABXRUJQVlA4IEAAAAAQAgCdASoIAAwABABoJZACdH8AGAmWASYAAP707wagFxWKWOwhtKUxg+N4+Gca0P7QCR0PAFiMeoKJygLlpBAA"
   },
   {
     "file": "levelsequence-1.0011.png",
     "url": "/landing/levelsequence-1.0011.png",
-    "type": "image"
+    "type": "image",
+    "webpSrcset": "/landing/levelsequence-1.0011.480.webp 480w, /landing/levelsequence-1.0011.1080.webp 1080w, /landing/levelsequence-1.0011.1920.webp 1920w",
+    "avifSrcset": "/landing/levelsequence-1.0011.1080.avif 1080w",
+    "lqip": "data:image/webp;base64,UklGRkYAAABXRUJQVlA4IDoAAACwAQCdASoIAAwABABoJQBYdh5u1TQAAP6ob1SBuItFiqqKgWNj/+AcaR6egtcS6uIJKvlXLYrvYAAA"
   },
   {
     "file": "panic-attack-type-final-in-a-row.png",
     "url": "/landing/panic-attack-type-final-in-a-row.png",
-    "type": "image"
+    "type": "image",
+    "webpSrcset": "/landing/panic-attack-type-final-in-a-row.480.webp 480w, /landing/panic-attack-type-final-in-a-row.1080.webp 1080w, /landing/panic-attack-type-final-in-a-row.1920.webp 1920w",
+    "avifSrcset": "/landing/panic-attack-type-final-in-a-row.1080.avif 1080w",
+    "lqip": "data:image/webp;base64,UklGRpoAAABXRUJQVlA4WAoAAAAQAAAABwAACwAAQUxQSFkAAAABcFJt27O8/v+BDHSZchcgA2oXoMDUoHYEJOo/JEChllvvuGtEREhvu87OqRRueNCREqrKRfooOKUTBsbmjkPwwAEMFFV30ABwLGaTjI/xLsoUbdZriXSvKwBWUDggGgAAADABAJ0BKggADAAEAGglpAADcAD+8mzLAAAA"
   },
   {
     "file": "paper.portfolio_journal.9.png",
     "url": "/landing/paper.portfolio_journal.9.png",
-    "type": "image"
+    "type": "image",
+    "webpSrcset": "/landing/paper.portfolio_journal.9.480.webp 480w, /landing/paper.portfolio_journal.9.1080.webp 1080w, /landing/paper.portfolio_journal.9.1920.webp 1920w",
+    "avifSrcset": "/landing/paper.portfolio_journal.9.1080.avif 1080w",
+    "lqip": "data:image/webp;base64,UklGRkAAAABXRUJQVlA4IDQAAACwAQCdASoIAAwABABoJZQAAuYbYvJAAP7zcvJxKUq6/WdR2kw+wWV9Y/WmH0iSDG56AAAA"
   },
   {
     "file": "poster-story.png",
     "url": "/landing/poster-story.png",
-    "type": "image"
+    "type": "image",
+    "webpSrcset": "/landing/poster-story.480.webp 480w, /landing/poster-story.1080.webp 1080w",
+    "avifSrcset": "/landing/poster-story.1080.avif 1080w",
+    "lqip": "data:image/webp;base64,UklGRkYAAABXRUJQVlA4IDoAAACwAQCdASoIAAwABABoJaQAApe23zOAAP63tF9ePytatMNj45ti5UVv8UjNwADiKo1Dz2AsZcd6dAAA"
   },
   {
     "file": "rustycementt.png",
     "url": "/landing/rustycementt.png",
-    "type": "image"
+    "type": "image",
+    "webpSrcset": "/landing/rustycementt.480.webp 480w, /landing/rustycementt.1080.webp 1080w",
+    "avifSrcset": "/landing/rustycementt.1080.avif 1080w",
+    "lqip": "data:image/webp;base64,UklGRjQAAABXRUJQVlA4ICgAAABwAQCdASoIAAwABABoJZwAAkim6ADMkCFkFU4/cop+Kb7R08qYQCAA"
   },
   {
     "file": "skjermbilde-2024-05-07-011311.png",
     "url": "/landing/skjermbilde-2024-05-07-011311.png",
-    "type": "image"
+    "type": "image",
+    "webpSrcset": "/landing/skjermbilde-2024-05-07-011311.480.webp 480w, /landing/skjermbilde-2024-05-07-011311.1080.webp 1080w",
+    "avifSrcset": "/landing/skjermbilde-2024-05-07-011311.1080.avif 1080w",
+    "lqip": "data:image/webp;base64,UklGRkYAAABXRUJQVlA4IDoAAADwAQCdASoIAAwABABoJbACdADZtQpodAAA/iX3buXQAFJ5Bx4nDYSBoNEw5Hg87WZ5t8uBpXH6oAAA"
   },
   {
     "file": "the_lovers_i.mp4",
@@ -1420,11 +2076,17 @@ export const LANDING_ASSETS: MediaAsset[] = [
   {
     "file": "untitled5.png",
     "url": "/landing/untitled5.png",
-    "type": "image"
+    "type": "image",
+    "webpSrcset": "/landing/untitled5.480.webp 480w, /landing/untitled5.1080.webp 1080w, /landing/untitled5.1920.webp 1920w",
+    "avifSrcset": "/landing/untitled5.1080.avif 1080w",
+    "lqip": "data:image/webp;base64,UklGRj4AAABXRUJQVlA4IDIAAADQAQCdASoIAAwABABoJQBWACHXFe7YAAD+dMriY0CptFgWlNSs28XcRvQaEhnA2UUEAA=="
   },
   {
     "file": "urbanwarholtv.png",
     "url": "/landing/urbanwarholtv.png",
-    "type": "image"
+    "type": "image",
+    "webpSrcset": "/landing/urbanwarholtv.480.webp 480w, /landing/urbanwarholtv.1080.webp 1080w, /landing/urbanwarholtv.1920.webp 1920w",
+    "avifSrcset": "/landing/urbanwarholtv.1080.avif 1080w",
+    "lqip": "data:image/webp;base64,UklGRlAAAABXRUJQVlA4IEQAAAAwAgCdASoIAAwABABoJbACdH8AGKO6QLps9AD+n9wHClQYZJBZuAYriJnvOpsmGrMqmmQiWeACKAcLE79IXflKcKAAAA=="
   }
 ];

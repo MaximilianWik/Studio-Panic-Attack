@@ -53,7 +53,13 @@ export function Vocabulary() {
                 onClick={() => openLightbox(e.asset.url)}
                 aria-label={'Open ' + e.word}
               >
-                <Img src={e.asset.url} alt={e.word} />
+                <Img
+                  src={e.asset.url}
+                  alt={e.word}
+                  webpSrcset={e.asset.webpSrcset}
+                  avifSrcset={e.asset.avifSrcset}
+                  lqip={e.asset.lqip}
+                />
               </button>
             ) : null}
           </div>

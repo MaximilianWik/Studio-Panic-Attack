@@ -123,9 +123,31 @@ Vercel rewrites all paths to `index.html`, so deep-links and hard reloads work.
 
 ### Asset pipeline
 
-Source images in `public/landing/` total ~221 MB raw. In production, all image URLs are rewritten through `images.weserv.nl` (free image CDN) at 2000px wide, WebP, q82. This drops per-image payload from 5–17 MB to ~150–250 KB.
+Source images in `public/` total ~857 MB raw across 300 files (raster originals are uncompressed exports — single PNGs up to 18 MB). The site itself is served via Vercel Edge directly from `public/`. To keep payloads sane we run a one-time, idempotent optimization step that emits sibling files alongside the originals:
 
-The `assetUrl()` helper handles this transparently — returns local paths in dev, CDN URLs in prod.
+```
+public/.../foo.PNG                 # original (kept — used as <img> fallback + lightbox source)
+public/.../foo.480.webp            # responsive WebP — polaroid grid
+public/.../foo.1080.webp           # responsive WebP — lightbox / mid-zoom
+public/.../foo.1920.webp           # responsive WebP — full zoom
+public/.../foo.1080.avif           # AVIF for modern browsers
+public/.../foo.lqip.txt            # 8×12 base64 blurred placeholder
+```
+
+The `<Img>` helper (`src/helpers/media.tsx`) renders these as a `<picture>` with `type="image/avif"` and `type="image/webp"` sources plus `srcset`/`sizes`, with the original `<img>` as the fallback. It's IO-gated — until the wrapper enters a generous root-margin band it shows the LQIP and skips fetching the heavy raster entirely. Once decoded, the `<img>` crossfades over the LQIP.
+
+For videos, the optimizer additionally emits `<name>.webm` (vp9 crf 34) and `<name>.poster.jpg`. Video transcode silently skips when ffmpeg is not on `PATH`.
+
+The optimizer is idempotent (mtime-skip) and parallelised at 6 workers. Run it once after adding new assets:
+
+```sh
+npm run optimize       # produces .webp/.avif/.lqip siblings (requires sharp; ffmpeg optional)
+npm run gen:manifest   # rescans public/ and emits src/generated/mediaManifest.ts
+```
+
+The `gen:manifest` step probes for sibling files and writes `webpSrcset` / `avifSrcset` / `lqip` fields onto each `MediaAsset`. **Generated WebP/AVIF/LQIP siblings are committed** so Vercel doesn't have to install `sharp` at build time — CI is just a plain `tsc + vite build`.
+
+Approximate sizes after optimization: 857 MB raw → ~70 MB WebP (3 widths × ~250 sources) + ~14 MB AVIF + ~37 KB LQIP.
 
 ### Loading gate
 
@@ -162,6 +184,8 @@ The `vercel.json` catch-all rewrite ensures client-side routing works for all pa
 | `npm run build` | `tsc -b && vite build` — type-check then bundle |
 | `npm run preview` | Serve production bundle locally |
 | `npm run typecheck` | Type-check only (`tsc -b --noEmit`) |
+| `npm run optimize` | Generate `.webp` (480/1080/1920) + `.1080.avif` + `.lqip.txt` siblings for every raster ≥ 200 KB in `public/`, plus `.webm` + `.poster.jpg` for `.mp4` (idempotent; soft-skips when sharp/ffmpeg missing) |
+| `npm run gen:manifest` | Rescan `public/` + sibling optimized files; write `src/generated/mediaManifest.ts` |
 
 ### Smoke test
 

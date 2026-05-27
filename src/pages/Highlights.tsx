@@ -36,7 +36,13 @@ export function Highlights() {
                       onClick={() => openLightbox(a.url)}
                       aria-label={'Open ' + a.file}
                     >
-                      <Img src={a.url} alt="" />
+                      <Img
+                        src={a.url}
+                        alt=""
+                        webpSrcset={a.webpSrcset}
+                        avifSrcset={a.avifSrcset}
+                        lqip={a.lqip}
+                      />
                     </button>
                   )}
                 </div>

@@ -66,7 +66,15 @@ export function About() {
         <div className="spa-about__col spa-about__col--portrait">
           <div className="spa-about__portrait">
             {PORTRAIT ? (
-              <Img src={PORTRAIT.url} alt="Portrait of Ema" eager className="spa-about__portrait-img" />
+              <Img
+                src={PORTRAIT.url}
+                alt="Portrait of Ema"
+                eager
+                className="spa-about__portrait-img"
+                webpSrcset={PORTRAIT.webpSrcset}
+                avifSrcset={PORTRAIT.avifSrcset}
+                lqip={PORTRAIT.lqip}
+              />
             ) : null}
             <div className="spa-about__portrait-ring" aria-hidden />
           </div>
@@ -77,7 +85,13 @@ export function About() {
         <div className="spa-about__strip-frames">
           {STRIP.concat(STRIP).slice(0, 8).map((a, i) => (
             <div className="spa-about__strip-frame" key={i}>
-              <Img src={a.url} alt="" />
+              <Img
+                src={a.url}
+                alt=""
+                webpSrcset={a.webpSrcset}
+                avifSrcset={a.avifSrcset}
+                lqip={a.lqip}
+              />
               <span className="spa-about__strip-num">{String(i + 1).padStart(2, '0')}A</span>
             </div>
           ))}

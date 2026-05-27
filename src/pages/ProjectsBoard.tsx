@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import PageShell from '../components/PageShell/PageShell';
-import { Img, Vid } from '../helpers/media';
+import { Img, Vid, type LoadPriority } from '../helpers/media';
 import FolderTile from '../components/PageShell/FolderTile';
 import { Sticker } from '../components/PageShell/Stickers';
 import { PROJECTS, type Project } from '../config/projects';
@@ -32,6 +32,16 @@ interface ProjectsBoardProps {
 
 /** How many boards on each side of the active one to fully mount. */
 const HYDRATE_RADIUS = 1;
+
+/**
+ * After this many ms of idle (no scroll, no active-index change) we run a
+ * low-priority "peek-ahead" prefetch: warm the first few images of the
+ * adjacent boards so a snap to them feels instant. Cancelled on the next
+ * scroll/active-change.
+ */
+const PEEK_IDLE_MS = 800;
+/** How many polaroids per neighbour board to warm during peek-ahead. */
+const PEEK_COUNT = 3;
 
 export function ProjectsBoard({ initialSlug }: ProjectsBoardProps) {
   const trackRef = useRef<HTMLDivElement>(null);
@@ -110,6 +120,54 @@ export function ProjectsBoard({ initialSlug }: ProjectsBoardProps) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
+  // Idle peek-ahead: after the active board has settled, low-priority warm
+  // the first few images of the adjacent boards. Uses the browser's HTTP
+  // cache via new Image().src — the actual <img> tags inside the neighbour
+  // board (when it hydrates) will hit the cache and decode instantly.
+  // Cancelled (and pending Image objects abandoned) on every active change.
+  useEffect(() => {
+    let timer: number | null = null;
+    const inflight: HTMLImageElement[] = [];
+    const idle: typeof window.requestIdleCallback | undefined =
+      (window as unknown as { requestIdleCallback?: typeof window.requestIdleCallback })
+        .requestIdleCallback;
+    const cancelIdle: typeof window.cancelIdleCallback | undefined =
+      (window as unknown as { cancelIdleCallback?: typeof window.cancelIdleCallback })
+        .cancelIdleCallback;
+    let idleHandle: number | null = null;
+
+    timer = window.setTimeout(() => {
+      const run = () => {
+        for (const offset of [-1, 1]) {
+          const board = PROJECTS[activeIdx + offset];
+          if (!board) continue;
+          for (const a of board.assets.slice(0, PEEK_COUNT)) {
+            if (a.type !== 'image') continue;
+            const img = new Image();
+            // Prefer the smallest WebP variant if the manifest has one.
+            // We synthesise the URL from webpSrcset (first entry).
+            const firstWebp = a.webpSrcset?.split(',')[0]?.trim().split(' ')[0];
+            try { img.setAttribute('fetchpriority', 'low'); } catch { /* ignore */ }
+            img.decoding = 'async';
+            img.src = firstWebp || a.url;
+            inflight.push(img);
+          }
+        }
+      };
+      if (idle) idleHandle = idle.call(window, run, { timeout: 1500 });
+      else run();
+    }, PEEK_IDLE_MS);
+
+    return () => {
+      if (timer != null) window.clearTimeout(timer);
+      if (idleHandle != null && cancelIdle) cancelIdle.call(window, idleHandle);
+      // Abandon in-flight: clearing src cancels in most browsers.
+      for (const img of inflight) {
+        try { img.src = ''; } catch { /* ignore */ }
+      }
+    };
+  }, [activeIdx]);
+
   function goTo(idx: number) {
     const clamped = Math.max(0, Math.min(PROJECTS.length - 1, idx));
     const track = trackRef.current;
@@ -175,6 +233,12 @@ interface BoardProps {
 function Board({ project, index, total, onPrev, onNext, onJumpTo, active, hydrated }: BoardProps) {
   const prev = PROJECTS[index - 1];
   const next = PROJECTS[index + 1];
+
+  // Per-asset loading priority. Active board polaroids get 'active' (load now);
+  // hydrated neighbours get 'neighbour' (IO-gated, low priority); skeleton
+  // boards never render <Img>/<Vid> at all so 'idle' is unused here in
+  // practice, but we keep the type honest in case hydrated radius grows.
+  const priority: LoadPriority = active ? 'active' : hydrated ? 'neighbour' : 'idle';
 
   return (
     <section
@@ -290,7 +354,18 @@ function Board({ project, index, total, onPrev, onNext, onJumpTo, active, hydrat
                     aria-label={'View ' + a.file}
                   >
                     <span className="spa-polaroid__inner">
-                      {a.type === 'video' ? <Vid src={a.url} /> : <Img src={a.url} alt="" />}
+                      {a.type === 'video' ? (
+                        <Vid src={a.url} priority={priority} />
+                      ) : (
+                        <Img
+                          src={a.url}
+                          alt=""
+                          webpSrcset={a.webpSrcset}
+                          avifSrcset={a.avifSrcset}
+                          lqip={a.lqip}
+                          priority={priority}
+                        />
+                      )}
                     </span>
                     <span className="spa-polaroid__cap">{a.file.replace(/\.[a-zA-Z0-9]+$/, '')}</span>
                   </button>
@@ -328,7 +403,18 @@ function Board({ project, index, total, onPrev, onNext, onJumpTo, active, hydrat
                   aria-label={'View ' + a.file}
                 >
                   <span className="spa-polaroid__inner">
-                    {a.type === 'video' ? <Vid src={a.url} /> : <Img src={a.url} alt="" />}
+                    {a.type === 'video' ? (
+                      <Vid src={a.url} priority={priority} />
+                    ) : (
+                      <Img
+                        src={a.url}
+                        alt=""
+                        webpSrcset={a.webpSrcset}
+                        avifSrcset={a.avifSrcset}
+                        lqip={a.lqip}
+                        priority={priority}
+                      />
+                    )}
                   </span>
                   <span className="spa-polaroid__cap">{a.file.replace(/\.[a-zA-Z0-9]+$/, '')}</span>
                 </button>

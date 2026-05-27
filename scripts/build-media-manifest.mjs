@@ -7,9 +7,20 @@
  * URLs are emitted with proper percent-encoding for the spaces and special
  * characters in the source folder names (e.g. "2. Projects/11. UX`UI/...").
  *
+ * For each raster image asset, the optimizer (scripts/optimize-public-assets.mjs)
+ * may have produced sibling files:
+ *   <name>.480.webp / .1080.webp / .1920.webp   responsive WebP
+ *   <name>.1080.avif                            modern fallback
+ *   <name>.lqip.txt                             tiny blurred placeholder
+ *
+ * We probe for these on disk and emit per-asset srcset strings + lqip data
+ * so the runtime <Img> can render <picture> with srcset without further
+ * filesystem checks. If the siblings don't exist (optimize hasn't been run
+ * yet), the asset falls back to a plain <img src=originalUrl>.
+ *
  * Run via: npm run gen:manifest
  */
-import { readdir, stat, writeFile, mkdir } from 'node:fs/promises';
+import { readdir, readFile, stat, writeFile, mkdir } from 'node:fs/promises';
 import { join, extname } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
@@ -18,6 +29,7 @@ const PUBLIC_DIR = join(ROOT, 'public');
 const OUT = join(ROOT, 'src', 'generated', 'mediaManifest.ts');
 
 const IMG_EXT = new Set(['.jpg', '.jpeg', '.png', '.webp', '.gif']);
+const RASTER_RE = /\.(jpe?g|png)$/i;
 // .mov files are QuickTime containers — typically H.264 or HEVC. Chrome on
 // Windows can play H.264 MOVs but not HEVC. We include them anyway: in the
 // polaroid grid the <Vid> placeholder shows a film icon, and clicking opens
@@ -25,6 +37,9 @@ const IMG_EXT = new Set(['.jpg', '.jpeg', '.png', '.webp', '.gif']);
 // produce a visible "can't play" error inside the lightbox + download link
 // instead of silently breaking.
 const VID_EXT = new Set(['.mp4', '.webm', '.mov']);
+
+const WEBP_WIDTHS = [480, 1080, 1920];
+const AVIF_WIDTH = 1080;
 
 function urlPath(absInsidePublic) {
   // Encode path segments for use in a URL src attribute.
@@ -69,19 +84,80 @@ async function listSubdirs(dir) {
   }
 }
 
-function toAsset(folderRel, filename) {
+async function exists(p) {
+  try { await stat(p); return true; } catch { return false; }
+}
+
+/**
+ * Probe sibling optimized files for a raster image and return responsive
+ * metadata (srcset strings + LQIP). Returns null if no siblings exist.
+ */
+async function readOptimized(absImagePath, urlBase) {
+  if (!RASTER_RE.test(absImagePath)) return null;
+
+  const baseAbs = absImagePath.replace(RASTER_RE, '');
+  const baseUrl = urlBase.replace(RASTER_RE, '');
+
+  // WebP srcset.
+  const webpEntries = [];
+  for (const w of WEBP_WIDTHS) {
+    if (await exists(baseAbs + '.' + w + '.webp')) {
+      webpEntries.push(`${baseUrl}.${w}.webp ${w}w`);
+    }
+  }
+
+  // AVIF (single width).
+  const avifAbs = baseAbs + '.' + AVIF_WIDTH + '.avif';
+  const avif = (await exists(avifAbs)) ? `${baseUrl}.${AVIF_WIDTH}.avif ${AVIF_WIDTH}w` : null;
+
+  // LQIP.
+  let lqip = null;
+  const lqipAbs = baseAbs + '.lqip.txt';
+  if (await exists(lqipAbs)) {
+    try {
+      lqip = (await readFile(lqipAbs, 'utf8')).trim();
+    } catch { /* ignore */ }
+  }
+
+  if (!webpEntries.length && !avif && !lqip) return null;
+  return {
+    webpSrcset: webpEntries.length ? webpEntries.join(', ') : null,
+    avifSrcset: avif,
+    lqip,
+  };
+}
+
+async function toAsset(folderRel, filename) {
   const ext = extname(filename).toLowerCase();
   const isVid = VID_EXT.has(ext);
   const isImg = IMG_EXT.has(ext);
   if (!isVid && !isImg) return null;
-  // Skip lqip + poster + the original mp4 if a webm exists later (handled below).
+
+  // Skip generated siblings — they're consumed via the optimized fields below,
+  // not as standalone assets.
   if (filename.endsWith('.lqip.txt')) return null;
   if (filename.endsWith('.poster.jpg')) return null;
-  return {
+  // Generated WebP/AVIF siblings: pattern <name>.<width>.webp / .avif.
+  if (/\.\d+\.(webp|avif)$/i.test(filename)) return null;
+
+  const url = urlPath(folderRel + '/' + filename);
+  const asset = {
     file: filename,
-    url: urlPath(folderRel + '/' + filename),
+    url,
     type: isVid ? 'video' : 'image',
   };
+
+  if (isImg && RASTER_RE.test(filename)) {
+    const abs = join(PUBLIC_DIR, folderRel, filename);
+    const opt = await readOptimized(abs, url);
+    if (opt) {
+      if (opt.webpSrcset) asset.webpSrcset = opt.webpSrcset;
+      if (opt.avifSrcset) asset.avifSrcset = opt.avifSrcset;
+      if (opt.lqip) asset.lqip = opt.lqip;
+    }
+  }
+
+  return asset;
 }
 
 async function buildProjects() {
@@ -90,7 +166,7 @@ async function buildProjects() {
   const out = [];
   for (const folder of folders) {
     const files = await listDir(join(PUBLIC_DIR, projectsRoot, folder));
-    const assets = files.map((f) => toAsset(projectsRoot + '/' + folder, f)).filter(Boolean);
+    const assets = (await Promise.all(files.map((f) => toAsset(projectsRoot + '/' + folder, f)))).filter(Boolean);
     out.push({ folder, assets });
   }
   return out;
@@ -98,12 +174,12 @@ async function buildProjects() {
 
 async function listSimple(rel) {
   const files = await listDir(join(PUBLIC_DIR, rel));
-  return files.map((f) => toAsset(rel, f)).filter(Boolean);
+  return (await Promise.all(files.map((f) => toAsset(rel, f)))).filter(Boolean);
 }
 
 async function listLanding() {
   const files = await listDir(join(PUBLIC_DIR, 'landing'));
-  return files.map((f) => toAsset('landing', f)).filter(Boolean);
+  return (await Promise.all(files.map((f) => toAsset('landing', f)))).filter(Boolean);
 }
 
 const projects = await buildProjects();
@@ -113,16 +189,32 @@ const about = await listSimple('5. About');
 const contact = await listSimple('6. Contact');
 const landing = await listLanding();
 
+const optimizedCount = (() => {
+  let n = 0;
+  const all = [...highlights, ...vocabulary, ...about, ...contact, ...landing];
+  for (const p of projects) all.push(...p.assets);
+  for (const a of all) if (a.webpSrcset) n++;
+  return n;
+})();
+
 const header = `// AUTO-GENERATED by scripts/build-media-manifest.mjs
 // Do not edit by hand — re-run via \`npm run gen:manifest\`.
 //
 // Each entry's \`url\` is properly percent-encoded so it can be used directly
 // in src/href attributes without further escaping.
+//
+// Optional fields populated when scripts/optimize-public-assets.mjs has run:
+//   webpSrcset  — responsive WebP sources, comma-separated "<url> <w>w"
+//   avifSrcset  — single-width AVIF source for modern browsers
+//   lqip        — tiny base64 data-URL blurred placeholder
 
 export interface MediaAsset {
   file: string;
   url: string;
   type: 'image' | 'video';
+  webpSrcset?: string;
+  avifSrcset?: string;
+  lqip?: string;
 }
 
 export interface ProjectFolder {
@@ -150,3 +242,4 @@ console.log('  vocabulary:', vocabulary.length);
 console.log('  about:', about.length);
 console.log('  contact:', contact.length);
 console.log('  landing:', landing.length);
+console.log('  optimized assets (with srcset):', optimizedCount);
