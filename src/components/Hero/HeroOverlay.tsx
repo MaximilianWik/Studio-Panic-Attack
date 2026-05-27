@@ -1,6 +1,7 @@
 import { MeshGradient } from '@paper-design/shaders-react';
 
 import { PALETTES, usePalette } from '../../helpers/paletteStore';
+import { SwissKnifeTextPath } from './SwissKnifeTextPath';
 import { WhiteboardBackground } from './WhiteboardBackground';
 
 interface HeroOverlayProps {
@@ -70,20 +71,31 @@ export function HeroOverlay({ ready }: HeroOverlayProps) {
           transition: 'opacity 0.6s ease 0.15s',
         }}
       >
-        <img
-          src={isWhiteboard ? '/logo/PanicAttackLogoBlack.png' : '/logo/PanicAttackLogo.png'}
-          alt="Studio Panic Attack"
-          decoding="sync"
-          fetchPriority="high"
-          style={{
-            width: 'clamp(220px, 70vw, 840px)',
-            maxWidth: '92vw',
-            height: 'auto',
-            filter: isWhiteboard
-              ? 'drop-shadow(0 6px 28px rgba(10,10,10,0.45))'
-              : 'drop-shadow(0 6px 28px rgba(10,10,10,0.55)) drop-shadow(0 1px 0 rgba(211,0,0,0.4))',
-          }}
-        />
+        {isWhiteboard ? (
+          <SwissKnifeTextPath
+            style={{
+              width: 'clamp(480px, 90vmin, 1410px)',
+              maxWidth: '97vw',
+              aspectRatio: '662 / 636',
+              height: 'auto',
+              transform: 'translateY(-5vh)',
+            }}
+          />
+        ) : (
+          <img
+            src="/logo/PanicAttackLogo.png"
+            alt="Studio Panic Attack"
+            decoding="sync"
+            fetchPriority="high"
+            style={{
+              width: 'clamp(220px, 70vw, 840px)',
+              maxWidth: '92vw',
+              height: 'auto',
+              filter:
+                'drop-shadow(0 6px 28px rgba(10,10,10,0.55)) drop-shadow(0 1px 0 rgba(211,0,0,0.4))',
+            }}
+          />
+        )}
         <div className={'spa-scroll-prompt' + (ready ? ' spa-scroll-prompt--ready' : '')}>
           scroll to enter
         </div>

@@ -2,6 +2,19 @@
 
 All notable changes to Studio Panic Attack are tracked here.
 
+## [1.2.15] -- homepage whiteboard: swiss-knife SVG 50% larger, shifted up
+
+- `HeroOverlay.tsx`: SwissKnifeTextPath width changed from `clamp(320px,78vw,940px)` → `clamp(480px,90vmin,1410px)` (×1.5 across the board; `vmin` used as the fluid unit since the SVG is nearly square, so it scales sensibly on both landscape and portrait viewports). `maxWidth` eased to `97vw`.
+- Added `transform: translateY(-5vh)` to nudge the composition up slightly within the centred flex container.
+
+## [1.2.14] -- homepage whiteboard: animated swiss-knife textPath replaces the centered black logo
+
+- New `src/components/Hero/SwissKnifeTextPath.tsx` — self-contained SVG component that animates a single sentence ("Chaotic space of creativity & multidisciplinary ideas exploring the limits of the human curiosity.") in red Cormorant Garamond around the silhouette of a swiss-army knife, with `LogoText.png` overlaid in the centre. Two `<textPath>` runs share a synced `<animate>` (second begins at `lap.begin`) for a continuous double-sided crawl. Replicates the spec from `swiss-knife-textpath-2026-05-20-14-46-44.json`.
+- New `src/components/Hero/swissKnifeOutlineD.ts` — the 16k-char path d-string extracted out of the JSX so the component stays readable.
+- New asset `public/logo/SwissKnifeLogoText.png` (48 KB) — the centre logo overlay, decoded from the export's inlined data URL.
+- `src/components/Hero/HeroOverlay.tsx`: when the active palette is the whiteboard one, render `<SwissKnifeTextPath>` instead of the static `PanicAttackLogoBlack.png` `<img>`. Mesh palettes still get the white `PanicAttackLogo.png`. Wrapper sized via `clamp(320px, 78vw, 940px)` with the export's native 662:636 aspect ratio so the silhouette never distorts.
+- Cormorant Garamond 500-normal is loaded inline via a single `@font-face` rule pointing at the existing jsDelivr `@fontsource` CDN URL (same CDN the LoadingScreen already uses for italic-500). No `index.html` changes needed.
+
 ## [1.2.13] -- homepage grid: responsive cell count (no squishing on narrow viewports)
 
 - Removed fixed `NUM_COLS`, `NUM_ROWS`, `MAX_COLS` constants. Replaced with a single `TARGET_CELL = 120` (px) tunable.
