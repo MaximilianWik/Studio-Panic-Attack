@@ -98,9 +98,9 @@ video {
 }
 
 .spa-title {
-  font-family: var(--font-display);
+  font-family: "Quiet-Attempt", serif;
   font-weight: 400;
-  font-style: italic;
+  font-style: normal;
   font-size: clamp(56px, 9vw, 168px);
   line-height: 0.92;
   letter-spacing: -0.02em;
@@ -556,7 +556,7 @@ video {
 .spa-catgrid__num span { font-family: var(--font-display); font-style: italic; font-size: clamp(64px, 8vw, 120px); line-height: 0.85; color: var(--blood); }
 .spa-catgrid__eyebrow { grid-column: 6 / span 7; grid-row: 1; background: var(--blood) !important; border-color: var(--blood) !important; color: var(--paper); font-family: var(--font-mono); font-size: 9px; letter-spacing: 0.4em; text-transform: uppercase; flex-direction: row; align-items: center; }
 .spa-catgrid__title { grid-column: 6 / span 7; grid-row: 2 / span 2; }
-.spa-catgrid__title h2 { font-family: var(--font-display); font-style: italic; font-weight: 400; font-size: clamp(24px, 2.8vw, 42px); line-height: 0.95; letter-spacing: -0.012em; color: var(--paper); }
+.spa-catgrid__title h2 { font-family: "Quiet-Attempt", serif; font-style: normal; font-weight: 400; font-size: clamp(24px, 2.8vw, 42px); line-height: 0.95; letter-spacing: -0.012em; color: var(--paper); }
 .spa-catgrid__body { grid-column: 1 / span 8; grid-row: 4 / span 3; }
 .spa-catgrid__body p { font-size: 13px; line-height: 1.5; color: rgba(246,243,238,0.72); }
 .spa-catgrid__chips { grid-column: 9 / span 4; grid-row: 4 / span 3; flex-direction: column; align-items: flex-start; gap: 6px; }
@@ -604,7 +604,7 @@ video {
 /* ----- Vocabulary section ----- */
 .spa-vocab { width: min(1000px, 92vw); display: grid; grid-template-columns: 1fr 1fr; align-items: center; gap: 28px; }
 .spa-vocab__copy { display: flex; flex-direction: column; gap: 12px; }
-.spa-vocab__lead { font-family: var(--font-display); font-style: italic; font-size: clamp(24px, 3.2vw, 42px); line-height: 1.05; color: var(--paper); }
+.spa-vocab__lead { font-family: "Quiet-Attempt", serif; font-style: normal; font-size: clamp(24px, 3.2vw, 42px); line-height: 1.05; color: var(--paper); }
 .spa-vocab__lead em { color: var(--blood); }
 .spa-vocab__list { display: grid; grid-template-columns: 1fr 1fr; gap: 3px 14px; list-style: none; font-family: var(--font-mono); font-size: 10px; letter-spacing: 0.18em; text-transform: uppercase; color: rgba(246,243,238,0.7); }
 .spa-vocab__list li::before { content: "+ "; color: var(--blood); }

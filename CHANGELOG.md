@@ -1,21 +1,28 @@
-﻿# Changelog
+# Changelog
 
 All notable changes to Studio Panic Attack are tracked here.
+
+## [1.2.31] -- typography: Quiet-Attempt font for all page headers
+
+- `src/styles/whiteboard-pages.css`: `spa-about__title` � add `white-space: nowrap` and loosen `letter-spacing` to `-0.02em` (Quiet-Attempt wider than prev display font; ABOUT was wrapping to two lines).
+
+- src/styles/whiteboard-pages.css: switched all page title/header classes (.spa-about__title, .spa-about__sub, .spa-about__card-name, .spa-vocab__title, .spa-vocab__word, .spa-hl__title, .spa-contact__title, .spa-pb__head-title, .spa-pb__events-doc h3) from ar(--font-display) (Times New Roman) to "Quiet-Attempt", serif with ont-style: normal.
+- src/styles/global.css: switched .spa-title, .spa-catgrid__title h2, and .spa-vocab__lead to "Quiet-Attempt", serif. Home page fonts left unchanged.
 
 ## [1.2.30] -- particles: fire/old-film color palette
 
 - `src/pages/About.tsx`: changed `GlowParticles` props from purple (hue 265, spread 50) to warm amber (hue 25, spread 20).
-- `src/components/About/GlowParticles.tsx`: rendering now uses dynamic hue/saturation/lightness per particle — deep red/amber at rest (45% lightness), shifts toward bright orange-yellow near the cursor (70% lightness, +15 hue). Connection lines use 80% sat / 50% lightness for a warm ember look.
+- `src/components/About/GlowParticles.tsx`: rendering now uses dynamic hue/saturation/lightness per particle � deep red/amber at rest (45% lightness), shifts toward bright orange-yellow near the cursor (70% lightness, +15 hue). Connection lines use 80% sat / 50% lightness for a warm ember look.
 
 
-- `src/styles/whiteboard-pages.css`: removed `margin-bottom: 60px` from `.spa-about__understrip-wrap` — the image now sits flush at the bottom of the page with no trailing black gap.
+- `src/styles/whiteboard-pages.css`: removed `margin-bottom: 60px` from `.spa-about__understrip-wrap` � the image now sits flush at the bottom of the page with no trailing black gap.
 
 ## [1.2.28] -- about: dispersing text + glow particles
 
-- **`src/components/About/DispersingText.tsx`** — new component: renders an array of `TextBlock` items as individually-moveable `<span>` chars. A single `pointermove` listener (on `window`) feeds cursor coords; a single RAF loop spring-physics-drives ALL chars. Chars within `radius` of the cursor get pushed away; they spring back with configurable `spring`/`friction` damping. Recalculates home positions on resize and scroll. Coordinate system uses purely container-relative positions from `getBoundingClientRect` (no scroll/offsetLeft mixing) so dispersion tracks the actual cursor position accurately.
-- **`src/components/About/GlowParticles.tsx`** — new component: full-page `<canvas>` with 90 drifting particles. Cursor attracts them within 180 px; proximity increases glow radius and alpha. Faint connecting lines drawn between nearby particles that are both near the cursor. Particles pulse size sinusoidally and wrap edges. Single RAF loop, DPR-aware, `pointer-events: none`.
-- **`src/pages/About.tsx`** — `<h1>`, `<h2>`, `<p>` body text replaced by `<DispersingText blocks={...}>` (single RAF, single listener). `<GlowParticles>` mounted as a fixed-position canvas at z-index 1. Content bumped to z-index 2 so text/card remain interactive.
-- **`src/styles/whiteboard-pages.css`** — added `.spa-about__particles` (fixed, inset 0, z 1, no pointer events), `.spa-about__dispersing` (flex column gap), `.dtext-char` base styles. Bumped `__main`, `__strip-wrap`, `__understrip-wrap` to z-index 2.
+- **`src/components/About/DispersingText.tsx`** � new component: renders an array of `TextBlock` items as individually-moveable `<span>` chars. A single `pointermove` listener (on `window`) feeds cursor coords; a single RAF loop spring-physics-drives ALL chars. Chars within `radius` of the cursor get pushed away; they spring back with configurable `spring`/`friction` damping. Recalculates home positions on resize and scroll. Coordinate system uses purely container-relative positions from `getBoundingClientRect` (no scroll/offsetLeft mixing) so dispersion tracks the actual cursor position accurately.
+- **`src/components/About/GlowParticles.tsx`** � new component: full-page `<canvas>` with 90 drifting particles. Cursor attracts them within 180 px; proximity increases glow radius and alpha. Faint connecting lines drawn between nearby particles that are both near the cursor. Particles pulse size sinusoidally and wrap edges. Single RAF loop, DPR-aware, `pointer-events: none`.
+- **`src/pages/About.tsx`** � `<h1>`, `<h2>`, `<p>` body text replaced by `<DispersingText blocks={...}>` (single RAF, single listener). `<GlowParticles>` mounted as a fixed-position canvas at z-index 1. Content bumped to z-index 2 so text/card remain interactive.
+- **`src/styles/whiteboard-pages.css`** � added `.spa-about__particles` (fixed, inset 0, z 1, no pointer events), `.spa-about__dispersing` (flex column gap), `.dtext-char` base styles. Bumped `__main`, `__strip-wrap`, `__understrip-wrap` to z-index 2.
 
 ## [1.2.27] -- about: remove portrait circle
 
@@ -27,54 +34,54 @@ All notable changes to Studio Panic Attack are tracked here.
 The About page is reskinned to use the new `Background.PNG` photographic backdrop instead of the whiteboard grid, with all text/UI flipped to a dark colour scheme.
 
 - `src/pages/About.tsx`: replaced the SVG "Hi! I'm Ema :)" CSS text with the `Hi im ema.PNG` artwork (positioned over the background, slight `-3deg` tilt, drop-shadow). Removed the `spa-about__card-tape` CSS strip element. Removed the old `STRIP.concat(...)` filmstrip render and replaced it with two stacked `<section>`s: `spa-about__strip-wrap` rendering `ImageStrip.webp`, then `spa-about__understrip-wrap` rendering `under image strip.PNG`. Added `<div className="spa-about__bg">` mounted off the page-shell with `Background.PNG` as a fixed full-bleed `background-image`. Asset lookups in the manifest (case-insensitive) for Background / Hi im ema / ImageStrip / under image strip; portrait keeps `IMG_5800-min`.
-- `src/styles/whiteboard-pages.css`: rewrote the entire `About` block. Hides the inherited `.spa-page__bg` whiteboard grid under `.spa-about`. New `.spa-about__bg` (fixed, cover, top-anchored) plus a vignette `::after` for legibility. Title/sub/lede/body now in `#ffffff` / `rgba(255,255,255,0.78)` tones with subtle text-shadows. Filmstrip CSS (`.spa-about__strip`, `::before`/`::after` perforations, `__strip-frames`, `__strip-frame`, `__strip-num`) deleted; replaced by `.spa-about__strip-wrap` / `__strip-img` and `.spa-about__understrip-wrap` / `__understrip-img` (both render the source image edge-to-edge at full width). Post-it card converted to a dark variant — `linear-gradient(#1c1c1c → #141414)` background, white text, white-on-hover icons that invert to dark on hover. Portrait ring switched from black-dashed to white-dashed at 28% alpha; portrait shadow deepened.
+- `src/styles/whiteboard-pages.css`: rewrote the entire `About` block. Hides the inherited `.spa-page__bg` whiteboard grid under `.spa-about`. New `.spa-about__bg` (fixed, cover, top-anchored) plus a vignette `::after` for legibility. Title/sub/lede/body now in `#ffffff` / `rgba(255,255,255,0.78)` tones with subtle text-shadows. Filmstrip CSS (`.spa-about__strip`, `::before`/`::after` perforations, `__strip-frames`, `__strip-frame`, `__strip-num`) deleted; replaced by `.spa-about__strip-wrap` / `__strip-img` and `.spa-about__understrip-wrap` / `__understrip-img` (both render the source image edge-to-edge at full width). Post-it card converted to a dark variant � `linear-gradient(#1c1c1c ? #141414)` background, white text, white-on-hover icons that invert to dark on hover. Portrait ring switched from black-dashed to white-dashed at 28% alpha; portrait shadow deepened.
 
 ## [1.2.25] -- remove loading screen
 
-The intro loader is gone — the site now renders the hero immediately on first paint, no preload gate, no minimum-display timer.
+The intro loader is gone � the site now renders the hero immediately on first paint, no preload gate, no minimum-display timer.
 
 - `src/App.tsx`: dropped `LoadingScreen` mount, the `usePreloadGate` call, the 2.5 s `MIN_LOADER_MS` timer, the averaged `progress` signal, and the gallery-preload `assets`/`useMemo` block. `ready` is now hardcoded `true` so `HeroOverlay` fades in on first paint instead of waiting on a gate. Imports of `useMemo`, `LoadingScreen`, `assets`, and `usePreloadGate` removed.
 - `src/components/Loading/LoadingScreen.tsx`: deleted (the empty `Loading/` folder removed alongside it).
 - `src/helpers/usePreloadGate.ts`: deleted (no remaining callers after `App.tsx` was simplified).
-- `src/components/Hero/HeroOverlay.tsx`: rewrote the `ready` prop docstring and the fade-in comment so they no longer reference the deleted loader. Kept the prop itself so the 0 → 1 opacity transition still plays on mount.
-- `src/components/Hero/SwissKnifeTextPath.tsx`: corrected the `FONT_FACE_CSS` comment — italic-500 used to be loaded by `LoadingScreen`'s inline `<style>`, but the SwissKnife textpath only ever needed the upright weight, so the deletion has no functional impact on the hero. Gallery loads italic-500 directly via troika-three-text and is unaffected.
+- `src/components/Hero/HeroOverlay.tsx`: rewrote the `ready` prop docstring and the fade-in comment so they no longer reference the deleted loader. Kept the prop itself so the 0 ? 1 opacity transition still plays on mount.
+- `src/components/Hero/SwissKnifeTextPath.tsx`: corrected the `FONT_FACE_CSS` comment � italic-500 used to be loaded by `LoadingScreen`'s inline `<style>`, but the SwissKnife textpath only ever needed the upright weight, so the deletion has no functional impact on the hero. Gallery loads italic-500 directly via troika-three-text and is unaffected.
 
 ## [1.2.24] -- category numbers: 3x stroke, italic, no red glow
 
-- `src/styles/global.css`: `.spa-cat-elegant__number` (the giant 01/02/03/04 outline numerals on each category section) — `-webkit-text-stroke` bumped 2px → 6px, portrait breakpoint stroke 1.4px → 4.2px (3× across the board), `font-style` switched from `normal` to `italic`, and the red bloom (`text-shadow: 0 0 80px rgba(211,0,0,0.2)`) removed.
+- `src/styles/global.css`: `.spa-cat-elegant__number` (the giant 01/02/03/04 outline numerals on each category section) � `-webkit-text-stroke` bumped 2px ? 6px, portrait breakpoint stroke 1.4px ? 4.2px (3� across the board), `font-style` switched from `normal` to `italic`, and the red bloom (`text-shadow: 0 0 80px rgba(211,0,0,0.2)`) removed.
 
 ## [1.2.23] -- homepage: full optimization pass + Gallery shows ALL projects randomized + lightbox "View project" pill
 
-This is the second half of the media pipeline overhaul (the first half landed in [1.2.18] for the Projects whiteboard). Every image fetched anywhere on the site now goes through the local WebP/AVIF/LQIP pipeline; the home-page Gallery rotates the entire portfolio rather than a curated subset; and clicking any image (Gallery or ScatteredImages) surfaces a "View project →" pill that jumps directly to the matching board.
+This is the second half of the media pipeline overhaul (the first half landed in [1.2.18] for the Projects whiteboard). Every image fetched anywhere on the site now goes through the local WebP/AVIF/LQIP pipeline; the home-page Gallery rotates the entire portfolio rather than a curated subset; and clicking any image (Gallery or ScatteredImages) surfaces a "View project ?" pill that jumps directly to the matching board.
 
 ### Manifest pipeline
 
-- `scripts/build-media-manifest.mjs`: each raster `MediaAsset` now also carries intrinsic `width` / `height` (probed via sharp metadata) so consumers can size their layout boxes correctly before the texture decodes. New top-level export `OPTIMIZED_INDEX: Record<string, OptimizedSiblings>` keyed by ORIGINAL asset URL — provides a flat lookup of `webp480 / webp1080 / webp1920 / avif1080 / lqip` URLs for every optimized asset, used by THREE textures and any raw `<img>` tag that doesn't have a `MediaAsset` in scope.
-- `src/generated/mediaManifest.ts`: regenerated. 220 entries in `OPTIMIZED_INDEX`. Bundle size grew from 207 KB → 328 KB gzipped (≈ +20 KB after gzip) — acceptable trade-off for the decode wins, with most of the growth coming from the inline LQIP base64 strings.
+- `scripts/build-media-manifest.mjs`: each raster `MediaAsset` now also carries intrinsic `width` / `height` (probed via sharp metadata) so consumers can size their layout boxes correctly before the texture decodes. New top-level export `OPTIMIZED_INDEX: Record<string, OptimizedSiblings>` keyed by ORIGINAL asset URL � provides a flat lookup of `webp480 / webp1080 / webp1920 / avif1080 / lqip` URLs for every optimized asset, used by THREE textures and any raw `<img>` tag that doesn't have a `MediaAsset` in scope.
+- `src/generated/mediaManifest.ts`: regenerated. 220 entries in `OPTIMIZED_INDEX`. Bundle size grew from 207 KB ? 328 KB gzipped (� +20 KB after gzip) � acceptable trade-off for the decode wins, with most of the growth coming from the inline LQIP base64 strings.
 
 ### New helper: `helpers/optimizedSrc.ts`
 
-- `pickOptimized(url, width)` — single source of truth for "give me the best WebP variant of this URL at the given width". Snaps UP to nearest available variant so callers never get a fuzzy upscale; returns the original URL unchanged when no siblings exist.
-- `pickLqip(url)`, `getOptimized(url)`, `buildPictureProps(url)` — convenience accessors.
+- `pickOptimized(url, width)` � single source of truth for "give me the best WebP variant of this URL at the given width". Snaps UP to nearest available variant so callers never get a fuzzy upscale; returns the original URL unchanged when no siblings exist.
+- `pickLqip(url)`, `getOptimized(url)`, `buildPictureProps(url)` � convenience accessors.
 
-### `assetUrl` rewritten — no more weserv proxy
+### `assetUrl` rewritten � no more weserv proxy
 
 - `src/helpers/assetUrl.ts`: dropped the `images.weserv.nl` runtime proxy entirely. In its place: a thin wrapper around `pickOptimized()` that snaps the requested width to one of `480 / 1080 / 1920` and returns the local WebP URL. **Identical behaviour in dev and prod** (the WebP siblings are committed and Vite serves them straight from `public/`). No more first-hit slow path, no third-party dependency, no CORS edge cases. The `quality` opts field is preserved as a deprecated no-op for backward-compatibility.
 
 ### Home-page Gallery: ALL projects, randomized, WebP textures
 
-- `src/helpers/useImageAssets.ts`: new `getAllPortfolioImages(seed)` builds the complete cross-project gallery pool — every image asset across every project folder, plus the legacy `/landing/` gallery shots — deduped by URL, with intrinsic aspect taken from manifest `width`/`height`. Order is shuffled deterministically via Mulberry32 PRNG (default seed `0xC0FFEE` so reloads are stable; pass a different seed to vary). Returns `PortfolioImage` records that pair the original URL (lightbox source) with the originating project folder.
-- `src/components/Gallery/Gallery.tsx`: the carousel now rotates this full pool instead of `affinity === 'gallery'` (~30 → ~232 unique images). Each slot stores both `texUrl` (`.1080.webp`, used for the THREE texture, ~5–10× cheaper decode than the original PNG) and a 1920-WebP `clickUrl` for the lightbox. `CarouselSlot` reads the texture's natural dimensions after load and re-derives the slot box aspect from them, so cross-project images with unknown intrinsic aspect (e.g. tall photos) don't get squashed into the default 4:3 box. `useTexture.preload` now warms the WebP variant.
+- `src/helpers/useImageAssets.ts`: new `getAllPortfolioImages(seed)` builds the complete cross-project gallery pool � every image asset across every project folder, plus the legacy `/landing/` gallery shots � deduped by URL, with intrinsic aspect taken from manifest `width`/`height`. Order is shuffled deterministically via Mulberry32 PRNG (default seed `0xC0FFEE` so reloads are stable; pass a different seed to vary). Returns `PortfolioImage` records that pair the original URL (lightbox source) with the originating project folder.
+- `src/components/Gallery/Gallery.tsx`: the carousel now rotates this full pool instead of `affinity === 'gallery'` (~30 ? ~232 unique images). Each slot stores both `texUrl` (`.1080.webp`, used for the THREE texture, ~5�10� cheaper decode than the original PNG) and a 1920-WebP `clickUrl` for the lightbox. `CarouselSlot` reads the texture's natural dimensions after load and re-derives the slot box aspect from them, so cross-project images with unknown intrinsic aspect (e.g. tall photos) don't get squashed into the default 4:3 box. `useTexture.preload` now warms the WebP variant.
 
 ### ScatteredImages: project-aware lightbox
 
-- `src/components/ScatteredImages/ScatteredImages.tsx`: refactored `SCATTER_IMAGES` (raw URL list with module-level `assetUrl()` calls) into typed `SCATTER_SOURCES` (per-image `{ url, affinity }` records). New `AFFINITY_TO_PROJECT` map: `graphic→graphic-design`, `threeD→3d`, `ai→ai`, `ux→ux-ui`. Each scatter item now resolves to a `texUrl` (1080.webp for the texture) and `fullUrl` (1920.webp for the lightbox click), and carries explicit `project: { slug, title }` metadata. Click handler passes that to `openLightbox` so the legacy /landing/ images surface the same "View project" pill as the Gallery does.
+- `src/components/ScatteredImages/ScatteredImages.tsx`: refactored `SCATTER_IMAGES` (raw URL list with module-level `assetUrl()` calls) into typed `SCATTER_SOURCES` (per-image `{ url, affinity }` records). New `AFFINITY_TO_PROJECT` map: `graphic?graphic-design`, `threeD?3d`, `ai?ai`, `ux?ux-ui`. Each scatter item now resolves to a `texUrl` (1080.webp for the texture) and `fullUrl` (1920.webp for the lightbox click), and carries explicit `project: { slug, title }` metadata. Click handler passes that to `openLightbox` so the legacy /landing/ images surface the same "View project" pill as the Gallery does.
 
-### Lightbox: "View project →" pill + meta API
+### Lightbox: "View project ?" pill + meta API
 
 - `src/helpers/lightbox.ts`: extended `openLightbox(url, meta?)` to accept optional `{ projectSlug?, projectTitle? }`. The pubsub now broadcasts a `LightboxState` (`{ url, meta }`) instead of a bare URL.
 - `src/helpers/projectFromUrl.ts`: new helper. Decodes the second path segment of an asset URL (`/2.%20Projects/<folder>/...`) and looks up the matching project via `PROJECTS`. Returns `{ slug, title, href }` or null.
-- `src/components/Lightbox.tsx`: when the open URL maps to a known project (either via explicit `meta.projectSlug` from the caller or via `projectFromUrl()` URL fallback), renders a "View project →" pill anchored next to the caption. Pill is suppressed when already on the matching `/projects/<slug>` page (avoids no-op nav). Plain `<a href>` triggers a full-page navigation to the projects board, which is correct given the path-based router in `main.tsx`.
+- `src/components/Lightbox.tsx`: when the open URL maps to a known project (either via explicit `meta.projectSlug` from the caller or via `projectFromUrl()` URL fallback), renders a "View project ?" pill anchored next to the caption. Pill is suppressed when already on the matching `/projects/<slug>` page (avoids no-op nav). Plain `<a href>` triggers a full-page navigation to the projects board, which is correct given the path-based router in `main.tsx`.
 - `src/styles/global.css`: added `.spa-lightbox__project` pill styles (red background, paper border, hover lift) plus `.spa-lightbox__caption` flex-row layout to host caption text + pill side-by-side. Mobile breakpoint stacks them vertically.
 
 ### Highlights cards
@@ -84,46 +91,46 @@ This is the second half of the media pipeline overhaul (the first half landed in
 
 ### Net effect
 
-- **Home-page texture payload** drops dramatically: every THREE.js plane that previously decoded a 5–17 MB PNG now decodes a 100–400 KB WebP. Decode work is the main contributor to scroll jank, and it's down ~5–10× per image.
-- **Gallery breadth**: 18 visible slots × 232-image pool means the carousel can spin for several minutes without repeating, and every project gets airtime.
+- **Home-page texture payload** drops dramatically: every THREE.js plane that previously decoded a 5�17 MB PNG now decodes a 100�400 KB WebP. Decode work is the main contributor to scroll jank, and it's down ~5�10� per image.
+- **Gallery breadth**: 18 visible slots � 232-image pool means the carousel can spin for several minutes without repeating, and every project gets airtime.
 - **Linkability**: every image surface on the homepage is now a one-click jump to the matching project board. Closes the loop between "look at this cool image" and "what project is this from".
 
 ### Verification
 
 - `tsc -b --force` clean.
-- `vite build` clean (32.3 s, no warnings; main bundle 328.78 KB → gzip 80.81 KB).
+- `vite build` clean (32.3 s, no warnings; main bundle 328.78 KB ? gzip 80.81 KB).
 
 ## [1.2.22] -- folder tiles: pageA and pageB show different artworks
 
-- `src/components/PageShell/FolderTile.tsx`: prop renamed/split — `coverUrl` → `coverUrlA` (back sheet) + `coverUrlB` (front sheet). Each `<image>` references its own URL so the open folder reveals two distinct images.
+- `src/components/PageShell/FolderTile.tsx`: prop renamed/split � `coverUrl` ? `coverUrlA` (back sheet) + `coverUrlB` (front sheet). Each `<image>` references its own URL so the open folder reveals two distinct images.
 - `src/pages/ProjectsBoard.tsx`: pick the first two image assets per project; if only one exists, fall back to it for both sheets so the front never goes blank.
 
 ## [1.2.21] -- folder tiles: cover on both peek-out sheets
 
-- `src/components/PageShell/FolderTile.tsx`: pageB (the front-most sheet, renders on top of pageA in SVG paint order) now also carries the same `<image>` overlay. Previously only pageA had the cover, so the white front sheet stayed blank when the folder opened. Same `showCover` gate, same single `coverUrl` — still at most one image fetched per interaction.
+- `src/components/PageShell/FolderTile.tsx`: pageB (the front-most sheet, renders on top of pageA in SVG paint order) now also carries the same `<image>` overlay. Previously only pageA had the cover, so the white front sheet stayed blank when the folder opened. Same `showCover` gate, same single `coverUrl` � still at most one image fetched per interaction.
 
 ## [1.2.20] -- folder tiles: thumbnail of project's first image on hover/active
 
-- `src/components/PageShell/FolderTile.tsx`: new optional `coverUrl` prop. On hover or when the tile represents the active board, an SVG `<image>` with `preserveAspectRatio="xMidYMid slice"` mounts inside the `pageA` group so the thumbnail inherits the existing pop-out / rotate animation. Mounted only while `active || hovered` so the 16-tile grid still costs zero image bytes at idle (matches the original "removed for perf" intent — covers fetch on demand, max one in flight at a time).
+- `src/components/PageShell/FolderTile.tsx`: new optional `coverUrl` prop. On hover or when the tile represents the active board, an SVG `<image>` with `preserveAspectRatio="xMidYMid slice"` mounts inside the `pageA` group so the thumbnail inherits the existing pop-out / rotate animation. Mounted only while `active || hovered` so the 16-tile grid still costs zero image bytes at idle (matches the original "removed for perf" intent � covers fetch on demand, max one in flight at a time).
 - `src/pages/ProjectsBoard.tsx`: pick the first `image` asset of each project and hand its smallest WebP variant (480w from `webpSrcset`, falling back to `url`) to `FolderTile`.
 
 ## [1.2.19] -- mobile: stop projects-board overlap, fix events polaroid stretch
 
-- `src/styles/whiteboard-pages.css`: on `max-width: 900px` hide `.spa-pb__mini` (folder grid, 4×4 absolute top-right) and `.spa-pb__arrow` (prev/next floating pills at ~50vh). Both were overlapping the head title, project metadata, and body paragraphs on phone-width viewports — the top breadcrumb pill is already a complete 1–16 navigation so the duplicates were doing nothing but obstructing text. Removed the now-dead `.spa-pb__mini` / `.spa-folder-tile` mobile sizing overrides.
-- `src/styles/whiteboard-pages.css`: `.spa-pb__events-photos` `grid-auto-rows: 1fr` → `auto`. With `1fr`, each row stretched to fill the column height, which is driven by the long left-column text → polaroids ballooned into elongated white frames on narrow-but-not-mobile widths (~900–1200px). `auto` lets each polaroid size to its 4/3 inner.
+- `src/styles/whiteboard-pages.css`: on `max-width: 900px` hide `.spa-pb__mini` (folder grid, 4�4 absolute top-right) and `.spa-pb__arrow` (prev/next floating pills at ~50vh). Both were overlapping the head title, project metadata, and body paragraphs on phone-width viewports � the top breadcrumb pill is already a complete 1�16 navigation so the duplicates were doing nothing but obstructing text. Removed the now-dead `.spa-pb__mini` / `.spa-folder-tile` mobile sizing overrides.
+- `src/styles/whiteboard-pages.css`: `.spa-pb__events-photos` `grid-auto-rows: 1fr` ? `auto`. With `1fr`, each row stretched to fill the column height, which is driven by the long left-column text ? polaroids ballooned into elongated white frames on narrow-but-not-mobile widths (~900�1200px). `auto` lets each polaroid size to its 4/3 inner.
 
 ## [1.2.18] -- projects: full media pipeline overhaul (responsive WebP/AVIF, LQIP, IO-gated lazy)
 
 - `package.json`: added `sharp@^0.33.5` as devDependency. Vercel's CI no longer needs sharp because the optimized siblings are committed.
-- `scripts/optimize-public-assets.mjs`: rewritten to emit **three WebP widths (480 / 1080 / 1920, q=78)** and a **single AVIF width (1080, q=50)** per raster ≥ 200 KB, alongside the existing `.lqip.txt` thumbnail. Skips up-scaling when the source is smaller than a target. Concurrency-capped at 6 workers (Windows file-handle thrash on parallel sharp). Idempotent (mtime-skip) — safe to re-run. Soft-skips quietly when sharp is missing.
+- `scripts/optimize-public-assets.mjs`: rewritten to emit **three WebP widths (480 / 1080 / 1920, q=78)** and a **single AVIF width (1080, q=50)** per raster = 200 KB, alongside the existing `.lqip.txt` thumbnail. Skips up-scaling when the source is smaller than a target. Concurrency-capped at 6 workers (Windows file-handle thrash on parallel sharp). Idempotent (mtime-skip) � safe to re-run. Soft-skips quietly when sharp is missing.
 - `scripts/build-media-manifest.mjs`: now probes for sibling `.<width>.webp` / `.<width>.avif` / `.lqip.txt` per asset and emits `webpSrcset`, `avifSrcset`, `lqip` fields on each `MediaAsset`. Generated `.<width>.webp` / `.<width>.avif` siblings are filtered from the manifest (consumed via the optimized fields, not as standalone assets). The TS type definition is updated accordingly.
-- `src/helpers/media.tsx` <Img>: rewritten as a `<picture>` with `type="image/avif"` → `type="image/webp"` → `<img>` fallback, full `srcset` + `sizes` (default `(max-width: 600px) 50vw, 25vw`). New props: `webpSrcset`, `avifSrcset`, `lqip`, `priority` (`'active' | 'neighbour' | 'idle'`). Real IntersectionObserver lazy gate with priority-aware `rootMargin` (active=600px, neighbour=300px, idle=100px). Until in-view, the wrapper paints the LQIP as a `background-image` and the `<img>` carries a 1×1 transparent gif src so the heavy raster is never fetched. On load, the inner `<img>` crossfades over the LQIP. `fetchpriority` set to `low` on neighbour boards.
-- `src/helpers/media.tsx` <Vid>: new `priority` prop. When `priority='idle'` (off-board) `preload="none"` and the thumbnail capture is skipped — prevents the browser from speculatively fetching range-0 of every off-screen video.
+- `src/helpers/media.tsx` <Img>: rewritten as a `<picture>` with `type="image/avif"` ? `type="image/webp"` ? `<img>` fallback, full `srcset` + `sizes` (default `(max-width: 600px) 50vw, 25vw`). New props: `webpSrcset`, `avifSrcset`, `lqip`, `priority` (`'active' | 'neighbour' | 'idle'`). Real IntersectionObserver lazy gate with priority-aware `rootMargin` (active=600px, neighbour=300px, idle=100px). Until in-view, the wrapper paints the LQIP as a `background-image` and the `<img>` carries a 1�1 transparent gif src so the heavy raster is never fetched. On load, the inner `<img>` crossfades over the LQIP. `fetchpriority` set to `low` on neighbour boards.
+- `src/helpers/media.tsx` <Vid>: new `priority` prop. When `priority='idle'` (off-board) `preload="none"` and the thumbnail capture is skipped � prevents the browser from speculatively fetching range-0 of every off-screen video.
 - `src/pages/ProjectsBoard.tsx`: threads `priority` ('active' on the active board, 'neighbour' on hydrated neighbours) into every `<Img>` / `<Vid>`. Added an idle-time **peek-ahead prefetch**: 800 ms after the active index settles (or via `requestIdleCallback` if available), low-priority `new Image()` fetches the smallest WebP variant of the first 3 images on each adjacent board. Cancelled on the next active change so rapid scrolling doesn't pile up requests.
-- `src/pages/Highlights.tsx`, `src/pages/About.tsx`, `src/pages/Vocabulary.tsx`: pass `webpSrcset` / `avifSrcset` / `lqip` from manifest assets through to `<Img>` so these pages also benefit from responsive sources + LQIP. (Contact stars are tiny SVG-style ornaments — left as raw `<Img>`.)
-- `src/styles/whiteboard-pages.css`: new `.spa-img` wrapper rules (positioned, overflow hidden, dark fallback bg) + `.spa-img__el` opacity transition (220 ms ease-out crossfade on `.is-loaded`). The 8×12 LQIP is intrinsically blurry so no CSS `filter: blur()` is needed. Added `.spa-img` to the `.spa-polaroid__inner` cover-fill rule.
+- `src/pages/Highlights.tsx`, `src/pages/About.tsx`, `src/pages/Vocabulary.tsx`: pass `webpSrcset` / `avifSrcset` / `lqip` from manifest assets through to `<Img>` so these pages also benefit from responsive sources + LQIP. (Contact stars are tiny SVG-style ornaments � left as raw `<Img>`.)
+- `src/styles/whiteboard-pages.css`: new `.spa-img` wrapper rules (positioned, overflow hidden, dark fallback bg) + `.spa-img__el` opacity transition (220 ms ease-out crossfade on `.is-loaded`). The 8�12 LQIP is intrinsically blurry so no CSS `filter: blur()` is needed. Added `.spa-img` to the `.spa-polaroid__inner` cover-fill rule.
 - README.md: replaced the stale `images.weserv.nl` paragraph with a real "Asset pipeline" section describing the optimize/manifest workflow, the sibling file naming convention, and explaining why the WebP/AVIF/LQIP siblings are committed to the repo. Added `optimize` and `gen:manifest` rows to the Scripts table.
-- One-time data: ran `npm run optimize` (308 sources processed in <1 min — much faster than the 5–15 min plan estimate) followed by `npm run gen:manifest`. Manifest now carries 223 optimized entries. Public folder grows from 857 MB raw to 857 MB raw + ~84 MB siblings; runtime payload drops from ~15 MB/PNG to ~10–30 KB per polaroid (480w WebP).
+- One-time data: ran `npm run optimize` (308 sources processed in <1 min � much faster than the 5�15 min plan estimate) followed by `npm run gen:manifest`. Manifest now carries 223 optimized entries. Public folder grows from 857 MB raw to 857 MB raw + ~84 MB siblings; runtime payload drops from ~15 MB/PNG to ~10�30 KB per polaroid (480w WebP).
 
 ## [1.2.17] -- projects: structured editorial content per board (project type, date, location, body paragraphs)
 
@@ -135,19 +142,19 @@ This is the second half of the media pipeline overhaul (the first half landed in
 ## [1.2.16] -- category sections: Alagard for numbers, Quiet-Attempt for titles
 
 - `src/styles/global.css`: added `@font-face` declarations for `Alagard` (`/font/alagard.ttf`) and `Quiet-Attempt` (`/font/Quiet-Attempt.otf`).
-- `.spa-cat-elegant__number`: switched from `var(--font-display)` italic to `"Alagard"`. Removed `font-style: italic` (no italic variant). `letter-spacing` changed from `-0.07em` → `0.03em` (pixel fonts need positive/neutral tracking).
-- `.spa-cat-elegant__title`: switched from `var(--font-display)` italic to `"Quiet-Attempt"`. Removed `font-style: italic`. `letter-spacing` changed from `-0.02em` → `0.02em`.
+- `.spa-cat-elegant__number`: switched from `var(--font-display)` italic to `"Alagard"`. Removed `font-style: italic` (no italic variant). `letter-spacing` changed from `-0.07em` ? `0.03em` (pixel fonts need positive/neutral tracking).
+- `.spa-cat-elegant__title`: switched from `var(--font-display)` italic to `"Quiet-Attempt"`. Removed `font-style: italic`. `letter-spacing` changed from `-0.02em` ? `0.02em`.
 
 ## [1.2.15] -- homepage whiteboard: swiss-knife SVG 50% larger, shifted up
 
-- `HeroOverlay.tsx`: SwissKnifeTextPath width changed from `clamp(320px,78vw,940px)` → `clamp(480px,90vmin,1410px)` (×1.5 across the board; `vmin` used as the fluid unit since the SVG is nearly square, so it scales sensibly on both landscape and portrait viewports). `maxWidth` eased to `97vw`.
+- `HeroOverlay.tsx`: SwissKnifeTextPath width changed from `clamp(320px,78vw,940px)` ? `clamp(480px,90vmin,1410px)` (�1.5 across the board; `vmin` used as the fluid unit since the SVG is nearly square, so it scales sensibly on both landscape and portrait viewports). `maxWidth` eased to `97vw`.
 - Added `transform: translateY(-5vh)` to nudge the composition up slightly within the centred flex container.
 
 ## [1.2.14] -- homepage whiteboard: animated swiss-knife textPath replaces the centered black logo
 
-- New `src/components/Hero/SwissKnifeTextPath.tsx` — self-contained SVG component that animates a single sentence ("Chaotic space of creativity & multidisciplinary ideas exploring the limits of the human curiosity.") in red Cormorant Garamond around the silhouette of a swiss-army knife, with `LogoText.png` overlaid in the centre. Two `<textPath>` runs share a synced `<animate>` (second begins at `lap.begin`) for a continuous double-sided crawl. Replicates the spec from `swiss-knife-textpath-2026-05-20-14-46-44.json`.
-- New `src/components/Hero/swissKnifeOutlineD.ts` — the 16k-char path d-string extracted out of the JSX so the component stays readable.
-- New asset `public/logo/SwissKnifeLogoText.png` (48 KB) — the centre logo overlay, decoded from the export's inlined data URL.
+- New `src/components/Hero/SwissKnifeTextPath.tsx` � self-contained SVG component that animates a single sentence ("Chaotic space of creativity & multidisciplinary ideas exploring the limits of the human curiosity.") in red Cormorant Garamond around the silhouette of a swiss-army knife, with `LogoText.png` overlaid in the centre. Two `<textPath>` runs share a synced `<animate>` (second begins at `lap.begin`) for a continuous double-sided crawl. Replicates the spec from `swiss-knife-textpath-2026-05-20-14-46-44.json`.
+- New `src/components/Hero/swissKnifeOutlineD.ts` � the 16k-char path d-string extracted out of the JSX so the component stays readable.
+- New asset `public/logo/SwissKnifeLogoText.png` (48 KB) � the centre logo overlay, decoded from the export's inlined data URL.
 - `src/components/Hero/HeroOverlay.tsx`: when the active palette is the whiteboard one, render `<SwissKnifeTextPath>` instead of the static `PanicAttackLogoBlack.png` `<img>`. Mesh palettes still get the white `PanicAttackLogo.png`. Wrapper sized via `clamp(320px, 78vw, 940px)` with the export's native 662:636 aspect ratio so the silhouette never distorts.
 - Cormorant Garamond 500-normal is loaded inline via a single `@font-face` rule pointing at the existing jsDelivr `@fontsource` CDN URL (same CDN the LoadingScreen already uses for italic-500). No `index.html` changes needed.
 
@@ -158,31 +165,31 @@ This is the second half of the media pipeline overhaul (the first half landed in
 - `maxCols` (fan-out cap) scales with `numCols * 4` so the edge fill stays proportional.
 - To change the overall cell size: edit the single `TARGET_CELL` constant.
 
-## [1.2.12] -- homepage grid: larger cells (NUM_COLS 11→6, NUM_ROWS 28→14)
+## [1.2.12] -- homepage grid: larger cells (NUM_COLS 11?6, NUM_ROWS 28?14)
 
-- Halved column count and row count so each cell is ~2× bigger in each dimension.
-- `MAX_COLS` reduced from 38 → 22 to match the sparser grid.
+- Halved column count and row count so each cell is ~2� bigger in each dimension.
+- `MAX_COLS` reduced from 38 ? 22 to match the sparser grid.
 
-## [1.2.11] -- homepage grid: square cells at bottom (ROW_EXPO 0.68 → 1.60)
+## [1.2.11] -- homepage grid: square cells at bottom (ROW_EXPO 0.68 ? 1.60)
 
 - `ROW_EXPO` raised from `0.68` to `1.60`. Values below 1 compress rows toward the bottom (derivative < 1 near t=1), making grid cells flat wide rectangles. Values above 1 spread rows further apart near the viewer so the cell aspect ratio is approximately 1:1 on a 16:9 screen.
 - `NUM_ROWS` raised from `22` to `28` to compensate for the wider near-viewer spacing and keep the grid dense enough to fill the screen.
 
 ## [1.2.10] -- highlights: update intro copy
 
-- Replaced "A scrolling cork-board of recent pieces…" with "Some of my favourite pieces that I've created so far, as a multidisciplinary artist".
+- Replaced "A scrolling cork-board of recent pieces�" with "Some of my favourite pieces that I've created so far, as a multidisciplinary artist".
 
 ## [1.2.9] -- projects: every asset goes in the scatter; overflow grid removed
 
-- `src/config/projects.ts`: drop `SCATTER_CAP` and the `Project.overflow` field. All assets per folder go through `scatter()` with bounds widened to `x: 8–88%`, `y: 3–97%` and `tries: 140` so dense folders (3D — 64 pieces, Digital Art — 21, Graphic Design — 20) still find non-overlapping slots.
+- `src/config/projects.ts`: drop `SCATTER_CAP` and the `Project.overflow` field. All assets per folder go through `scatter()` with bounds widened to `x: 8�88%`, `y: 3�97%` and `tries: 140` so dense folders (3D � 64 pieces, Digital Art � 21, Graphic Design � 20) still find non-overlapping slots.
 - `ProjectsBoard.tsx`: remove the `<div class="spa-pb__overflow">` block and the events-board's `concat(overflow)`. The board now contains exactly one scrollable scatter container per category.
-- `.spa-pb__scatter` gets an inline `min-height: max(calc(100vh - 280px), N*80px)` driven by the asset count — viewport-tall for small folders, several screens tall for dense ones. The "More from <category>" header + `.spa-pb__overflow-*` CSS is now unused but left in `whiteboard-pages.css` for now (harmless dead rules; can prune in a later pass).
+- `.spa-pb__scatter` gets an inline `min-height: max(calc(100vh - 280px), N*80px)` driven by the asset count � viewport-tall for small folders, several screens tall for dense ones. The "More from <category>" header + `.spa-pb__overflow-*` CSS is now unused but left in `whiteboard-pages.css` for now (harmless dead rules; can prune in a later pass).
 
 
 
-- `.spa-nav__brandmark` height: 28px → 56px (desktop), 22px → 44px (mobile).
-- Nav padding reduced from 14px → 8px (desktop) and 12px → 8px (mobile) to keep the bar compact with the larger logo.
-- Projects breadcrumb `top` updated: 78px → 82px (desktop), 70px → 66px (mobile) to stay clear of the resized nav bar.
+- `.spa-nav__brandmark` height: 28px ? 56px (desktop), 22px ? 44px (mobile).
+- Nav padding reduced from 14px ? 8px (desktop) and 12px ? 8px (mobile) to keep the bar compact with the larger logo.
+- Projects breadcrumb `top` updated: 78px ? 82px (desktop), 70px ? 66px (mobile) to stay clear of the resized nav bar.
 
 ## [1.2.7] -- navbar: replace "Ema Stoyanova" text with PanicAttackLogoBlack.png
 
@@ -192,44 +199,44 @@ This is the second half of the media pipeline overhaul (the first half landed in
 
 ## [1.2.6] -- video thumbnails captured client-side from the first frame
 
-- **`useVideoThumbnail` hook.** When a `<Vid>` enters viewport, a hidden `<video>` element loads metadata, seeks to ~10% of duration (or 0.5s, whichever is smaller — avoids the black opening frames), draws the frame to a canvas, and reads it back as a JPEG data-URL. The data-URL is set as the visible `<video poster>` and (for MOV where autoplay is disabled) painted as an overlay `<img>` on top of the inert video so the polaroid shows a real preview.
-- **Bandwidth gated by IntersectionObserver.** Thumbnail capture only fires when the wrapper is within 300 px of the viewport — boards offscreen never request anything. Each capture runs on its own throwaway `<video>` element with an 8s safety timeout so a stuck decode doesn't hang the page.
+- **`useVideoThumbnail` hook.** When a `<Vid>` enters viewport, a hidden `<video>` element loads metadata, seeks to ~10% of duration (or 0.5s, whichever is smaller � avoids the black opening frames), draws the frame to a canvas, and reads it back as a JPEG data-URL. The data-URL is set as the visible `<video poster>` and (for MOV where autoplay is disabled) painted as an overlay `<img>` on top of the inert video so the polaroid shows a real preview.
+- **Bandwidth gated by IntersectionObserver.** Thumbnail capture only fires when the wrapper is within 300 px of the viewport � boards offscreen never request anything. Each capture runs on its own throwaway `<video>` element with an 8s safety timeout so a stuck decode doesn't hang the page.
 - **Fallback flow:** if the codec can't be decoded (HEVC MOV in Chrome/Windows, etc.), the seek/error/timeout paths all set `tried=true` and the placeholder reads "click to play" instead of the loading spinner.
 - **Play indicator.** When a captured thumbnail is shown for a MOV polaroid, a small dark circle with a white play triangle appears in the bottom-right corner so the user knows the tile is interactive.
 - Same-origin assets in `/public` decode cleanly without `crossOrigin` since the canvas isn't tainted; tainted-canvas exceptions are still caught and treated as "no thumb".
 
 ## [1.2.5] -- MOV files: click-to-play in lightbox + film placeholder
 
-- **MOV files restored to manifest.** Re-added `.mov` to `VID_EXT` so all 8 Projection Mapping clips show up again — but as click-to-play tiles, not autoplay previews.
-- **`<Vid>` skips IO/autoplay/preload for `.mov`.** Detects `.mov` by URL and short-circuits the IntersectionObserver + autoplay + `preload="metadata"`. Saves on bandwidth (these are 4–52 MB files, mostly HEVC) and stops them looking like broken black boxes. Polaroid shows the film-strip placeholder with the label "click to play".
+- **MOV files restored to manifest.** Re-added `.mov` to `VID_EXT` so all 8 Projection Mapping clips show up again � but as click-to-play tiles, not autoplay previews.
+- **`<Vid>` skips IO/autoplay/preload for `.mov`.** Detects `.mov` by URL and short-circuits the IntersectionObserver + autoplay + `preload="metadata"`. Saves on bandwidth (these are 4�52 MB files, mostly HEVC) and stops them looking like broken black boxes. Polaroid shows the film-strip placeholder with the label "click to play".
 - **Lightbox now handles videos.** When the URL ends in `.mp4 / .webm / .mov / .m4v / .ogv`, the lightbox renders `<video controls autoPlay playsInline>` instead of `<img>`. If the browser refuses the codec (HEVC MOV on Chrome/Windows), an `onError` listener swaps in a "can't play" panel with an explanation and a download link.
-- **Polaroid click-handlers** dropped the `a.type === 'image' &&` filter — both images and videos open the lightbox now (scatter, events grid, overflow grid).
+- **Polaroid click-handlers** dropped the `a.type === 'image' &&` filter � both images and videos open the lightbox now (scatter, events grid, overflow grid).
 
 ## [1.2.4] -- Projection: remove unplayable MOV files + video placeholder
 
-- **`.MOV` files excluded from manifest.** QuickTime `.MOV` containers (all from the Projection Mapping folder — 8 files, up to 52 MB each) are typically HEVC/H.265 encoded from iPhone. Chrome on Windows cannot play them without a separate codec pack; they render as solid black. Removed `.mov` from `VID_EXT` in the manifest builder. Projection board now shows its 2 PNG images cleanly. To restore: convert the MOV files to H.264 MP4 (e.g. `ffmpeg -i IMG_2765.MOV -c:v libx264 -c:a aac IMG_2765.mp4`) then re-run `npm run gen:manifest`.
+- **`.MOV` files excluded from manifest.** QuickTime `.MOV` containers (all from the Projection Mapping folder � 8 files, up to 52 MB each) are typically HEVC/H.265 encoded from iPhone. Chrome on Windows cannot play them without a separate codec pack; they render as solid black. Removed `.mov` from `VID_EXT` in the manifest builder. Projection board now shows its 2 PNG images cleanly. To restore: convert the MOV files to H.264 MP4 (e.g. `ffmpeg -i IMG_2765.MOV -c:v libx264 -c:a aac IMG_2765.mp4`) then re-run `npm run gen:manifest`.
 - **`<Vid>` now shows a film-strip placeholder** when video data hasn't loaded. Wraps `<video>` in a `.spa-vid-wrap` div; before `onLoadedData`/`onCanPlay` fires, a centred play-triangle + "video" label is overlaid so unsupported formats produce a clear indicator rather than solid black.
 - CSS: `.spa-vid-wrap` + `.spa-vid-wrap__placeholder` added; all container selectors (`spa-polaroid__inner`, `spa-hl__photo`, `spa-pb__overflow-tile-inner`) updated to include `.spa-vid-wrap`.
 
 ## [1.2.3] -- fix broken images (URL encoding) + breadcrumb overflow + MOV mime type
 
-- **URL encoding root cause fixed.** The manifest builder was using `encodeURIComponent` which over-encodes `& + ,` into `%26 %2B %2C`. These are valid characters in URI path segments (RFC 3986). Some browsers — particularly on the HTML parser side — re-interpret `%26` in a `src` attribute as a literal `&` BEFORE forming the HTTP request, then re-encode inconsistently, causing the request to differ from what the server expects. Switched to a minimal path encoder that only encodes the characters that genuinely break URL parsing: space (`%20`), `#` (`%23`), `?` (`%3F`), and existing `%` literals (`%25` to prevent double-encoding). Manifest regenerated — `&`, `+`, `,` are now literal in all paths. Fixes broken images in: Product Design & Brand Identity, AI (Firefly file with commas), Holistic Art Magazine (filenames with &), Projection Mapping + VJ + Lights, Vocabulary letter A (Firefly file with commas).
-- **Navbar breadcrumb no longer clips projects.** Text labels (`span.spa-pb__crumb-label`) are hidden below 1100 px — each crumb shows only its two-digit number, which fits all 16 within the pill. `flex-shrink: 0` + `white-space: nowrap` + `flex-wrap: nowrap` ensure the pill itself stays single-row and scrolls rather than wrapping.
+- **URL encoding root cause fixed.** The manifest builder was using `encodeURIComponent` which over-encodes `& + ,` into `%26 %2B %2C`. These are valid characters in URI path segments (RFC 3986). Some browsers � particularly on the HTML parser side � re-interpret `%26` in a `src` attribute as a literal `&` BEFORE forming the HTTP request, then re-encode inconsistently, causing the request to differ from what the server expects. Switched to a minimal path encoder that only encodes the characters that genuinely break URL parsing: space (`%20`), `#` (`%23`), `?` (`%3F`), and existing `%` literals (`%25` to prevent double-encoding). Manifest regenerated � `&`, `+`, `,` are now literal in all paths. Fixes broken images in: Product Design & Brand Identity, AI (Firefly file with commas), Holistic Art Magazine (filenames with &), Projection Mapping + VJ + Lights, Vocabulary letter A (Firefly file with commas).
+- **Navbar breadcrumb no longer clips projects.** Text labels (`span.spa-pb__crumb-label`) are hidden below 1100 px � each crumb shows only its two-digit number, which fits all 16 within the pill. `flex-shrink: 0` + `white-space: nowrap` + `flex-wrap: nowrap` ensure the pill itself stays single-row and scrolls rather than wrapping.
 - **`.MOV` MIME type fixed.** `<Vid>` was emitting `type="video/mp4"` for `.mov` files. Corrected to `type="video/quicktime"` so the browser correctly identifies the Projection Mapping videos.
 
 ## [1.2.2] -- projects: show every asset + virtualised boards + perf pass
 
 - **Every project asset is now reachable.** Drop `slice(0, 12)` cap in `src/config/projects.ts`. The first 8 assets per project still get the seeded scatter (visual chaos at the top); everything beyond is rendered in a clean `auto-fill minmax(180px, 1fr)` overflow grid below the scatter, with a "More from <category>" header showing the total count. Scrolling the board reveals the rest -- 3D's full 64 pieces, Digital Art's 21, etc. all show up.
-- **Board virtualisation.** Only the active board and its immediate neighbours (radius = 1) mount full content (mini-grid, scatter, overflow grid, stickers, arrows). Boards further away render a lightweight skeleton -- preserves the horizontal scroll-snap geometry without paying the DOM/image cost. As the user scrolls horizontally, neighbours hydrate just-in-time. Eliminates the up-front cost of mounting ~16 × N polaroids and 16 × 16 folder thumbnails.
+- **Board virtualisation.** Only the active board and its immediate neighbours (radius = 1) mount full content (mini-grid, scatter, overflow grid, stickers, arrows). Boards further away render a lightweight skeleton -- preserves the horizontal scroll-snap geometry without paying the DOM/image cost. As the user scrolls horizontally, neighbours hydrate just-in-time. Eliminates the up-front cost of mounting ~16 � N polaroids and 16 � 16 folder thumbnails.
 - **Folder mini-grid: cover thumbnails removed.** `FolderTile` no longer accepts a `cover` prop. The previous `<image href={cover}>` inside an SVG `<pattern>` was kicking off 16 large image fetches for every board (and we render 16 boards), so 256 large fetches per page load. Mini-grid tiles are now pure SVG -- folder lid + tab number + label, opens on hover via CSS transforms. Visually as charming, ~zero network cost.
 - **Broken-image icon suppression.** `<Img>` now sets `data-failed="1"` on the element when its onError fires (and logs the URL once); CSS replaces the broken-image glyph with a neutral diagonal-stripe pattern so any one missing file doesn't pepper the page with OS glyphs. Doesn't fix the underlying 404, but stops the visual breakage.
 
 
 
-- **`<Img>` no longer wraps in `<picture>`**: the `<source srcSet="*.webp">` was being selected by all webp-supporting browsers (i.e. all of them), and when the .webp 404s the browser shows the broken-image icon — `<picture>` does NOT fall back to the `<img>` child on a 404 source. Reverted to a plain `<img>`. Once `npm run optimize` has actually produced sibling .webp files we can reintroduce `<picture>` gated by a manifest of optimised URLs.
+- **`<Img>` no longer wraps in `<picture>`**: the `<source srcSet="*.webp">` was being selected by all webp-supporting browsers (i.e. all of them), and when the .webp 404s the browser shows the broken-image icon � `<picture>` does NOT fall back to the `<img>` child on a 404 source. Reverted to a plain `<img>`. Once `npm run optimize` has actually produced sibling .webp files we can reintroduce `<picture>` gated by a manifest of optimised URLs.
 - Same gotcha applied to `<Vid>`: the auto-derived `.webm` `<source>` is now only emitted when explicitly passed via the `webm` prop.
 - **Projects boards now scroll vertically**: `.spa-pb__board` switched from `overflow: hidden` to `overflow-y: auto`. Each board is its own scroll container; the horizontal snap track still moves between boards.
-- Events board: dropped the inner `.spa-pb__events-doc { overflow-y: auto }` scroller — now the whole board scrolls so all the long-form event copy is reachable.
+- Events board: dropped the inner `.spa-pb__events-doc { overflow-y: auto }` scroller � now the whole board scrolls so all the long-form event copy is reachable.
 - Scatter boards: `.spa-pb__scatter` switched from absolute `inset` to relative + `min-height: calc(100vh - 280px)` so the polaroid scatter has somewhere to scroll into when there are more than a screenful of items.
 - `.spa-pb__count` repositioned to `position: fixed` (bottom-right pill, glass-blur) and gated to the active board so 16 stacked pills don't overlap. `.spa-pb__arrow` got a glass-blur background so it stays legible against scattered photos and a clamp-based top so it never sits behind the head when scrolled.
 
@@ -292,8 +299,8 @@ This is the second half of the media pipeline overhaul (the first half landed in
 
 ## [1.1.3] -- gallery: fix shadow cursor-dependence + underside visibility
 
-- Moved `<ContactShadows>` + ambient disc OUTSIDE `stageRef` (into `groupRef` directly). The stage tilts/pans with the pointer for parallax, but the shadow plane now stays fixed — shadows no longer drift with cursor movement.
-- Added a DoubleSide ambient disc (r=24, black, opacity 0.08) at y=-1.32 — provides a soft ground indicator visible from below when scrolling past the gallery.
+- Moved `<ContactShadows>` + ambient disc OUTSIDE `stageRef` (into `groupRef` directly). The stage tilts/pans with the pointer for parallax, but the shadow plane now stays fixed � shadows no longer drift with cursor movement.
+- Added a DoubleSide ambient disc (r=24, black, opacity 0.08) at y=-1.32 � provides a soft ground indicator visible from below when scrolling past the gallery.
 - ContactShadows position converted from stageRef-local [0,-0.8,0] to groupRef-space [0,-1.3,-2].
 
 ## [1.1.2] -- whiteboard: visual tuning pass
@@ -308,7 +315,7 @@ This is the second half of the media pipeline overhaul (the first half landed in
 ## [1.1.1] -- gallery: image-wrapped 3D slots + ContactShadows fix
 
 ### Slots revamped
-- Removed multi-mesh frame architecture (outer dark box + inner frame + separate drei Image). Replaced with a single thick box (depth 0.35) that uses the loaded texture directly via `meshBasicMaterial map={texture}`. The image now wraps around all faces of the box — front shows the full image, sides show a canvas-wrap continuation.
+- Removed multi-mesh frame architecture (outer dark box + inner frame + separate drei Image). Replaced with a single thick box (depth 0.35) that uses the loaded texture directly via `meshBasicMaterial map={texture}`. The image now wraps around all faces of the box � front shows the full image, sides show a canvas-wrap continuation.
 - Hover: box brightens slightly (depthFactor * 1.12); additive rim glow behind the box uses `#2563eb` (blue) when whiteboard or `#d30000` (red) on dark palettes.
 - Thicker geometry (0.05 -> 0.35) eliminates the sub-pixel AA artifacts at corners that occurred with ultra-thin boxes.
 - `useTexture(currentUrl)` replaces drei `<Image>`. Per-slot `<Suspense>` still handles loading gracefully.
@@ -324,7 +331,7 @@ This is the second half of the media pipeline overhaul (the first half landed in
 ## [1.0.9] -- whiteboard: contact shadows + revert red numbers
 
 - Gallery floor: when whiteboard active, the full reflective pedestal (reflector + backface + mist + floor text) is hidden. In its place, drei `<ContactShadows>` renders soft drop-shadows below the carousel frames (opacity 0.35, scale 50, blur 2.5, far 12). Normal palettes keep the full dark reflector unchanged.
-- Category numbers (01-04): removed the whiteboard-specific `[data-spa-theme=whiteboard] .spa-cat-elegant__number` CSS override entirely — numbers now keep their default red stroke + red glow on ALL palettes including GRID.
+- Category numbers (01-04): removed the whiteboard-specific `[data-spa-theme=whiteboard] .spa-cat-elegant__number` CSS override entirely � numbers now keep their default red stroke + red glow on ALL palettes including GRID.
 
 ## [1.0.8] -- whiteboard: stronger number shadow + black logo shadow
 
@@ -333,7 +340,7 @@ This is the second half of the media pipeline overhaul (the first half landed in
 
 ## [1.0.7] -- whiteboard: number shadow outside outline
 
-- `spa-cat-elegant__number`: replaced `text-shadow` (renders behind fill, bleeds through transparent interior) with `filter: drop-shadow()` which operates on composited pixels — shadow falls outside the stroke, not inside it.
+- `spa-cat-elegant__number`: replaced `text-shadow` (renders behind fill, bleeds through transparent interior) with `filter: drop-shadow()` which operates on composited pixels � shadow falls outside the stroke, not inside it.
 
 ## [1.0.6] -- whiteboard: number shadows + nav monochrome
 
@@ -349,50 +356,50 @@ This is the second half of the media pipeline overhaul (the first half landed in
 - `Gallery.tsx`: 'STUDIO PANIC ATTACK' floor text -> `#ffffff`, `fillOpacity 0.5` when whiteboard.
 - `global.css`: `[data-spa-theme=whiteboard]` block -- category numbers (black stroke), titles (dark), body-wrap (light bg, black accent bar), highlights (all text black except .spa-title), loading screen (white bg, black bar/labels/stroke, dark scanlines).
 
-## [1.0.4] â€” whiteboard: full-width grid + lighter fog
+## [1.0.4] — whiteboard: full-width grid + lighter fog
 
-- Horizontal lines now span `0 â†’ Wl` (full viewport width) instead of clipping to `projX(Â±NUM_COLS, t)`.
-- Added `MAX_COLS = 38`. Vertical lines drawn for all `j âˆˆ [âˆ’38, 38]`; those with `j > NUM_COLS` land off-screen at the bottom but their upper portion fans into the viewport, filling the sides near the horizon. Canvas clips naturally.
-- Cross `jMax` is now dynamic per row: `min(MAX_COLS, ceil(NUM_COLS / tExpo))`. Near-horizon rows get many small crosses covering full width; deep rows get fewer large ones â€” always matching the actual grid intersections.
+- Horizontal lines now span `0 → Wl` (full viewport width) instead of clipping to `projX(±NUM_COLS, t)`.
+- Added `MAX_COLS = 38`. Vertical lines drawn for all `j ∈ [−38, 38]`; those with `j > NUM_COLS` land off-screen at the bottom but their upper portion fans into the viewport, filling the sides near the horizon. Canvas clips naturally.
+- Cross `jMax` is now dynamic per row: `min(MAX_COLS, ceil(NUM_COLS / tExpo))`. Near-horizon rows get many small crosses covering full width; deep rows get fewer large ones — always matching the actual grid intersections.
 - `projX` now accepts a pre-computed `tExpo` instead of recomputing `Math.pow(t, ROW_EXPO)` per call. `Row` type carries `tExpo`.
-- Depth fog reduced: `span Ã— 0.16 â†’ 0.12`, solid stop `0.6 â†’ 0.4`.
+- Depth fog reduced: `span × 0.16 → 0.12`, solid stop `0.6 → 0.4`.
 
 
 ## [1.0.3] -- debug: whiteboard perspective grid revamp
 
 
 
-- Replaced CSS SVG-tile whiteboard (crosses at cell centres, not intersections) with `WhiteboardBackground.tsx` â€” a `<canvas>`-based animated perspective grid.
+- Replaced CSS SVG-tile whiteboard (crosses at cell centres, not intersections) with `WhiteboardBackground.tsx` — a `<canvas>`-based animated perspective grid.
 - Single vanishing point at 38 % of viewport height, centre-x. Vertical lines radiate from VP to viewport edge. Horizontal lines scroll toward the viewer at 0.55 rows/s.
-- `+` crosses drawn at every mathematically computed row Ã— column intersection (perspective-projected), so they are precisely at grid-line meetings at every depth.
-- Depth-based weight: near horizon = faint/tiny; approaching viewer = thicker lines, larger crosses (arm 1.5 â†’ 8 px). Horizon fog gradient prevents a hard cutoff.
+- `+` crosses drawn at every mathematically computed row × column intersection (perspective-projected), so they are precisely at grid-line meetings at every depth.
+- Depth-based weight: near horizon = faint/tiny; approaching viewer = thicker lines, larger crosses (arm 1.5 → 8 px). Horizon fog gradient prevents a hard cutoff.
 - HiDPI-aware: canvas sized in physical pixels, all drawing in logical pixels via `ctx.setTransform`.
 - `HeroOverlay`: removed `WHITEBOARD_TILE` CSS constant; now mounts `<WhiteboardBackground />` for the `'whiteboard'` palette type.
 
-## [1.0.2] â€” debug: whiteboard grid background
+## [1.0.2] — debug: whiteboard grid background
 
 - Added `type?: 'mesh' | 'whiteboard'` discriminator to the `Palette` interface in `paletteStore.ts`.
-- Added `GRID` palette (type `'whiteboard'`) as index 0 â€” now the default background. All existing mesh-gradient palettes (BLOOD â†’ INK) shift to indices 1â€“8 and remain accessible via the cycle button.
+- Added `GRID` palette (type `'whiteboard'`) as index 0 — now the default background. All existing mesh-gradient palettes (BLOOD → INK) shift to indices 1–8 and remain accessible via the cycle button.
 - `HeroOverlay`: branches on `palette.type`. When `'whiteboard'`, renders a CSS cross-grid (48 px tiled SVG: faint `#d4d4d4` grid lines + `#a8a8a8` `+` crosses at every intersection, `#fafafa` base). When `'mesh'`, renders `<MeshGradient>` as before.
-- No changes to NavHeader â€” the swatch uses `palette.colors[3]/[4]` which are set to grey tones for the GRID entry.
+- No changes to NavHeader — the swatch uses `palette.colors[3]/[4]` which are set to grey tones for the GRID entry.
 
-## [1.0.1] â€” gallery: spawn gap 5.5 â†’ 4.5
+## [1.0.1] — gallery: spawn gap 5.5 → 4.5
 
-- `MIN_SPAWN_GAP` 5.5 â†’ 4.5.
+- `MIN_SPAWN_GAP` 5.5 → 4.5.
 
-## [1.0.0] â€” gallery: spawn gap for doubled tilt + drag hint
+## [1.0.0] — gallery: spawn gap for doubled tilt + drag hint
 
 ### Spawn gap widened for doubled tilt
 
 With pointer tilt at `0.20` rad, a slot of average width ~5 units
-has a corner X-projection of `cos(0.20) Ã— 2.5 â‰ˆ 2.45`. Two
+has a corner X-projection of `cos(0.20) × 2.5 ≈ 2.45`. Two
 adjacent slots require centre-to-centre offset spacing of
-`2 Ã— 2.45 â‰ˆ 4.9` to avoid geometry clipping. `MIN_SPAWN_GAP` is
-raised from 3.8 â†’ **5.5** to cover this with a comfortable margin.
+`2 × 2.45 ≈ 4.9` to avoid geometry clipping. `MIN_SPAWN_GAP` is
+raised from 3.8 → **5.5** to cover this with a comfortable margin.
 
-Side effect: with 18 slots Ã— 5.5 > `CAROUSEL_WIDTH`, slots spread
+Side effect: with 18 slots × 5.5 > `CAROUSEL_WIDTH`, slots spread
 more loosely through the belt. The visible window holds ~6-8 slots
-at once â€” more gallery-like, less packed.
+at once — more gallery-like, less packed.
 
 ### Drag visual cue
 
@@ -401,39 +408,39 @@ can interact:
 
 - `dragHinted` state (default false). Flips to true on the first
   pointer drag (`isDrag` crossing the 5 px threshold) *or* after
-  6 s via a `setTimeout` â€” whichever comes first.
+  6 s via a `setTimeout` — whichever comes first.
 - `<Html transform={false}>` inside `groupRef` but outside
   `stageRef` so stage camera-pan doesn't shift the hint off-centre.
 - Content: small left/right arrow SVG + mono "drag" label.
 - CSS class `.spa-drag-hint`: mono 9 px, letter-spaced, cream 70 %
-  opacity, `spa-drag-hint-sway` keyframe (Â±5 px left/right over
+  opacity, `spa-drag-hint-sway` keyframe (±5 px left/right over
   2.4 s) to draw attention. `.spa-drag-hint--done` fades it to
   transparent in 0.6 s.
 
-## [0.9.9] â€” gallery: 5s glide, slower drag, faster auto, double tilt
+## [0.9.9] — gallery: 5s glide, slower drag, faster auto, double tilt
 
-- `CAROUSEL_SPEED` 0.28 â†’ **0.38**.
-- `DRAG_SENSITIVITY` 0.02 â†’ **0.006** â€” carousel no longer follows
+- `CAROUSEL_SPEED` 0.28 → **0.38**.
+- `DRAG_SENSITIVITY` 0.02 → **0.006** — carousel no longer follows
   the mouse 1:1; it responds like a weighted object. A 300 px drag
   moves ~1.8 offset units.
 - useFrame drag block:
   - Applies only **35 %** of `pendingDelta` per frame; the rest
     carries over. The carousel eases into input rather than snapping
     to it.
-  - `smoothVelocity` EMA changed from 70/30 â†’ **80/20** history/
+  - `smoothVelocity` EMA changed from 70/30 → **80/20** history/
     current weighting. A brief pause before release doesn't zero
-    out momentum â€” the rolling average is more stable.
+    out momentum — the rolling average is more stable.
   - `smoothVelocity *= 0.9` (was 0.75) when no input arrives this
     frame, giving gentler idle decay.
-  - Post-release momentum: `smoothVelocity Ã— 30` (was Ã—60) for a
+  - Post-release momentum: `smoothVelocity × 30` (was ×60) for a
     proportional initial glide velocity.
-  - Decay `0.82^(60dt)` â†’ **`0.990^(60dt)`**: ~5 s exponential
-    glide (after 5 s â‰ˆ 5 % of initial momentum remains).
-- Pointer tilt `state.pointer.x Ã— 0.10` â†’ **Ã—0.20** (doubled).
+  - Decay `0.82^(60dt)` → **`0.990^(60dt)`**: ~5 s exponential
+    glide (after 5 s ≈ 5 % of initial momentum remains).
+- Pointer tilt `state.pointer.x × 0.10` → **×0.20** (doubled).
 
-## [0.9.8] â€” gallery: faster auto-speed + smooth drag momentum
+## [0.9.8] — gallery: faster auto-speed + smooth drag momentum
 
-- `CAROUSEL_SPEED` 0.15 â†’ **0.28** (~87 % faster).
+- `CAROUSEL_SPEED` 0.15 → **0.28** (~87 % faster).
 - Drag rework:
   - `onMove` now **accumulates** pixel deltas into `pendingDelta`
     instead of applying them directly to slot offsets. `useFrame`
@@ -441,19 +448,19 @@ can interact:
     synced and never jitters from irregular pointer-event intervals.
   - A `smoothVelocity` EMA (70 % history + 30 % current frame)
     tracks the rolling drag speed. If the hand pauses mid-drag the
-    EMA decays (Ã—0.75 per frame) so a stationary hold doesn't build
+    EMA decays (×0.75 per frame) so a stationary hold doesn't build
     phantom momentum.
-  - `onUp` sets `momentum = smoothVelocity Ã— 60` â€” drawn from the
+  - `onUp` sets `momentum = smoothVelocity × 60` — drawn from the
     rolling average rather than the last single delta, so release
     always feels proportional to how fast the user was dragging.
-  - Post-release decay changed from `0.88^(60dt)` â†’ `0.82^(60dt)`
+  - Post-release decay changed from `0.88^(60dt)` → `0.82^(60dt)`
     (~1 s half-life vs 0.8 s): glide lasts a touch longer.
 
-## [0.9.7] â€” gallery: wider gaps, stronger parallax, click-and-drag
+## [0.9.7] — gallery: wider gaps, stronger parallax, click-and-drag
 
 ### Spawn gap widened
 
-`MIN_SPAWN_GAP` 2.2 â†’ **3.8**. Slots that re-enter after wrapping
+`MIN_SPAWN_GAP` 2.2 → **3.8**. Slots that re-enter after wrapping
 are pushed rightward until they are 3.8 offset units from every
 neighbour. Gives more breathing room between images and a less
 packed, more browseable feel.
@@ -465,31 +472,31 @@ Speed-factor formula updated in two places:
 | | before | now |
 |---|---|---|
 | exponent | `pow(minDist/dist, 0.55)` | `pow(minDist/dist, 0.70)` |
-| jitter range | 0.8 â€¦ 1.2 | **0.65 â€¦ 1.35** |
+| jitter range | 0.8 … 1.2 | **0.65 … 1.35** |
 
-Front/back ratio now ~2.2Ã— (was ~1.8Ã—). Jitter span doubled
-from Â±20 % to Â±35 %. The parallax between adjacent slots is now
+Front/back ratio now ~2.2× (was ~1.8×). Jitter span doubled
+from ±20 % to ±35 %. The parallax between adjacent slots is now
 visibly distinct on any screen.
 
 ### Click-and-drag to spin
 
 New `drag` ref + window-level pointer listener inside `Gallery`.
 
-- `pointerdown` â€” arm the drag, remember `startX`.
-- `pointermove` â€” after a 5 px threshold (distinguishes from
-  slot-open clicks), apply `Î”x Ã— DRAG_SENSITIVITY` directly to
+- `pointerdown` — arm the drag, remember `startX`.
+- `pointermove` — after a 5 px threshold (distinguishes from
+  slot-open clicks), apply `Δx × DRAG_SENSITIVITY` directly to
   every slot's offset each frame.  Dragging left accelerates the
   carousel; dragging right decelerates or reverses it.
-- `pointerup` â€” carry the last-frame delta as momentum
-  (`lastDelta Ã— 55 units/s`). In `useFrame`, the momentum is
-  applied to all slot offsets and decays at `0.88^(60Ã—dt)` per
+- `pointerup` — carry the last-frame delta as momentum
+  (`lastDelta × 55 units/s`). In `useFrame`, the momentum is
+  applied to all slot offsets and decays at `0.88^(60×dt)` per
   second (~0.8 s half-life).
-- `DRAG_SENSITIVITY = 0.02` (300 px drag â‰ˆ 6 offset units).
+- `DRAG_SENSITIVITY = 0.02` (300 px drag ≈ 6 offset units).
 - Event listeners cleaned up on unmount.
 
-## [0.9.6] â€” gallery: density 18 + spawn-gap safeguard
+## [0.9.6] — gallery: density 18 + spawn-gap safeguard
 
-- `SLOT_COUNT` 26 â†’ **18**.
+- `SLOT_COUNT` 26 → **18**.
 - New `MIN_SPAWN_GAP = 2.2`. When a slot wraps and re-enters on the
   right side, a cascade loop checks every other slot: if the new
   offset is within `MIN_SPAWN_GAP` of any neighbour, the slot is
@@ -499,42 +506,42 @@ New `drag` ref + window-level pointer listener inside `Gallery`.
   laps, which was causing the pointer-tilt to clip adjacent
   geometry.
 
-## [0.9.5] â€” gallery: density 36 â†’ 26
+## [0.9.5] — gallery: density 36 → 26
 
-- `SLOT_COUNT` 36 â†’ 26.
+- `SLOT_COUNT` 36 → 26.
 
-## [0.9.4] â€” gallery: density down, parallax up, slots fully behind text
+## [0.9.4] — gallery: density down, parallax up, slots fully behind text
 
-- **Density** â€” `SLOT_COUNT` 44 â†’ **36**. The 44-slot carousel was
+- **Density** — `SLOT_COUNT` 44 → **36**. The 44-slot carousel was
   visually crowded, especially with the wider size variation; 36
   fills the deeper Z range without packing slots on top of each
   other.
-- **Parallax bumped ~20 %** â€” speedFactor formula reworked:
+- **Parallax bumped ~20 %** — speedFactor formula reworked:
   - Anchor changed from `pow(4/dist, 0.4)` to
     `pow(minDist/dist, 0.55)` where `minDist =
     STAGE_TO_CAMERA - SLOT_Z_FRONT` (= 10 with the new front cap).
-    A slot at the front cap now gets a clean `1.0Ã—` baseline
+    A slot at the front cap now gets a clean `1.0×` baseline
     instead of being capped at ~0.6 because nothing was at the
     reference distance.
-  - Random jitter widened from `0.85..1.15` (Â±15 %) to
-    `0.8..1.2` (Â±20 %).
+  - Random jitter widened from `0.85..1.15` (±15 %) to
+    `0.8..1.2` (±20 %).
   - Resulting per-slot speed range with the new exponent:
-    front â‰ˆ 1.0Ã—, back â‰ˆ 0.56Ã— (was 1.0Ã— / ~0.55Ã— nominally but
+    front ≈ 1.0×, back ≈ 0.56× (was 1.0× / ~0.55× nominally but
     with a much smaller usable spread once jitter compounded).
     Real-feeling layered drift now.
-- **Front cap pushed back** â€” `SLOT_Z_FRONT` `+0.5` â†’ `-2`. With
+- **Front cap pushed back** — `SLOT_Z_FRONT` `+0.5` → `-2`. With
   the gallery floor text at z=3, a 5-unit Z gap between the
   closest possible slot and the text is enough headroom for the
-  arc curve, the size compensation, and any rotation jitter â€” no
+  arc curve, the size compensation, and any rotation jitter — no
   slot can visually pass in front of "Have a peek inside my
   brain" anymore.
-- Size caps lifted again (`6/7` â†’ `8/9`) since the further-back
+- Size caps lifted again (`6/7` → `8/9`) since the further-back
   cap means depth-size compensation produces slightly larger
   worst-case dimensions.
 - Depth-dim curve mapped onto `[-28, -2]` (was `[-28, +0.5]`) to
   match the new front cap.
 
-## [0.9.3] â€” gallery: deeper depth, exponential size, parallax speeds
+## [0.9.3] — gallery: deeper depth, exponential size, parallax speeds
 
 Restructured the carousel's spatial layout for real depth and
 visual variety, and prevented slots from clipping the floor text.
@@ -543,12 +550,12 @@ visual variety, and prevented slots from clipping the floor text.
 
 | | before | now |
 |---|---:|---:|
-| Slot Z range (stage local) | -1 â€¦ +4 | **-20 â€¦ +0.5** |
+| Slot Z range (stage local) | -1 … +4 | **-20 … +0.5** |
 | Front cap | +4 | **+0.5** |
 | Back cap | -1 | **-20** |
 
 `SLOT_Z_FRONT = +0.5` keeps every slot behind the gallery floor's
-"Have a peek inside my brain" text (which sits at floor z=3) â€” the
+"Have a peek inside my brain" text (which sits at floor z=3) — the
 text is now always in front of every slot, never occluded. The
 back cap pushes the carousel into a 20-unit Z corridor instead
 of a 5-unit slab.
@@ -572,13 +579,13 @@ depthSizeFactor = pow(distance / 4, 0.72)
 | -10          | 18  | 2.95 |
 | -20 (back)   | 28  | 4.13 |
 
-Back slots are physically ~4Ã— a front slot, but appear at a
+Back slots are physically ~4× a front slot, but appear at a
 similar visual size on the camera with subtle "further away"
 diminishing. Per-slot `sizeMultiplier` widened from
-`0.63 .. 1.26` â†’ **`0.55 .. 1.65`** so adjacent slots vary more
+`0.63 .. 1.26` → **`0.55 .. 1.65`** so adjacent slots vary more
 in apparent size on top of distance compensation.
 
-`clampedW / clampedH` caps lifted from `2.52 / 2.94` â†’ **`6 / 7`**
+`clampedW / clampedH` caps lifted from `2.52 / 2.94` → **`6 / 7`**
 so the depth-driven sizing isn't clipped.
 
 ### Per-slot parallax speeds
@@ -586,19 +593,19 @@ so the depth-driven sizing isn't clipped.
 `SlotState` gains a `speedFactor` field. Set once at init from:
 
 ```
-speedFactor = pow(4 / distance, 0.4) Ã— jitter(0.85..1.15)
+speedFactor = pow(4 / distance, 0.4) × jitter(0.85..1.15)
 ```
 
-So a front slot drifts ~1.0Ã— and a back slot ~0.55Ã— the base
-`CAROUSEL_SPEED`, with each slot getting its own Â±15 % twist on
+So a front slot drifts ~1.0× and a back slot ~0.55× the base
+`CAROUSEL_SPEED`, with each slot getting its own ±15 % twist on
 top so they don't drift in lockstep. Stronger sense of real
 depth as the carousel moves; spacing drifts over time but the
 per-slot wrap logic keeps everything looping.
 
-### Density: 28 â†’ 44 slots, carousel 36 â†’ 44 wide
+### Density: 28 → 44 slots, carousel 36 → 44 wide
 
-Bumped `SLOT_COUNT` from 28 â†’ 44 and `CAROUSEL_WIDTH` from
-36 â†’ 44 to fill the deeper Z corridor â€” without more slots the
+Bumped `SLOT_COUNT` from 28 → 44 and `CAROUSEL_WIDTH` from
+36 → 44 to fill the deeper Z corridor — without more slots the
 back rows would read as empty. Spacing stays at 1.0 stage units
 between slot anchors.
 
@@ -608,11 +615,11 @@ The E (depth dimming) lerp range was tuned for the old shallow
 Z. Updated to map `[-28, +0.5]` onto `[0.45, 1.0]` so the
 darkest back-row slot still has 45 % of full brightness.
 
-## [0.9.2] â€” gallery polish: arc, depth, rim glow, mist, slot tilt
+## [0.9.2] — gallery polish: arc, depth, rim glow, mist, slot tilt
 
 Five overlapping enhancements to the gallery, all in `Gallery.tsx`:
 
-### I â€” curved carousel arc
+### I — curved carousel arc
 Slots no longer travel along a straight line in stage X. Each
 slot's `offset` is treated as arc-length along a circle of radius
 `ARC_R = 30`, so:
@@ -623,89 +630,89 @@ slot's `offset` is treated as arc-length along a circle of radius
 Net result: edge slots curve gently away in Z (~5 units back at
 the carousel ends) and turn to face inward. Reads as a real 3D
 stage rather than a parallax slideshow. No change to the wrap or
-pool-cursor logic â€” `s.offset` math is identical, only the
+pool-cursor logic — `s.offset` math is identical, only the
 position projection moved.
 
-### K â€” pointer tilt
-Each slot's Y rotation now adds `state.pointer.x * 0.10` (~5.7Â°
+### K — pointer tilt
+Each slot's Y rotation now adds `state.pointer.x * 0.10` (~5.7°
 range) on top of the arc-facing rotation. The carousel "watches"
 the cursor without breaking the curve. Direct write per frame,
-no lerp â€” pointer already moves smoothly enough.
+no lerp — pointer already moves smoothly enough.
 
-### E â€” depth dimming
+### E — depth dimming
 Per-slot brightness scales with the slot's final `position.z`.
-Mapped onto `[0.45, 1.0]` via `clamp(0.55 + (z + 4) * 0.06, â€¦)`.
+Mapped onto `[0.45, 1.0]` via `clamp(0.55 + (z + 4) * 0.06, …)`.
 Applied to:
-- the drei `<Image>` material's `color` uniform â†’ image tints
+- the drei `<Image>` material's `color` uniform → image tints
   darker the further it sits;
-- the existing frame-colour lerp target â†’ frames dim alongside
+- the existing frame-colour lerp target → frames dim alongside
   their image.
 
 Combined with the arc, edge slots are noticeably dimmer than
-centre slots â€” atmospheric perspective without a real DOF /
+centre slots — atmospheric perspective without a real DOF /
 fog pass.
 
-### F â€” rim glow on hover
+### F — rim glow on hover
 Added a `<mesh ref={rimRef}>` plane just behind each image at
 `z=0.65, scale=[1.08, 1.08, 1]`, additively blended blood red.
-Opacity ramps `0 â†’ 0.6` over ~250 ms when the slot is hovered,
+Opacity ramps `0 → 0.6` over ~250 ms when the slot is hovered,
 back to 0 on leave. The mesh sets `visible = false` once opacity
 drops below 0.01 so the 27 idle slots aren't all eating draw
 calls when nothing is hovered.
 
-### H â€” ground mist
+### H — ground mist
 Two soft-noise circles just above the floor at `y = 0.06` and
 `y = 0.32`, generated from a new `makeMistTexture(seed)` helper
-(per-pixel random luminance â†’ two-pass `filter: blur(10px)` â†’
+(per-pixel random luminance → two-pass `filter: blur(10px)` →
 `CanvasTexture` with repeat-wrap). Each layer drifts its UV
 `offset` in opposite directions on X with a small Y wobble, so
 the carousel feels like it's emerging from low fog. Both layers
 are `depthWrite: false` so they don't break the slot frame
 depth, and the entire mist stack is gated behind
-`!profile.isLowPower` (skipped on tiers â‰¤ 1).
+`!profile.isLowPower` (skipped on tiers ≤ 1).
 
 Both mist textures are disposed via a `useEffect` cleanup; same
 for `floorAlphaMap`.
 
-## [0.9.1] â€” gallery floor: circular pedestal with radial alpha fade
+## [0.9.1] — gallery floor: circular pedestal with radial alpha fade
 
-Replaced the hard-edged 60Ã—60 reflective square with the
+Replaced the hard-edged 60×60 reflective square with the
 "infinity stage" treatment.
 
 - `Gallery.tsx`: geometry swapped from `planeGeometry [60, 60]`
-  to `circleGeometry [32, 96]` â€” a 64-unit-diameter disc with
+  to `circleGeometry [32, 96]` — a 64-unit-diameter disc with
   smooth 96-segment perimeter. Covers the carousel content
-  (slots span Â±18) plus a soft margin. Same change applied to
+  (slots span ±18) plus a soft margin. Same change applied to
   the underside back-face mesh so the silhouette is consistent
   from above and below.
-- New `floorAlphaMap` â€” a 512Ã—512 `CanvasTexture` painted with a
-  radial gradient (`#ffffff` 0 % â†’ `#dddddd` 55 % â†’ `#444444`
-  85 % â†’ `#000000` 100 %). Mounted on both materials with
+- New `floorAlphaMap` — a 512×512 `CanvasTexture` painted with a
+  radial gradient (`#ffffff` 0 % → `#dddddd` 55 % → `#444444`
+  85 % → `#000000` 100 %). Mounted on both materials with
   `transparent: true`. The reflective top fades to nothing at
   the rim, so the reflection itself dissolves rather than
   cutting off at a hard edge. Disposed on unmount via the same
   effect that owns the canvas.
-- `MeshReflectorMaterial` keeps every other prop the same â€” the
+- `MeshReflectorMaterial` keeps every other prop the same — the
   alpha mask is a pure visual upgrade, no perf delta.
 
 The disc reads as a deliberate stage / pedestal instead of an
 arbitrary slice, and the soft rim blends into the brand
 backdrop so the floor never announces "this is where 3D ends".
 
-## [0.9.0] â€” portrait fix: text clipping + UXâ†”Highlights overlap
+## [0.9.0] — portrait fix: text clipping + UX↔Highlights overlap
 
 Two real-world bugs surfaced on iPhone:
 
-1. **Body text clipped on the left** â€” in v0.8.x's Option B layout
+1. **Body text clipped on the left** — in v0.8.x's Option B layout
    the text Html anchor sat at `(side === 'left' ? -1.6 : 1.6) *
-   xFit` even on portrait. With xFit â‰ˆ 0.6 the anchor projects to
+   xFit` even on portrait. With xFit ≈ 0.6 the anchor projects to
    ~25 % from left of screen; with `Html center=true` and a 62 vw
    wide box the left edge ended up ~45 px off-screen, clipping the
    first letter of every line.
-2. **04 UX Design overlapping "Featured pieces"** â€” text was
-   dropped âˆ’10 world units everywhere. UX text at `âˆ’52.5 âˆ’ 10 =
-   âˆ’62.5`; Highlights anchor at `âˆ’67.5`. Only 5 world units apart.
-   On a portrait viewport (~8.4 world units tall at FOV 70Â°)
+2. **04 UX Design overlapping "Featured pieces"** — text was
+   dropped −10 world units everywhere. UX text at `−52.5 − 10 =
+   −62.5`; Highlights anchor at `−67.5`. Only 5 world units apart.
+   On a portrait viewport (~8.4 world units tall at FOV 70°)
    that's well within one viewport, so both render on screen at
    the same scroll.
 
@@ -714,15 +721,15 @@ unchanged; portrait gets a tighter, centred layout:
 
 | | landscape (unchanged) | portrait (new) |
 |---|---|---|
-| `heroPos` | `[Â±2.4 Â· xFit, +7, 0]` | `[0, +4, 0]` |
-| `htmlPos` | `[âˆ“1.6 Â· xFit, âˆ’10, 0]` | `[0, âˆ’4, 0]` |
+| `heroPos` | `[±2.4 · xFit, +7, 0]` | `[0, +4, 0]` |
+| `htmlPos` | `[∓1.6 · xFit, −10, 0]` | `[0, −4, 0]` |
 | Html width | `min(760 px, 86 vw)` | `min(440 px, 78 vw)` |
 
 Portrait policy now: centre both halves on X (text overlays
-sculpture, layered/editorial â€” the Option B trade-off we already
+sculpture, layered/editorial — the Option B trade-off we already
 accepted), and use small Y offsets so adjacent sections never
-share screen space at the same scroll. UX text at section_Y âˆ’ 4
-= âˆ’56.5 vs Highlights at âˆ’67.5 â†’ 11 world units apart, larger
+share screen space at the same scroll. UX text at section_Y − 4
+= −56.5 vs Highlights at −67.5 → 11 world units apart, larger
 than the ~8.4-unit portrait viewport, so they exit/enter cleanly.
 
 Caveat: this means per-element worldY differs between portrait
@@ -731,13 +738,13 @@ Still consistent within each orientation though, and the
 overlap/clip bugs were a much worse experience than that
 abstraction was worth.
 
-## [0.8.9] â€” fix: weserv proxy on the live Vercel deploy
+## [0.8.9] — fix: weserv proxy on the live Vercel deploy
 
 **Bug**: prod deploy at
 `studio-panic-attack-maximilian.vercel.app` 404'd every gallery
 image. `assetUrl.ts` had a hardcoded `PROD_ORIGIN =
 'https://max-wik.com'` left over from copy-pasting the helper
-from a different project â€” weserv was being asked to fetch
+from a different project — weserv was being asked to fetch
 `max-wik.com/landing/artist-frame-1.png` (which doesn't exist on
 that host), got a 404, and the ErrorBoundary tipped over with
 "the render flatlined". Local dev worked because dev returns the
@@ -748,19 +755,19 @@ path unmodified.
 
 - the canonical Vercel URL,
 - any Vercel preview deploy (PR-specific URL),
-- any future custom domain â€” no code change needed.
+- any future custom domain — no code change needed.
 
 Defensive fallback: if `window.location.host` is somehow empty
 (SSR / weird environment), `assetUrl` returns the raw `/landing/`
 path so the image still loads (slowly) instead of 404'ing.
 
 Also dropped the four `<link rel="preload">` weserv URLs from
-`index.html` â€” they had to be byte-identical to the JS-emitted
+`index.html` — they had to be byte-identical to the JS-emitted
 URLs to share a browser-cache entry, which is impossible with a
 runtime origin. The JS preload gate (`usePreloadGate`) already
 covers the same first-batch images.
 
-## [0.8.8] â€” palette cycler in the debug cluster
+## [0.8.8] — palette cycler in the debug cluster
 
 - New `helpers/paletteStore.ts`: zustand store with a list of
   named 5-stop palettes (`BLOOD`, `OCEAN`, `AMBER`, `MOSS`,
@@ -768,14 +775,14 @@ covers the same first-batch images.
   `cycle` / `current()`. Persists to
   `localStorage['spa-palette']`.
 - All palettes follow the original five-stop format
-  (`ink â†’ smoke â†’ muted accent â†’ mid accent â†’ bright accent`)
+  (`ink → smoke → muted accent → mid accent → bright accent`)
   so the page edges stay grounded and only the dominant hue
   changes.
 - `HeroOverlay.tsx`: subscribes to the palette index and feeds
-  the current colour list straight into `<MeshGradient colors=â€¦/>`.
+  the current colour list straight into `<MeshGradient colors=…/>`.
 - `NavHeader.tsx`: new `.spa-nav__palette` button as the first
   control in the Debug Tools cluster (left of the perf button).
-  Two-part layout â€” a 16 px circular swatch using the active
+  Two-part layout — a 16 px circular swatch using the active
   palette's accent + mid colours via CSS `radial-gradient`,
   next to the palette ID in mono. Click cycles to the next
   palette. Hover lights the border + adds a soft glow in the
@@ -785,18 +792,18 @@ covers the same first-batch images.
   `.spa-nav__palette-id`. Uses CSS custom properties
   (`--palette-accent`, `--palette-mid`) inlined per render.
 
-## [0.8.7] â€” nav: "Debug Tools" label next to the action cluster
+## [0.8.7] — nav: "Debug Tools" label next to the action cluster
 
 - `NavHeader.tsx`: small `<span class="spa-nav__actions-label">
   Debug Tools</span>` inserted as the first child of
   `.spa-nav__actions`, sitting just before the perf button.
 - CSS: mono 9 px, 0.32 em letter-spacing, dimmed cream
-  (`rgba(246,243,238,0.45)`), uppercase â€” same vocabulary as
+  (`rgba(246,243,238,0.45)`), uppercase — same vocabulary as
   the rest of the small mono labels in the nav. Hidden below
   1100 px viewport width so the nav doesn't crowd on smaller
   screens.
 
-## [0.8.6] â€” nav: keep perf + debug + hamburger on one row
+## [0.8.6] — nav: keep perf + debug + hamburger on one row
 
 The nav uses `grid-template-columns: auto 1fr auto` (3 columns:
 brand / links / actions). Adding the perf button alongside the
@@ -807,13 +814,13 @@ Wrapped the three action buttons in a single `.spa-nav__actions`
 flex container so they share the third grid column. `display:
 inline-flex; gap: 8px; justify-self: end`.
 
-## [0.8.5] â€” gallery floor: stop despawning when viewed from below
+## [0.8.5] — gallery floor: stop despawning when viewed from below
 
 - The reflective gallery floor is a `MeshReflectorMaterial` plane,
   which is `FrontSide` only. As scroll lifts the scene group
   upward, the camera ends up *below* the floor's world Y; with
   the back face culled, the floor visually disappears in one frame
-  â€” read as a glitch.
+  — read as a glitch.
 - Added a second `<mesh>` at the same position with a
   `meshBasicMaterial` set to `side: THREE.BackSide`,
   `color: '#050505'`, `opacity: 0.55`, `transparent`,
@@ -821,13 +828,13 @@ inline-flex; gap: 8px; justify-self: end`.
   plane is invisible while the camera is above the floor (no
   z-fighting with the reflective top) and only kicks in once the
   camera passes underneath. Semi-transparent so the brand
-  backdrop bleeds through â€” reads as a ghost of the floor instead
+  backdrop bleeds through — reads as a ghost of the floor instead
   of a hard black wall.
 
-## [0.8.4] â€” perf-tier override in nav
+## [0.8.4] — perf-tier override in nav
 
-The performance-tier system already worked end-to-end â€”
-`detect-gpu` returns 0â€“3, `useDeviceProfile` derives
+The performance-tier system already worked end-to-end —
+`detect-gpu` returns 0–3, `useDeviceProfile` derives
 `isLowPower = tier <= 1 || mobile`, and that flag drives the DPR,
 antialias, postprocessing, MeshReflector blur, Hedgehog spike
 count, Lens material choice, and ScatteredImages count. There
@@ -847,53 +854,53 @@ Added a manual override:
 - Added `overridden: boolean` to `DeviceProfile` so consumers
   can opt into showing the override state if they want.
 - `NavHeader` gains a `.spa-nav__perf` mono-text button next to
-  the debug grid icon. Cycles `AUTO â†’ T0 â†’ T1 â†’ T2 â†’ T3 â†’ AUTO`
+  the debug grid icon. Cycles `AUTO → T0 → T1 → T2 → T3 → AUTO`
   on click. Label shows current effective tier:
-  `AUTOÂ·T<n>` when on auto-detect, `T<n>` when forced. Lights up
-  blood-red with a glow when a manual tier is in effect â€” same
+  `AUTO·T<n>` when on auto-detect, `T<n>` when forced. Lights up
+  blood-red with a glow when a manual tier is in effect — same
   treatment as the debug toggle.
 - Title attribute spells out the full state for hover inspection
   (e.g. "Perf: forced T0 (isLowPower=true). Click to cycle.").
 
 What flips when you force a low tier:
 
-- Canvas `dpr` drops from `[1, 1.6]` â†’ `[0.85, 1.1]`, antialias off.
+- Canvas `dpr` drops from `[1, 1.6]` → `[0.85, 1.1]`, antialias off.
 - `PostFx` returns `null` (bloom / chromatic aberration / vignette
   / noise all disabled).
-- `Gallery` reflector blur `[300, 100] â†’ [0, 0]`, resolution
-  `256 â†’ 128`, mixStrength `80 â†’ 40`.
+- `Gallery` reflector blur `[300, 100] → [0, 0]`, resolution
+  `256 → 128`, mixStrength `80 → 40`.
 - `GraphicDesign` Lens swaps `MeshTransmissionMaterial` for
   cheap transmission glass.
-- `AIArt` Hedgehog drops from `420 â†’ 150` spikes; idle breathing
+- `AIArt` Hedgehog drops from `420 → 150` spikes; idle breathing
   disabled.
-- `ScatteredImages` count `18 â†’ 10`; shader effects all swap to
+- `ScatteredImages` count `18 → 10`; shader effects all swap to
   `'plain'`.
 
-## [0.8.3] â€” readable titles + bigger body text in categories
+## [0.8.3] — readable titles + bigger body text in categories
 
 - `.spa-cat-elegant__title` (01 Graphic Design / 02 3D Art /
-  03 AI Art / 04 UX Design) and `.spa-title` (Highlights â†’
-  "Featured pieces"): added a layered black text-shadow stack â€”
+  03 AI Art / 04 UX Design) and `.spa-title` (Highlights →
+  "Featured pieces"): added a layered black text-shadow stack —
   a tight `0 2px 12px / 0.85`, a soft `0 0 28px / 0.55` halo,
   and a 1 px hard drop. Stays readable now that scattered images
   can sit directly behind these titles.
-- `.spa-cat-elegant__body` body copy: `15 px â†’ 18 px`, line-height
-  `1.65 â†’ 1.60`, colour from `rgba(...,0.82)` to `0.86` for a
+- `.spa-cat-elegant__body` body copy: `15 px → 18 px`, line-height
+  `1.65 → 1.60`, colour from `rgba(...,0.82)` to `0.86` for a
   hair more contrast. Mobile breakpoint override (`max-width: 700px`)
-  bumped from `13.5 px â†’ 16 px`.
+  bumped from `13.5 px → 16 px`.
 
-## [0.8.2] â€” sculptures down 3 + fix the early-despawn bug
+## [0.8.2] — sculptures down 3 + fix the early-despawn bug
 
 ### fix(visibility): sculptures vanished when scrolling slightly past
 
 `useSectionVisibility` ramps up over a window centred on the
 section's scroll range. With sculptures lifted to `section_Y + 10`
 in v0.8.1, they entered the camera ~10 world-units (~0.155 scroll
-units) **earlier** than the visibility window opened â€” but the
+units) **earlier** than the visibility window opened — but the
 sculpture's own `useFrame` short-circuits with
 `if (v < 0.005) mesh.visible = false`. So the sculpture was on
 screen but mesh-hidden until the section's own visibility ramp
-caught up â€” the "appears too late" symptom. Same in reverse on
+caught up — the "appears too late" symptom. Same in reverse on
 exit: window closed before the sculpture had finished scrolling
 out of frame, so it popped out a beat early.
 
@@ -905,13 +912,13 @@ shifts the visibility window backwards by that amount.
 - `GraphicDesign.tsx`: `useSectionVisibility('graphic', 7)` (Knot
   is at section centre + 7).
 - `AIArt.tsx`: `useSectionVisibility('ai', 7)` (Hedgehog same).
-- Other call sites (`Gallery`, `Vocabulary`) pass no offset â€”
+- Other call sites (`Gallery`, `Vocabulary`) pass no offset —
   default `0` keeps current behaviour.
 
-### move: sculptures + scattered down 3 (current value âˆ’ 3)
+### move: sculptures + scattered down 3 (current value − 3)
 
-- `CategorySection.heroPos.y`: `+10` â†’ `+7`.
-- `ScatteredImages.worldY` bias: `+10` â†’ `+7`.
+- `CategorySection.heroPos.y`: `+10` → `+7`.
+- `ScatteredImages.worldY` bias: `+10` → `+7`.
 - DebugLabel `worldY` arguments in `GraphicDesign` and `AIArt`
   updated to match (`getSectionWorldY(id) + 7`).
 
@@ -929,18 +936,18 @@ Resulting world Y for the affected entities:
 Section anchors and category text positions (`htmlPos.y = -10`)
 unchanged from v0.8.1.
 
-## [0.8.1] â€” manual placement: text âˆ’10, bg +10 within categories
+## [0.8.1] — manual placement: text −10, bg +10 within categories
 
 Per direct positional spec from the design pass: split the text
 half and the 3D / scattered halves of every category by 20 world
-units. Section anchors in `sections.ts` are unchanged â€” only the
+units. Section anchors in `sections.ts` are unchanged — only the
 local offsets inside CategorySection (and the world-Y bias inside
 ScatteredImages) shift.
 
 `CategorySection.tsx`:
 
-- `htmlPos.y`: `0` â†’ `-10` (text body drops 10 units in scroll).
-- `heroPos.y`: `0` â†’ `+10` (sculpture rises 10 units; appears
+- `htmlPos.y`: `0` → `-10` (text body drops 10 units in scroll).
+- `heroPos.y`: `0` → `+10` (sculpture rises 10 units; appears
   earlier in scroll than the text).
 
 `ScatteredImages.tsx`:
@@ -974,19 +981,19 @@ Heads-up: Knot (-20.5) is now only 4.5 units below the gallery
 centre (-16). They may visually overlap. Toggle the debug
 overlay to confirm and send the next adjustment if you want.
 
-## [0.8.0] â€” Option B layout + worldY debug overlay
+## [0.8.0] — Option B layout + worldY debug overlay
 
 ### feat(layout): single side-by-side layout on every viewport
 
 - `CategorySection.tsx`: dropped the portrait/landscape branch.
   Both halves are now anchored at section centre `Y=0` regardless
-  of orientation â€” only X scales with viewport. **Every element's
+  of orientation — only X scales with viewport. **Every element's
   worldY is identical on every device.**
   - `xFit = clamp(viewport.width / 6.4, 0.4, 1.0)` shrinks the
     side offsets on phones so both halves stay on screen.
   - `heroPos = [(side==='left' ? 2.4 : -2.4) * xFit, 0, 0]`
   - `htmlPos = [(side==='left' ? -1.6 : 1.6) * xFit, 0, 0]`
-  - On portrait, the Html width drops from 86vw â†’ 62vw so the
+  - On portrait, the Html width drops from 86vw → 62vw so the
     text doesn't fully blanket the 3D sculpture.
   - Trade-off: text Html and 3D sculpture overlap visually on
     narrow phones (text on top, layered/editorial). Acceptable
@@ -1006,16 +1013,16 @@ overlay to confirm and send the next adjustment if you want.
     drawn at the section's centre worldY (read from `sections.ts`,
     so adjusting the registry auto-updates the overlay).
   - Mounted inside `Layout`'s scrolling group so the ruler
-    scrolls with the scene â€” coordinates always correspond to
+    scrolls with the scene — coordinates always correspond to
     real world space.
 - Exported `DebugLabel` helper from `DebugOverlay.tsx`: a
   `<Billboard><Text/></Billboard>` that auto-hides via the same
   store. Drop into any 3D component to mark a specific entity.
 - Per-entity labels now wired into:
-  - `GraphicDesign` â†’ `Sculpture: Knot (01 graphic)` at the section
+  - `GraphicDesign` → `Sculpture: Knot (01 graphic)` at the section
     centre.
-  - `AIArt` â†’ `Sculpture: Hedgehog (03 ai)` at the section centre.
-  - `ScatteredImages` â†’ one orange label per item:
+  - `AIArt` → `Sculpture: Hedgehog (03 ai)` at the section centre.
+  - `ScatteredImages` → one orange label per item:
     `Scatter[<i>] (<affinity>) y=<n>`. Added an `affinity` field
     to the `ScatteredItem` interface so each label can show which
     section the image is attached to.
@@ -1039,35 +1046,35 @@ overlay to confirm and send the next adjustment if you want.
   zustand for app state, it should move into `package.json` as a
   direct dependency.
 
-## [0.7.1] â€” bg density: lift scattered images into the text band
+## [0.7.1] — bg density: lift scattered images into the text band
 
-After the v6 section retune the categories felt visually sparse â€”
+After the v6 section retune the categories felt visually sparse —
 scattered images were trailing well below the text since they
-spread Â±2.5 world units around each section centre, and the
+spread ±2.5 world units around each section centre, and the
 category bodies are only ~6 units tall. Tightened + biased the
 distribution so the bg images read as flanking the text instead
 of orphaned beneath it.
 
 In `ScatteredImages.tsx`:
 
-- Item count bumped: low-power 8 â†’ 10, normal 14 â†’ 18. Gallery is
+- Item count bumped: low-power 8 → 10, normal 14 → 18. Gallery is
   longer now and 02 is shorter, so the category sections needed a
   bit more density to not feel empty.
 - `ySpread` formula changed from `((i % 3) / 2 - 0.5) * 0.5 * 10`
-  (range âˆ’2.5 / 0 / +2.5) to `((i % 3) / 2 - 0.2) * 0.3 * 10`
-  (range âˆ’0.6 / +0.9 / +2.4). Tighter band, biased upward so each
-  scattered image's section-local Y lands between roughly âˆ’1.1 and
-  +2.9 (after the existing Â±0.5 random jitter). "Up" here = earlier
+  (range −2.5 / 0 / +2.5) to `((i % 3) / 2 - 0.2) * 0.3 * 10`
+  (range −0.6 / +0.9 / +2.4). Tighter band, biased upward so each
+  scattered image's section-local Y lands between roughly −1.1 and
+  +2.9 (after the existing ±0.5 random jitter). "Up" here = earlier
   in scroll = on screen at the same time as the category number /
   title rather than after.
 
 Sculptures already follow their section's world Y automatically
 (they're children of `<CategorySection>`'s yPos group), so no
-change needed there â€” Knot moved 5 units later with 01 in v6,
+change needed there — Knot moved 5 units later with 01 in v6,
 Hedgehog stayed put, and both are still anchored to their section
 centres.
 
-## [0.7.0] â€” section retune: gallery breathing room, Hedgehog â†” Knot
+## [0.7.0] — section retune: gallery breathing room, Hedgehog ↔ Knot
 
 After the loader work, two layout problems became obvious on the
 real page:
@@ -1083,43 +1090,43 @@ real page:
 
 Retuned `src/config/sections.ts` to v6:
 
-| section          | length     | center â†’ worldY     | notes |
+| section          | length     | center → worldY     | notes |
 |------------------|-----------:|--------------------:|-------|
-| hero             | 0.6        |  0.30 â†’ -3.0        | unchanged |
-| gallery          | **2.0** (was 1.5) |  1.60 â†’ -16.0 | extra half-page so 01 doesn't crowd the carousel |
-| graphic (01)     | 0.9        |  3.05 â†’ -30.5       | shifts 5 units later |
-| threeD (02)      | **0.4** (was 0.9) |  3.70 â†’ -37.0 | no sculpture (relocated to 01); doesn't need a full page |
-| ai (03)          | 0.9        |  4.35 â†’ -43.5       | unchanged |
-| ux (04)          | 0.9        |  5.25 â†’ -52.5       | unchanged |
-| vocabulary       | 0.7        |  6.05 â†’ -60.5       | unchanged |
-| highlights       | 0.7        |  6.75 â†’ -67.5       | unchanged |
+| hero             | 0.6        |  0.30 → -3.0        | unchanged |
+| gallery          | **2.0** (was 1.5) |  1.60 → -16.0 | extra half-page so 01 doesn't crowd the carousel |
+| graphic (01)     | 0.9        |  3.05 → -30.5       | shifts 5 units later |
+| threeD (02)      | **0.4** (was 0.9) |  3.70 → -37.0 | no sculpture (relocated to 01); doesn't need a full page |
+| ai (03)          | 0.9        |  4.35 → -43.5       | unchanged |
+| ux (04)          | 0.9        |  5.25 → -52.5       | unchanged |
+| vocabulary       | 0.7        |  6.05 → -60.5       | unchanged |
+| highlights       | 0.7        |  6.75 → -67.5       | unchanged |
 
 Net `TOTAL_PAGES` stays at **7.1** because gallery's +0.5 cancels
-threeD's âˆ’0.5. So Layout.tsx's hardcoded travel range (`3.0 +
-offset * 64.5`) is **still correct** â€” only its comment was
+threeD's −0.5. So Layout.tsx's hardcoded travel range (`3.0 +
+offset * 64.5`) is **still correct** — only its comment was
 refreshed to enumerate the new section centers.
 
 Result:
 - Gallery has ~33 % more scroll length to play out before 01 hits.
-- Knot â†” Hedgehog distance drops from **18 â†’ 13 world units**
+- Knot ↔ Hedgehog distance drops from **18 → 13 world units**
   (5 units closer); 02 still has time for the user to read its
   body without a sculpture competing for attention.
 - Every section after 03 is byte-for-byte at the same world Y as
   before, so the highlights handoff and the global travel math
   are unaffected.
 
-## [0.6.4] â€” loader %: outline the symbol to match the number
+## [0.6.4] — loader %: outline the symbol to match the number
 
 - `.spa-loader__pct-sym`: dropped the filled-cream override.
   Symbol is now `color: transparent` with `-webkit-text-stroke:
-  1.4px var(--blood)` â€” same red outlined treatment as the
+  1.4px var(--blood)` — same red outlined treatment as the
   number, stroke scaled down for the smaller font size so the
   visual weight stays balanced.
 
-## [0.6.3] â€” loader %: red stroke matching category numbers
+## [0.6.3] — loader %: red stroke matching category numbers
 
 - `.spa-loader__pct`: stroke colour swapped from cream to
-  `var(--blood)` and a subtle red text-shadow glow added â€”
+  `var(--blood)` and a subtle red text-shadow glow added —
   same treatment as `.spa-cat-elegant__number` (the giant
   italic 02 / 03 numbers in the category sections). Loader now
   reads as part of the same typographic family instead of a
@@ -1127,29 +1134,29 @@ Result:
 - `.spa-loader__pct-sym`: gains `text-shadow: none` so the
   inherited red glow doesn't bleed onto the small filled `%`.
 
-## [0.6.2] â€” loader is its own opaque screen + outlined % counter
+## [0.6.2] — loader is its own opaque screen + outlined % counter
 
 - `.spa-loader` is now a real own-screen overlay:
-  - `pointer-events: auto` â€” the loader itself catches every wheel,
+  - `pointer-events: auto` — the loader itself catches every wheel,
     touch, and click, so drei `<ScrollControls>` (which listens on
     the canvas parent below it) literally never sees the input.
     Scroll is fully blocked during loading without a single
     capture-phase listener.
   - Opaque background: a layered radial-gradient (red center glow
-    â†’ near-black) over a `#050505` base. The MeshGradient + canvas
+    → near-black) over a `#050505` base. The MeshGradient + canvas
     behind are completely hidden until fade-out reveals them.
   - `visibility` is transitioned alongside `opacity` (delay-on,
     delay-off) so the loader stops eating events the instant its
     fade-out completes.
 - `.spa-loader__pct`: outlined italic typography. `color: transparent`
   + `-webkit-text-stroke: 2.5px rgba(246,243,238,0.9)` +
-  `paint-order: stroke fill`. Old `text-shadow` glow dropped â€” it
+  `paint-order: stroke fill`. Old `text-shadow` glow dropped — it
   fights with the hollow stroke.
 - `.spa-loader__pct-sym`: explicitly resets `-webkit-text-stroke: 0`
-  so the small `%` symbol stays filled â€” editorial counterpoint to
+  so the small `%` symbol stays filled — editorial counterpoint to
   the hollow number.
 
-## [0.6.1] â€” loader holds for 2.5 s, scroll-lock removed
+## [0.6.1] — loader holds for 2.5 s, scroll-lock removed
 
 - `App.tsx`: loader now runs for a deliberate minimum of 2.5 s
   regardless of network speed. Tracked via a `timeProgress` rAF
@@ -1159,17 +1166,17 @@ Result:
   2.5 s instead of snapping to 100 % in 50 ms. `ready` only flips
   once both gate and timer are done.
 - Removed the leftover scroll/touch/keyboard capture-phase
-  listeners â€” that's the only piece of the old hairline-bar
+  listeners — that's the only piece of the old hairline-bar
   attempt still in the file. The new LoadingScreen sits over the
   canvas with `pointer-events: none`, and on a 2.5 s budget there
   is no realistic window for the user to scroll the canvas before
   the loader fades out.
 
-## [0.6.0] â€” proper loading screen + under-construction routes
+## [0.6.0] — proper loading screen + under-construction routes
 
 ### feat(loading): full-screen LoadingScreen replaces the hairline bar
 
-- The old gate was just a 220 px red line under the logo â€” read as
+- The old gate was just a 220 px red line under the logo — read as
   "is this thing broken?" rather than a deliberate moment. Replaced
   with a proper fullscreen entry experience.
 - New `components/Loading/LoadingScreen.tsx`:
@@ -1185,7 +1192,7 @@ Result:
     neurons", "assembling mood", "buffering memories",
     "sharpening edges", "composing panic"), cross-fading every
     1.1 s.
-  - Corner labels: "STUDIO Â· PANIC Â· ATTACK" top-left, blinking
+  - Corner labels: "STUDIO · PANIC · ATTACK" top-left, blinking
     red dot + "LOADING" top-right, signature bottom-left,
     "2026 / v0.5" bottom-right.
   - Faint repeating CRT scan-line overlay across the whole screen
@@ -1211,49 +1218,49 @@ Result:
   Contact) all pointed at routes that didn't exist as content.
   Rather than pull in `react-router` for five placeholder pages,
   added a path-based root picker in `main.tsx`:
-  - `/` â†’ `<App />` (the real site)
+  - `/` → `<App />` (the real site)
   - `/projects | /highlights | /vocabulary | /about | /contact`
-    â†’ `<UnderConstruction />`
-  - any other path â†’ also `<UnderConstruction />` so typos /
+    → `<UnderConstruction />`
+  - any other path → also `<UnderConstruction />` so typos /
     stale links don't 404.
 - New `components/UnderConstruction/UnderConstruction.tsx`:
   fullscreen page with `codingCat.gif` (from
   `public/Under construction/codingCat.gif`), "Under construction
   :3" in display italic, a small mono sub-line, the route label
-  in the top-left corner, and a "â† back to studio" button styled
+  in the top-left corner, and a "← back to studio" button styled
   to match the nav vocabulary.
-- CSS: new `Under construction page` block â€” `.spa-uc`,
+- CSS: new `Under construction page` block — `.spa-uc`,
   `.spa-uc__bg`, `.spa-uc__gif`, `.spa-uc__title`, `.spa-uc__sub`,
   `.spa-uc__back`, `.spa-uc__route`. Pixelated `image-rendering`
   on the gif keeps the cat crisp at scaled sizes.
 - Vercel rewrites in `vercel.json` already serve `index.html` for
   all paths, so deep-links and hard reloads work in production.
 
-## [0.5.2] â€” Featured Pieces: float quote into 3D scene
+## [0.5.2] — Featured Pieces: float quote into 3D scene
 
 - `Highlights.tsx`: the quote ("There may be no better way to
-  communicate what we doâ€¦") was wedged into a 2-col DOM grid next
+  communicate what we do…") was wedged into a 2-col DOM grid next
   to the "Featured pieces" h2, fighting it for space. Removed it
   from the DOM layout entirely; the title block is now a single
   left-aligned column.
 - New `FloatingQuote` 3D element, rendered as drei `<Text>` inside
   the Highlights `<group>`. Sits at `[0, 4.6, -3.2]` (above and
-  behind the cards, in actual world space â€” scrolls in with the
+  behind the cards, in actual world space — scrolls in with the
   rest of the section). Cormorant Garamond italic 500 to match the
   gallery floor. Soft cream fill at 55%, faint outline for legibility
-  against the cards. `maxWidth=11`, centered, line-height 1.35 â†’
+  against the cards. `maxWidth=11`, centered, line-height 1.35 →
   wraps to 3 readable lines.
 - Subtle motion: `useFrame` lerps a pointer-parallax offset onto
   position and adds a slow `sin` drift on top. Gives the quote
-  presence without competing with the cards. No CSS animation â€”
+  presence without competing with the cards. No CSS animation —
   it's purely 3D.
 - Removed `.spa-highlights-quote` CSS; no longer used.
 
-## [0.5.1] â€” gallery floor text refresh
+## [0.5.1] — gallery floor text refresh
 
 - `Gallery.tsx`: removed the duplicate floor texts. The italic
   "Have a peek inside my brain" at `z=-4` is gone; the small
-  uppercase "PROJECTS Â· GALLERY Â· 2024 â€” 2026" at `z=5` is gone.
+  uppercase "PROJECTS · GALLERY · 2024 — 2026" at `z=5` is gone.
   In their place, a single `Have a peek inside my brain` set in
   Cormorant Garamond italic 500 at `z=3`, fontSize 0.5, cream
   on the reflective floor. Loaded from
@@ -1261,12 +1268,12 @@ Result:
   `<Text>` (troika-three-text) can ship the glyphs as MSDF without
   needing a bundled font file.
 
-## [0.5.0] â€” image-CDN proxy + first-paint loading gate
+## [0.5.0] — image-CDN proxy + first-paint loading gate
 
 ### perf(assets): route /landing/ images through images.weserv.nl
 
-- 64 source files in `public/landing/` total **221 MB** â€” many PNGs are
-  5â€“17 MB raw exports (e.g. `img_1034.png` 17.9 MB, `cemetery-scene1.png`
+- 64 source files in `public/landing/` total **221 MB** — many PNGs are
+  5–17 MB raw exports (e.g. `img_1034.png` 17.9 MB, `cemetery-scene1.png`
   15.4 MB). On a cold load this took *minutes* on a typical broadband
   connection and never finished on 4G.
 - Local image-processing tooling (sharp, ImageMagick, cwebp) is blocked
@@ -1278,19 +1285,19 @@ Result:
   in production, returns the path unchanged in dev. URLs are built
   by hand (not via `URLSearchParams`) so the runtime-generated URL is
   byte-identical to the hand-written `<link rel="preload">` tags in
-  `index.html` â€” same string = same browser-cache entry.
+  `index.html` — same string = same browser-cache entry.
 - All callsites updated:
-  - `helpers/useImageAssets.ts` â€” every entry routed via `assetUrl()`
+  - `helpers/useImageAssets.ts` — every entry routed via `assetUrl()`
     inside the existing `L()` builder.
-  - `components/ScatteredImages/ScatteredImages.tsx` â€” `.map(assetUrl)`
+  - `components/ScatteredImages/ScatteredImages.tsx` — `.map(assetUrl)`
     over the SCATTER_IMAGES list.
-  - `components/Highlights/Highlights.tsx` â€” 4 hard-coded `media:`
+  - `components/Highlights/Highlights.tsx` — 4 hard-coded `media:`
     paths wrapped in `assetUrl()`.
-  - `index.html` â€” 4 preload links rewritten as full weserv URLs with
+  - `index.html` — 4 preload links rewritten as full weserv URLs with
     `crossorigin="anonymous"` (matching three.js TextureLoader's
     default crossOrigin so the preload bytes are reusable).
-- Expected post-CDN payload per image: ~150â€“250 KB instead of
-  5â€“17 MB. â‰ˆ 30â€“40Ã— smaller; cold load drops from minutes to seconds.
+- Expected post-CDN payload per image: ~150–250 KB instead of
+  5–17 MB. ≈ 30–40× smaller; cold load drops from minutes to seconds.
 
 ### feat(loading): gate scroll on first-batch preload + progress line
 
@@ -1299,19 +1306,19 @@ Result:
   Now scroll is blocked until the first 8 gallery portraits are in
   the browser's HTTP cache, so the gallery is fully populated the
   moment the user scrolls past the hero.
-- New hook `helpers/usePreloadGate.ts` â€” DOM-side preloader that
+- New hook `helpers/usePreloadGate.ts` — DOM-side preloader that
   fires `new Image()` per URL with `crossOrigin = 'anonymous'`
   (so the cache entry is shared with three.js' subsequent GPU
   upload). Returns `{ ready, progress }`. Counts both `onload` and
   `onerror` as "done" so a single broken URL can't deadlock the
-  gate. 8 s failsafe timeout â€” never blocks the user indefinitely
+  gate. 8 s failsafe timeout — never blocks the user indefinitely
   on a stalled network.
-- `App.tsx` â€” `useMemo`s the first 8 gallery URLs, passes them to
+- `App.tsx` — `useMemo`s the first 8 gallery URLs, passes them to
   `usePreloadGate`, then attaches capture-phase `wheel` /
   `touchmove` / `keydown` listeners that `preventDefault()` until
   ready. Capture phase runs before drei `<ScrollControls>`'s own
   handlers so this also stops the canvas from advancing.
-- `HeroOverlay.tsx` â€” accepts `{ ready, progress }`, renders a thin
+- `HeroOverlay.tsx` — accepts `{ ready, progress }`, renders a thin
   220 px red progress line below the logo while loading, fades it
   out and reveals the "scroll to enter" prompt once ready. Single
   fixed-height slot (`.spa-hero__cta`) so the logo stays vertically
@@ -1320,13 +1327,13 @@ Result:
   `.spa-load-bar__fill`, `.spa-load-bar--done`,
   `.spa-scroll-prompt--ready`. Drift animation is now only applied
   in the `--ready` state so it can't override the hidden opacity.
-- On a fast connection the whole gate is over in <500 ms â€” feels
+- On a fast connection the whole gate is over in <500 ms — feels
   deliberate, not annoying. On slow connections the user gets a
   truthful progress signal instead of a broken-feeling site.
 
 ### Notes / non-goals
 
-- Logo PNG (62 KB, transparent) stays as a local PNG â€” already
+- Logo PNG (62 KB, transparent) stays as a local PNG — already
   tiny, transparency matters, and weserv would lose nothing.
 - 3 MP4 files in `/landing/` (totalling ~10 MB) are NOT referenced
   anywhere in code; left in place for now. Can be removed in a
@@ -1339,16 +1346,16 @@ Result:
   reliability concern we can move to a hosted service or run sharp
   on Vercel's build infra (laptop never installs it).
 
-## [0.4.2] â€” Vercel deploy: logo case fix
+## [0.4.2] — Vercel deploy: logo case fix
 
-- `public/Logo/` â†’ `public/logo/`. The folder was tracked in git with
+- `public/Logo/` → `public/logo/`. The folder was tracked in git with
   a capital `L` but every code reference (`/logo/PanicAttackLogo.png`
   in `index.html`, `HeroOverlay.tsx`, `NavHeader.tsx`) used lowercase.
   Windows is case-insensitive so it worked locally; Vercel runs on
   Linux which is case-sensitive, so the logo 404'd in production and
   the browser showed a broken-image icon with the alt text.
 
-## [0.4.1] â€” perf pass + scroll-blank bugfix
+## [0.4.1] — perf pass + scroll-blank bugfix
 
 ### Bugfix: scene blanked for one frame when scrolling
 
@@ -1357,9 +1364,9 @@ Result:
   that **suspended** while the network fetch resolved. Because the
   only Suspense boundary in the tree was the top-level one in
   `App.tsx` wrapping `<Layout/>`, that local suspension blanked the
-  entire 3D scene for one frame on every wrap â€” the symptom users
+  entire 3D scene for one frame on every wrap — the symptom users
   reported as "everything except the background disappears for a
-  split second when scrolling". Aggravated by 5â€“17 MB source PNGs
+  split second when scrolling". Aggravated by 5–17 MB source PNGs
   in `/landing/` that took multiple frames to decode.
   - **Per-slot Suspense**: each carousel slot is now wrapped in its
     own `<Suspense fallback={null}>` so a still-loading texture only
@@ -1367,7 +1374,7 @@ Result:
   - **Eager preload**: `useTexture.preload(url)` is fired for every
     gallery image on mount, so by the time any slot wraps to a fresh
     URL the texture is already resident in `THREE.Cache` and the
-    render resolves synchronously â€” no fallback at all in practice.
+    render resolves synchronously — no fallback at all in practice.
 
 ### Perf
 
@@ -1380,7 +1387,7 @@ Result:
 - `Gallery.tsx`: `MeshReflectorMaterial` resolution dropped from
   `512` to `256` (high tier) and `128` (low tier); blur disabled
   entirely on low tier. Reflector render-target cost is the single
-  most expensive thing in the gallery â€” this reclaims real GPU.
+  most expensive thing in the gallery — this reclaims real GPU.
 - `GraphicDesign.tsx` (Lens): replaced four per-frame `new
   THREE.Vector3()` calls + a `.clone()` with module-scope scratch
   vectors (`_orbit`, `_pointer`, `_diff`, `_target`). Eliminates GC
@@ -1405,7 +1412,7 @@ Result:
 
 - Removed `index.html.bak`, `preview.log`, `preview.err.log`.
 
-## [0.4.0] â€” responsive design pass
+## [0.4.0] — responsive design pass
 
 ### Mobile / touch UX
 
@@ -1425,23 +1432,23 @@ Result:
 
 ### Adaptive 3D framing
 
-- `App.tsx`: camera FOV now derives from viewport aspect â€” 70Â° on
-  tall phones, 60Â° on portrait tablets, 52Â° square-ish, 42Â° default
+- `App.tsx`: camera FOV now derives from viewport aspect — 70° on
+  tall phones, 60° on portrait tablets, 52° square-ish, 42° default
   landscape. Resize listener updates live. Wider FOV on narrow
   aspects keeps section content from cropping horizontally.
 - `GraphicDesign.tsx` and `AIArt.tsx`: the torus-knot and Hedgehog
-  groups are wrapped in viewport-aware scale groups â€” `min(1,
+  groups are wrapped in viewport-aware scale groups — `min(1,
   viewport.width / 6.4)` clamped to `>=0.55`. Sculptures shrink with
   the canvas so orbit reach + headline width fit narrow framings.
 
 ### Layout / typography
 
 - `HeroOverlay.tsx`: logo width `clamp(220px, 70vw, 840px)` plus
-  `maxWidth: 92vw` (was `clamp(380px, 56vw, 840px)` â€” overflowed
+  `maxWidth: 92vw` (was `clamp(380px, 56vw, 840px)` — overflowed
   phones <420px).
 - `CategorySection.tsx`: now reads `useThree().viewport`. On
   portrait (`viewport.width / viewport.height < 1`), text and hero
-  stack vertically â€” hero at local y=+1.1, text at y=âˆ’1.6, both
+  stack vertically — hero at local y=+1.1, text at y=−1.6, both
   x-centered. On landscape it keeps the historic side-by-side
   alternation. HTML body width also raised from `min(760px, 56vw)`
   to `min(760px, 86vw)` so mobile body copy uses the full available
@@ -1457,16 +1464,16 @@ Result:
     becomes vertical stack on phones; lightbox close button
     smaller.
 
-## [0.3.2] â€” pull sculptures up: torus-knot to 01, Hedgehog to 03
+## [0.3.2] — pull sculptures up: torus-knot to 01, Hedgehog to 03
 
 - Torus-knot composition (Lens + headline) moved from `ThreeDeeArt.tsx`
-  back to `GraphicDesign.tsx` â€” now appears right below the gallery.
-- Hedgehog moved from `UXDesign.tsx` to `AIArt.tsx` â€” appears next.
+  back to `GraphicDesign.tsx` — now appears right below the gallery.
+- Hedgehog moved from `UXDesign.tsx` to `AIArt.tsx` — appears next.
 - 02 (3D Art) and 04 (UX Design) are now text-only.
 - Sides preserved as registered (graphic left / threeD right / ai
   left / ux right) so visual side alternation stays intact.
 
-## [0.3.1] â€” pull CMYK + Latent Bloom
+## [0.3.1] — pull CMYK + Latent Bloom
 
 - 01 (Graphic Design): sculpture removed, hero is empty (text only).
 - 03 (AI Art): sculpture removed, hero is empty (text only).
@@ -1475,7 +1482,7 @@ Result:
   `aiGlitchAt` keys; PostFx no longer reads them.
 - `helpers/usePointerVelocity.ts`: removed (was only used by Latent Bloom).
 
-## [0.3.0] â€” sculpture pass: shock-value reset for 01/03/04, torus-knot reassigned to 02
+## [0.3.0] — sculpture pass: shock-value reset for 01/03/04, torus-knot reassigned to 02
 
 ### Sculptures
 
@@ -1483,76 +1490,76 @@ Result:
   THE TRADITIONAL FORMAT" headline. The composition was previously
   authored inside `GraphicDesign.tsx` (01); it has been relocated
   verbatim into `ThreeDeeArt.tsx` so the pairing the user was already
-  seeing on screen is now the canonical one. Click â†’ `knifeSlashAt`
+  seeing on screen is now the canonical one. Click → `knifeSlashAt`
   event for a chromatic-aberration pulse.
 - 01 (Graphic Design) replaced with **CMYK Misregistration**: three
-  halftone dot screens (cyan / magenta / yellow at 15Â° / 75Â° / 0Â°)
+  halftone dot screens (cyan / magenta / yellow at 15° / 75° / 0°)
   multiplied against a white backdrop. Each layer follows the cursor
-  with a different drag factor â†’ constant misregistration. Click
-  springs all three offsets to zero over ~600 ms â€” the bold "01"
+  with a different drag factor → constant misregistration. Click
+  springs all three offsets to zero over ~600 ms — the bold "01"
   silhouette briefly resolves crisply, then drifts apart again.
   Source image is canvas-rasterised at mount. Fires `cmykSnapAt` on
-  click for a soft PostFx noise pulse. Pure CMY palette â€” total
+  click for a soft PostFx noise pulse. Pure CMY palette — total
   break from paper/blood.
 - 03 (AI Art) replaced with **Latent Bloom**: 5000-point cloud (1800
-  on tier â‰¤ 1) hallucinating through 7 SDF-sampled silhouettes â€” eye,
+  on tier ≤ 1) hallucinating through 7 SDF-sampled silhouettes — eye,
   hand, butterfly, key, skull, "DREAM", bloom. All seven targets
-  rasterised at mount, packed into a single (N Ã— 7) RGBA Float
+  rasterised at mount, packed into a single (N × 7) RGBA Float
   DataTexture; vertex shader morphs between two consecutive targets
   per frame. Pointer velocity multiplies morph speed (slow cursor =
-  slow dream, fast cursor = manic generation). Click â†’ freezes the
+  slow dream, fast cursor = manic generation). Click → freezes the
   morph for ~220 ms and fires `aiGlitchAt`. Neon vaporwave palette
-  (cyan â†” magenta) â€” full break from paper/blood.
+  (cyan ↔ magenta) — full break from paper/blood.
 - 04 (UX Design) replaced with **Hedgehog**: an InstancedMesh of 420
-  cones (150 on tier â‰¤ 1) distributed via Fibonacci spiral on a unit
+  cones (150 on tier ≤ 1) distributed via Fibonacci spiral on a unit
   sphere, each oriented along its outward surface normal. Per-instance
-  recoil from the cursor â€” spikes whose direction aligns with the
-  pointer collapse toward zero length, the rest stay erect. Click â†’
-  250 ms global pulse extending every spike to 2Ã— length, plus a
+  recoil from the cursor — spikes whose direction aligns with the
+  pointer collapse toward zero length, the rest stay erect. Click →
+  250 ms global pulse extending every spike to 2× length, plus a
   PostFx noise burst via `hedgehogPulseAt`. Section progress drives
   ball radius growth and slow yaw. Caution-tape yellow + ink black
-  palette. Conceptual inversion â€” a UX hero that visibly refuses to
+  palette. Conceptual inversion — a UX hero that visibly refuses to
   be touched.
 
 ### Architecture
 
-- New `helpers/sculptureEvents.ts` â€” tiny zustand store of one-shot
+- New `helpers/sculptureEvents.ts` — tiny zustand store of one-shot
   click timestamps (`knifeSlashAt`, `aiGlitchAt`, `hedgehogPulseAt`,
   `cmykSnapAt`) plus a `decay(at, dur)` envelope helper. Sculptures
   fire their event on click; PostFx and the sculpture itself decay
   the timestamp into transient effects.
-- New `helpers/usePointerVelocity.ts` â€” smoothed NDC pointer-velocity
+- New `helpers/usePointerVelocity.ts` — smoothed NDC pointer-velocity
   hook with EMA (fast attack, slow decay). Used by Latent Bloom to
   modulate morph speed; reusable by future sculptures.
-- `PostFx` extended: ChromaticAberration (transient â€” knife slash and
-  AI glitch) and Noise (transient â€” hedgehog pulse and CMYK snap)
+- `PostFx` extended: ChromaticAberration (transient — knife slash and
+  AI glitch) and Noise (transient — hedgehog pulse and CMYK snap)
   effects appended to the chain. Both effects are constructed
   manually via `useMemo` and inserted as `<primitive>` so per-frame
   mutation of `offset` and `blendMode.opacity.value` bypasses the
   drei wrapper's prop diffing. Effects collapse to zero between
-  events â€” chain looks identical to the static base when idle.
-  Tier â‰¤ 1 still bypasses the entire chain.
+  events — chain looks identical to the static base when idle.
+  Tier ≤ 1 still bypasses the entire chain.
 
 ### Cleanup
 
 - `Layout.tsx`: dropped unused `VIEWPORT_HEIGHT_UNITS` import.
 - `Vocabulary.tsx`: dropped unused `state` parameter from `useFrame`.
 
-## [0.2.0] â€” dark editorial pass + interactivity
+## [0.2.0] — dark editorial pass + interactivity
 
 ### Visual
 
 - Hero: logo image replaces "EMA STOYANOVA" wordmark. Red MeshGradient
   backdrop kept. MeshGradient perf-capped (maxPixelCount, minPixelRatio).
-  No particles in hero â€” zero GPU cost from r3f in that section.
+  No particles in hero — zero GPU cost from r3f in that section.
 - Categories rebuilt as a 12-column DOM card grid: ink number card,
   blood eyebrow pill, italic title card, body card, toolkit chips card,
   file index strip. Cards animate in and lift on hover. Fixes the
   "rogue 03 in section 02" overlap (Html is hidden when visibility < 0.25).
-- Gallery: drei reflector pattern â€” 9 framed photographs in a U-formation
+- Gallery: drei reflector pattern — 9 framed photographs in a U-formation
   around a reflective dark floor. Frame color lerps to red on hover.
   Breathing image zoom per-frame. Pointer parallax tilts the rig.
-- Scattered images: reduced 18 â†’ 6, size doubled (h 2.4â€“3.6 units).
+- Scattered images: reduced 18 → 6, size doubled (h 2.4–3.6 units).
   Hover ramps shader intensity to 0 (reveals bare image). Click opens
   lightbox. Pushed farther out to avoid category grid overlap.
 - Vocabulary section (new): swiss-knife textpath SVG (16k outline) with
@@ -1563,18 +1570,18 @@ Result:
 ### Interactivity
 
 - Click-to-enlarge lightbox: helpers/lightbox.ts pubsub + DOM Lightbox
-  modal. ESC / backdrop / Ã— close.
-- Hover on scattered images removes shader treatment (uIntensity â†’ 0).
+  modal. ESC / backdrop / × close.
+- Hover on scattered images removes shader treatment (uIntensity → 0).
 
 ### Performance
 
 - PostFx stripped: no bloom, no chromatic aberration, no noise. Only
   BrightnessContrast + Vignette remain. Low-power: chain fully bypassed.
-- AI Art particles halved: 18000 â†’ 4500 (high), 4500 â†’ 1800 (low).
+- AI Art particles halved: 18000 → 4500 (high), 4500 → 1800 (low).
 - Gallery reflector resolution: 256 (was 2048 in reference), blur [120,50].
 - Environment: frames=1 (static, rendered once), resolution 32.
-- Hero r3f scene is empty group. MeshGradient capped at 1280Ã—720 px.
-- Sections compacted: 8.0 â†’ 7.1 total scroll pages.
+- Hero r3f scene is empty group. MeshGradient capped at 1280×720 px.
+- Sections compacted: 8.0 → 7.1 total scroll pages.
 - AdaptiveDpr range [1, 1.6] (high) / [0.85, 1.1] (low).
 
 ### Architecture
@@ -1583,11 +1590,11 @@ Result:
 - ScrollBridge: publishes drei's scroll el to window.__spaScrollEl.
 - Vocabulary section: knifePathD.ts (16k SVG path) + Vocabulary.tsx.
 - NavHeader: reads --spa-scroll CSS var for active state detection.
-- GalleryCard.tsx removed â€” replaced by inline Frame inside Gallery.tsx.
+- GalleryCard.tsx removed — replaced by inline Frame inside Gallery.tsx.
 
-## [0.1.0] â€” initial build
+## [0.1.0] — initial build
 
-### Phase 1 â€” scaffold
+### Phase 1 — scaffold
 
 - Vite 6 + React 19 + TypeScript project scaffold
 - `@react-three/fiber` v9 + drei v10 + postprocessing v3 wiring
@@ -1598,7 +1605,7 @@ Result:
 - `useScrollSection` + `useScrollVelocity` + `useDeviceProfile` hooks
 - Postprocessing pipeline (bloom + chromatic aberration + vignette + noise)
 
-### Phase 2 â€” hero + gallery
+### Phase 2 — hero + gallery
 
 - Hero: animated dark-noise gradient backdrop (custom GLSL), centered logo
   plane that fades in then dissolves out as scroll progresses, drifting
@@ -1608,7 +1615,7 @@ Result:
   for cards passing through the front, pointer parallax tilt on the whole
   rig, per-card jitter (tilt + height) seeded for stable layout
 
-### Phase 3 â€” scattered images + custom shaders
+### Phase 3 — scattered images + custom shaders
 
 - Five custom GLSL fragment shaders shipped in `shaders/imageShaders.ts`:
   halftone, ordered Bayer dithering, paper-grain warp, ribbed flute glass,
@@ -1621,7 +1628,7 @@ Result:
 - Asset filenames sanitized to ASCII-safe lowercase kebab-case to avoid
   Vite static-middleware quirks with `&`, parens, and spaces
 
-### Phase 4 â€” categories
+### Phase 4 — categories
 
 - Shared `CategorySection` layout: massive outlined liquid-metal number,
   HTML eyebrow + serif title + body, scroll-driven entrance/exit
@@ -1637,7 +1644,7 @@ Result:
   scroll-in then explodes apart to reveal a wireframe grid; CRT scan-line
   shader on the screen plane; magnetic pull on UI elements
 
-### Phase 5 â€” highlights + polish
+### Phase 5 — highlights + polish
 
 - Highlights: 4-card grid in `<Html>` overlay using paper-design's
   `LiquidMetal` shader as the hover treatment, gentle CSS float stagger
@@ -1651,14 +1658,14 @@ Result:
 
 ### Performance
 
-- Detected GPU tier â‰¤ 1 collapses the visual budget: scattered images use
+- Detected GPU tier ≤ 1 collapses the visual budget: scattered images use
   plain texture pass-through, particle morph drops to 4.5K points, lens
   glass swaps to cheap `MeshPhysicalMaterial` transmission, post chain
   drops bloom + chromatic aberration
 
 ### Known caveats
 
-- Headless Chromium can hit WebGL context lost on intensive r3f scenes â€”
+- Headless Chromium can hit WebGL context lost on intensive r3f scenes —
   the production deploy on real hardware is unaffected
 - HDRI loads from drei's CDN at runtime; first paint can be ~300ms slower
   on cold cache
