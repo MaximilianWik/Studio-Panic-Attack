@@ -1,10 +1,13 @@
+import { useMemo } from 'react';
 import PageShell from '../components/PageShell/PageShell';
 import { ABOUT_ASSETS } from '../generated/mediaManifest';
+import DispersingText from '../components/About/DispersingText';
+import type { TextBlock } from '../components/About/DispersingText';
+import GlowParticles from '../components/About/GlowParticles';
 
 /**
- * About page — dark theme with custom Background.PNG, hand-drawn "Hi I'm Ema"
- * artwork over it, paper-tape contact card (dark variant),
- * and the ImageStrip.webp followed by under-image-strip.PNG below.
+ * About page — dark theme with Background.PNG, DispersingText for all copy,
+ * interactive glow particles, ImageStrip.webp + under-image-strip.
  */
 
 const BACKGROUND = ABOUT_ASSETS.find((a) => a.file.toLowerCase().startsWith('background'));
@@ -13,6 +16,21 @@ const STRIP = ABOUT_ASSETS.find((a) => a.file.toLowerCase() === 'imagestrip.webp
 const UNDER_STRIP = ABOUT_ASSETS.find((a) => a.file.toLowerCase().startsWith('under image strip'));
 
 export function About() {
+  const textBlocks = useMemo<TextBlock[]>(() => [
+    { text: 'ABOUT', tag: 'h1', className: 'spa-about__title' },
+    { text: 'Welcome to my universe', tag: 'h2', className: 'spa-about__sub' },
+    {
+      text: "I\u2019m a Stockholm-based designer working across events, graphic design, 3D, interactive media and the occasional weird experiment that doesn\u2019t fit anywhere else. Studio Panic Attack is the umbrella for it all \u2014 a playground for visual systems, immersive nights and things that get people talking to each other.",
+      tag: 'p',
+      className: 'spa-about__lede',
+    },
+    {
+      text: "I like working hands-on, from concept and 3D to wiring up sensors, running projection mapping or printing posters. I care about how an idea actually feels in a room, not just on a screen.",
+      tag: 'p',
+      className: 'spa-about__body',
+    },
+  ], []);
+
   return (
     <PageShell routeName="About" className="spa-about">
       {BACKGROUND ? (
@@ -22,6 +40,14 @@ export function About() {
           aria-hidden
         />
       ) : null}
+
+      <GlowParticles
+        count={90}
+        attractRadius={180}
+        hue={265}
+        hueSpread={50}
+        className="spa-about__particles"
+      />
 
       <main className="spa-about__main">
         <div className="spa-about__col spa-about__col--text">
@@ -33,20 +59,15 @@ export function About() {
               loading="eager"
             />
           ) : null}
-          <h1 className="spa-about__title">ABOUT</h1>
-          <h2 className="spa-about__sub">Welcome to my universe</h2>
-          <p className="spa-about__lede">
-            I&rsquo;m a Stockholm-based designer working across events, graphic design,
-            3D, interactive media and the occasional weird experiment that
-            doesn&rsquo;t fit anywhere else. Studio Panic Attack is the umbrella for
-            it all &mdash; a playground for visual systems, immersive nights and
-            things that get people talking to each other.
-          </p>
-          <p className="spa-about__body">
-            I like working hands-on, from concept and 3D to wiring up sensors,
-            running projection mapping or printing posters. I care about how
-            an idea actually feels in a room, not just on a screen.
-          </p>
+
+          <DispersingText
+            blocks={textBlocks}
+            radius={110}
+            maxDisplace={50}
+            spring={0.06}
+            friction={0.88}
+            className="spa-about__dispersing"
+          />
 
           <div className="spa-about__card" aria-label="Contact card">
             <div className="spa-about__card-name">Ema Stoyanova</div>
@@ -72,7 +93,6 @@ export function About() {
             </div>
           </div>
         </div>
-
       </main>
 
       {STRIP ? (
