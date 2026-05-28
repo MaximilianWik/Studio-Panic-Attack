@@ -2,6 +2,14 @@
 
 All notable changes to Studio Panic Attack are tracked here.
 
+## [1.2.30] -- particles: fire/old-film color palette
+
+- `src/pages/About.tsx`: changed `GlowParticles` props from purple (hue 265, spread 50) to warm amber (hue 25, spread 20).
+- `src/components/About/GlowParticles.tsx`: rendering now uses dynamic hue/saturation/lightness per particle — deep red/amber at rest (45% lightness), shifts toward bright orange-yellow near the cursor (70% lightness, +15 hue). Connection lines use 80% sat / 50% lightness for a warm ember look.
+
+
+- `src/styles/whiteboard-pages.css`: removed `margin-bottom: 60px` from `.spa-about__understrip-wrap` — the image now sits flush at the bottom of the page with no trailing black gap.
+
 ## [1.2.28] -- about: dispersing text + glow particles
 
 - **`src/components/About/DispersingText.tsx`** — new component: renders an array of `TextBlock` items as individually-moveable `<span>` chars. A single `pointermove` listener (on `window`) feeds cursor coords; a single RAF loop spring-physics-drives ALL chars. Chars within `radius` of the cursor get pushed away; they spring back with configurable `spring`/`friction` damping. Recalculates home positions on resize and scroll. Coordinate system uses purely container-relative positions from `getBoundingClientRect` (no scroll/offsetLeft mixing) so dispersion tracks the actual cursor position accurately.

@@ -128,16 +128,21 @@ export function GlowParticles({
       const glowAlpha = p.alpha + proximity * 0.5;
       const glowSize = size + proximity * 4;
 
+      // Fire/film palette: at rest = deep red/amber, near cursor = bright orange/yellow.
+      const litHue = p.hue + proximity * 15; // shift toward yellow when attracted
+      const litLight = 45 + proximity * 25;  // 45% dim ember → 70% bright flame
+      const litSat = 85 + proximity * 10;
+
       // Outer glow.
       ctx.beginPath();
       ctx.arc(p.x, p.y, glowSize * 3, 0, Math.PI * 2);
-      ctx.fillStyle = `hsla(${p.hue}, 80%, 65%, ${glowAlpha * 0.12})`;
+      ctx.fillStyle = `hsla(${litHue}, ${litSat}%, ${litLight - 10}%, ${glowAlpha * 0.15})`;
       ctx.fill();
 
       // Core.
       ctx.beginPath();
       ctx.arc(p.x, p.y, glowSize, 0, Math.PI * 2);
-      ctx.fillStyle = `hsla(${p.hue}, 85%, 72%, ${glowAlpha})`;
+      ctx.fillStyle = `hsla(${litHue}, ${litSat}%, ${litLight}%, ${glowAlpha})`;
       ctx.fill();
     }
 
@@ -159,7 +164,7 @@ export function GlowParticles({
           const abDist = Math.sqrt(abx * abx + aby * aby);
           if (abDist < 100) {
             const lineAlpha = (1 - abDist / 100) * 0.3;
-            ctx.strokeStyle = `hsla(${(a.hue + b.hue) / 2}, 70%, 60%, ${lineAlpha})`;
+            ctx.strokeStyle = `hsla(${(a.hue + b.hue) / 2}, 80%, 50%, ${lineAlpha})`;
             ctx.beginPath();
             ctx.moveTo(a.x, a.y);
             ctx.lineTo(b.x, b.y);

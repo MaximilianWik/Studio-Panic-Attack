@@ -44,8 +44,8 @@ export function About() {
       <GlowParticles
         count={90}
         attractRadius={180}
-        hue={265}
-        hueSpread={50}
+        hue={25}
+        hueSpread={20}
         className="spa-about__particles"
       />
 

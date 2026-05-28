@@ -449,7 +449,7 @@ img[data-failed="1"] {
 .spa-about__understrip-wrap {
   position: relative;
   z-index: 2;
-  margin: 0 0 60px;
+  margin: 0;
   padding: 0;
 }
 .spa-about__understrip-img {
