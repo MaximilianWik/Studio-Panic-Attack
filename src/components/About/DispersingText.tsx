@@ -59,15 +59,14 @@ export function DispersingText({
     if (!container) return;
     const spans = container.querySelectorAll<HTMLSpanElement>('[data-dchar]');
     const rect = container.getBoundingClientRect();
-    const scrollY = window.scrollY;
-    const scrollX = window.scrollX;
     const chars: CharState[] = [];
     spans.forEach((el) => {
       const r = el.getBoundingClientRect();
       chars.push({
         el,
-        homeX: r.left + r.width / 2 - rect.left + scrollX - container.offsetLeft,
-        homeY: r.top + r.height / 2 - rect.top + scrollY - container.offsetTop,
+        // Both r and rect are viewport-relative — difference is container-relative.
+        homeX: r.left + r.width / 2 - rect.left,
+        homeY: r.top + r.height / 2 - rect.top,
         x: 0,
         y: 0,
         vx: 0,
@@ -145,16 +144,25 @@ export function DispersingText({
     }, 100);
     window.addEventListener('pointermove', onPointerMove);
 
-    // Recalculate home positions on resize.
+    // Recalculate home positions on resize/scroll (scroll shifts viewport rects).
     const onResize = () => initChars();
     window.addEventListener('resize', onResize);
+    // Debounced scroll reinit — container position may change.
+    let scrollTimer: ReturnType<typeof setTimeout>;
+    const onScroll = () => {
+      clearTimeout(scrollTimer);
+      scrollTimer = setTimeout(initChars, 80);
+    };
+    window.addEventListener('scroll', onScroll, { passive: true });
 
     return () => {
       mountedRef.current = false;
       clearTimeout(t);
+      clearTimeout(scrollTimer);
       cancelAnimationFrame(rafRef.current);
       window.removeEventListener('pointermove', onPointerMove);
       window.removeEventListener('resize', onResize);
+      window.removeEventListener('scroll', onScroll);
     };
   }, [initChars, tick, onPointerMove]);
 
