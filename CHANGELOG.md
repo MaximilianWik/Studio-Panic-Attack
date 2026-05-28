@@ -2,7 +2,12 @@
 
 All notable changes to Studio Panic Attack are tracked here.
 
-## [1.2.26] -- about page: dark photographic theme
+## [1.2.27] -- about: remove portrait circle
+
+- `src/pages/About.tsx`: removed the portrait column (`spa-about__col--portrait`, `spa-about__portrait`, `IMG_5800` lookup, `Img` import).
+- `src/styles/whiteboard-pages.css`: `spa-about__main` changed from 2-col grid to single-column `max-width: 760px` block. Deleted `.spa-about__col--portrait`, `.spa-about__portrait`, `.__portrait img/picture`, `.spa-about__portrait-ring` rules. Cleaned up the 900px media query.
+
+
 
 The About page is reskinned to use the new `Background.PNG` photographic backdrop instead of the whiteboard grid, with all text/UI flipped to a dark colour scheme.
 

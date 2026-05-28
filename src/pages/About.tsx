@@ -73,22 +73,6 @@ export function About() {
           </div>
         </div>
 
-        <div className="spa-about__col spa-about__col--portrait">
-          <div className="spa-about__portrait">
-            {PORTRAIT ? (
-              <Img
-                src={PORTRAIT.url}
-                alt="Portrait of Ema"
-                eager
-                className="spa-about__portrait-img"
-                webpSrcset={PORTRAIT.webpSrcset}
-                avifSrcset={PORTRAIT.avifSrcset}
-                lqip={PORTRAIT.lqip}
-              />
-            ) : null}
-            <div className="spa-about__portrait-ring" aria-hidden />
-          </div>
-        </div>
       </main>
 
       {STRIP ? (

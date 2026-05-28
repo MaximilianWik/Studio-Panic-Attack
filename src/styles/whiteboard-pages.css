@@ -316,13 +316,9 @@ img[data-failed="1"] {
 .spa-about__main {
   position: relative;
   z-index: 1;
-  display: grid;
-  grid-template-columns: minmax(0, 1.1fr) minmax(0, 1fr);
-  gap: clamp(24px, 5vw, 80px);
-  max-width: 1280px;
+  max-width: 760px;
   margin: 0 auto;
   padding: clamp(110px, 12vh, 160px) clamp(24px, 6vw, 80px) 60px;
-  align-items: center;
 }
 .spa-about__col--text { display: flex; flex-direction: column; gap: 18px; }
 
@@ -419,32 +415,6 @@ img[data-failed="1"] {
   border-color: #ffffff;
 }
 
-.spa-about__col--portrait { display: flex; justify-content: center; }
-.spa-about__portrait {
-  position: relative;
-  width: clamp(260px, 36vw, 480px);
-  aspect-ratio: 1 / 1;
-  border-radius: 50%;
-  overflow: hidden;
-  background: #1a1a1a;
-  box-shadow:
-    0 24px 48px -16px rgba(0, 0, 0, 0.7),
-    inset 0 0 60px rgba(0, 0, 0, 0.4);
-}
-.spa-about__portrait img,
-.spa-about__portrait picture {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-}
-.spa-about__portrait-ring {
-  position: absolute;
-  inset: -8px;
-  border: 1px dashed rgba(255, 255, 255, 0.28);
-  border-radius: 50%;
-  pointer-events: none;
-}
-
 /* Image strip + under-strip image (replace the old CSS film strip). */
 .spa-about__strip-wrap {
   position: relative;
@@ -473,12 +443,8 @@ img[data-failed="1"] {
 
 @media (max-width: 900px) {
   .spa-about__main {
-    grid-template-columns: 1fr;
-    gap: 32px;
     padding-top: clamp(96px, 16vh, 140px);
   }
-  .spa-about__col--portrait { order: -1; }
-  .spa-about__portrait { width: clamp(220px, 60vw, 320px); }
 }
 
 /* ============================================================
