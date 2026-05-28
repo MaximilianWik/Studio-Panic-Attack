@@ -1,27 +1,38 @@
 import PageShell from '../components/PageShell/PageShell';
-import { Img } from '../helpers/media';
 import { ABOUT_ASSETS } from '../generated/mediaManifest';
 
 /**
- * About page — two-column whiteboard layout with handwritten "Hi I'm Ema",
- * portrait circle, paper-tape contact card, and a CSS film strip below.
- *
- * Portrait selection: prefers IMG_5800-min.PNG (per spec) and falls back to
- * any available about asset. Strip thumbnails use the remaining about
- * images plus a couple of project covers for variety.
+ * About page — dark theme with custom Background.PNG, hand-drawn "Hi I'm Ema"
+ * artwork over it, paper-tape contact card (dark variant),
+ * and the ImageStrip.webp followed by under-image-strip.PNG below.
  */
 
-const PORTRAIT = ABOUT_ASSETS.find((a) => a.file.includes('5800')) ?? ABOUT_ASSETS[0];
-const STRIP = ABOUT_ASSETS.filter((a) => a !== PORTRAIT);
+const BACKGROUND = ABOUT_ASSETS.find((a) => a.file.toLowerCase().startsWith('background'));
+const HI_EMA = ABOUT_ASSETS.find((a) => a.file.toLowerCase().startsWith('hi im ema'));
+const STRIP = ABOUT_ASSETS.find((a) => a.file.toLowerCase() === 'imagestrip.webp');
+const UNDER_STRIP = ABOUT_ASSETS.find((a) => a.file.toLowerCase().startsWith('under image strip'));
 
 export function About() {
   return (
     <PageShell routeName="About" className="spa-about">
+      {BACKGROUND ? (
+        <div
+          className="spa-about__bg"
+          style={{ backgroundImage: `url("${BACKGROUND.url}")` }}
+          aria-hidden
+        />
+      ) : null}
+
       <main className="spa-about__main">
         <div className="spa-about__col spa-about__col--text">
-          <svg className="spa-about__hi" viewBox="0 0 360 100" aria-label="Hi! I'm Ema :)">
-            <text x="0" y="72" className="spa-about__hi-text">Hi! I&rsquo;m Ema :)</text>
-          </svg>
+          {HI_EMA ? (
+            <img
+              className="spa-about__hi-img"
+              src={HI_EMA.url}
+              alt="Hi I'm Ema"
+              loading="eager"
+            />
+          ) : null}
           <h1 className="spa-about__title">ABOUT</h1>
           <h2 className="spa-about__sub">Welcome to my universe</h2>
           <p className="spa-about__lede">
@@ -38,7 +49,6 @@ export function About() {
           </p>
 
           <div className="spa-about__card" aria-label="Contact card">
-            <div className="spa-about__card-tape" aria-hidden />
             <div className="spa-about__card-name">Ema Stoyanova</div>
             <a className="spa-about__card-line" href="mailto:panicoattaki@gmail.com">panicoattaki@gmail.com</a>
             <div className="spa-about__card-icons">
@@ -81,22 +91,27 @@ export function About() {
         </div>
       </main>
 
-      <section className="spa-about__strip" aria-label="Film strip of recent work">
-        <div className="spa-about__strip-frames">
-          {STRIP.concat(STRIP).slice(0, 8).map((a, i) => (
-            <div className="spa-about__strip-frame" key={i}>
-              <Img
-                src={a.url}
-                alt=""
-                webpSrcset={a.webpSrcset}
-                avifSrcset={a.avifSrcset}
-                lqip={a.lqip}
-              />
-              <span className="spa-about__strip-num">{String(i + 1).padStart(2, '0')}A</span>
-            </div>
-          ))}
-        </div>
-      </section>
+      {STRIP ? (
+        <section className="spa-about__strip-wrap" aria-label="Strip of recent work">
+          <img
+            className="spa-about__strip-img"
+            src={STRIP.url}
+            alt="Strip of recent work"
+            loading="lazy"
+          />
+        </section>
+      ) : null}
+
+      {UNDER_STRIP ? (
+        <section className="spa-about__understrip-wrap" aria-hidden>
+          <img
+            className="spa-about__understrip-img"
+            src={UNDER_STRIP.url}
+            alt=""
+            loading="lazy"
+          />
+        </section>
+      ) : null}
     </PageShell>
   );
 }

@@ -2,6 +2,13 @@
 
 All notable changes to Studio Panic Attack are tracked here.
 
+## [1.2.26] -- about page: dark photographic theme
+
+The About page is reskinned to use the new `Background.PNG` photographic backdrop instead of the whiteboard grid, with all text/UI flipped to a dark colour scheme.
+
+- `src/pages/About.tsx`: replaced the SVG "Hi! I'm Ema :)" CSS text with the `Hi im ema.PNG` artwork (positioned over the background, slight `-3deg` tilt, drop-shadow). Removed the `spa-about__card-tape` CSS strip element. Removed the old `STRIP.concat(...)` filmstrip render and replaced it with two stacked `<section>`s: `spa-about__strip-wrap` rendering `ImageStrip.webp`, then `spa-about__understrip-wrap` rendering `under image strip.PNG`. Added `<div className="spa-about__bg">` mounted off the page-shell with `Background.PNG` as a fixed full-bleed `background-image`. Asset lookups in the manifest (case-insensitive) for Background / Hi im ema / ImageStrip / under image strip; portrait keeps `IMG_5800-min`.
+- `src/styles/whiteboard-pages.css`: rewrote the entire `About` block. Hides the inherited `.spa-page__bg` whiteboard grid under `.spa-about`. New `.spa-about__bg` (fixed, cover, top-anchored) plus a vignette `::after` for legibility. Title/sub/lede/body now in `#ffffff` / `rgba(255,255,255,0.78)` tones with subtle text-shadows. Filmstrip CSS (`.spa-about__strip`, `::before`/`::after` perforations, `__strip-frames`, `__strip-frame`, `__strip-num`) deleted; replaced by `.spa-about__strip-wrap` / `__strip-img` and `.spa-about__understrip-wrap` / `__understrip-img` (both render the source image edge-to-edge at full width). Post-it card converted to a dark variant — `linear-gradient(#1c1c1c → #141414)` background, white text, white-on-hover icons that invert to dark on hover. Portrait ring switched from black-dashed to white-dashed at 28% alpha; portrait shadow deepened.
+
 ## [1.2.25] -- remove loading screen
 
 The intro loader is gone — the site now renders the hero immediately on first paint, no preload gate, no minimum-display timer.
